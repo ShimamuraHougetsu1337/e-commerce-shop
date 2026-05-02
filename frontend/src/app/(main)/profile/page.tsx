@@ -1,0 +1,21 @@
+import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import ProfileClient from "./profile-client";
+
+export const metadata = {
+    title: 'Hồ sơ cá nhân',
+    description: 'Quản lý thông tin cá nhân và đơn hàng của bạn',
+};
+
+export default async function ProfilePage() {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        redirect("/login");
+    }
+
+    return (
+        <ProfileClient session={session} />
+    );
+}

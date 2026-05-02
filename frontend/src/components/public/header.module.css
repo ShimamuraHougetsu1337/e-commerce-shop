@@ -1,0 +1,36 @@
+
+
+
+.desktopOnly {
+  display: flex; 
+}
+
+
+.mobileOnly {
+  display: flex;
+}
+
+
+.searchWrapper {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 24px;
+}
+
+
+@media (max-width: 767px) {
+  .desktopOnly {
+    display: none !important;
+  }
+
+  .searchWrapper {
+    display: none !important;
+  }
+}
+
+
+@media (min-width: 768px) {
+  .mobileOnly {
+    display: none !important;
+  }
+}

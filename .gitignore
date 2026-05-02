@@ -1,0 +1,17 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+
+# Temp files
+*.log
+.temp/
+.tmp/

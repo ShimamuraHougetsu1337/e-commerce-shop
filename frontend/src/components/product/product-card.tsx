@@ -1,0 +1,140 @@
+'use client'
+import React, { useState, useEffect } from 'react';
+import { Card, Rate, Button, Flex, Typography, message } from 'antd';
+import { ShoppingCartOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useWishlistStore } from '@/store/useWishlistStore';
+import { useCartStore } from '@/store/useCartStore';
+
+const { Title, Text } = Typography;
+
+interface ProductCardProps {
+  product: IProduct;
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { items, addItem, removeItem } = useWishlistStore();
+  const { addItem: addToCart } = useCartStore();
+  const [isCartLoading, setIsCartLoading] = useState<boolean>(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
+
+
+  const isLiked = items.some(item => item._id === product._id);
+
+
+
+  const handleCardClick = () => {
+    router.push(`/products/${product._id}`);
+  };
+
+  const handleCartClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!session?.accessToken) {
+      message.warning('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+      return;
+    }
+
+    setIsCartLoading(true);
+    try {
+      await addToCart(product, 1, session.accessToken);
+      message.success(`Đã thêm ${product.name} vào giỏ hàng!`);
+    } catch (error) {
+      message.error('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+    } finally {
+      setIsCartLoading(false);
+    }
+  };
+
+  const handleWishlistClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!session?.accessToken) {
+      message.warning('Vui lòng đăng nhập để thêm vào yêu thích!');
+      return;
+    }
+
+    try {
+      setIsWishlistLoading(true);
+      if (isLiked) {
+        await removeItem(product._id, session.accessToken);
+        message.success('Đã gỡ khỏi danh sách yêu thích!');
+      } else {
+        await addItem(product, session.accessToken);
+        message.success('Đã thêm vào danh sách yêu thích!');
+      }
+    } catch (error) {
+      message.error('Có lỗi xảy ra, vui lòng thử lại!');
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
+
+  return (
+    <Card
+      hoverable
+      onClick={handleCardClick}
+      style={{ borderRadius: 16, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+      styles={{
+        body: {
+          padding: 20,
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column'
+        }
+      }}
+      cover={
+        <div suppressHydrationWarning style={{ height: 220, backgroundColor: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <Image
+            alt={product.name ?? "Product image"}
+            src={product.images && product.images.length > 0 ? (product.images[0].startsWith('http') ? product.images[0] : `http://localhost:8000/images/${product.images[0]}`) : "https://i.pinimg.com/736x/96/2a/64/962a64692ac9350b787db7fc4659df8c.jpg"}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            style={{ objectFit: 'cover' }}
+          />
+          <Button
+            type="text"
+            shape="circle"
+            icon={isLiked ? <HeartFilled style={{ color: '#ff4d4f', fontSize: 20 }} /> : <HeartOutlined style={{ fontSize: 20, color: '#aaa' }} />}
+            onClick={handleWishlistClick}
+            loading={isWishlistLoading}
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              backgroundColor: 'rgba(255,255,255,0.8)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          />
+        </div>
+      }
+    >
+      <div suppressHydrationWarning style={{ flex: 1 }}>
+        <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+          <Rate disabled defaultValue={product.averageRating || 0} style={{ fontSize: 14, color: '#faad14' }} />
+          <Text type="secondary" style={{ fontSize: 12 }}>({product.totalReviews || 0})</Text>
+        </Flex>
+        <Title level={5} style={{ margin: '0 0 16px', fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {product.name}
+        </Title>
+      </div>
+
+      <Flex align="center" justify="space-between" style={{ marginTop: 'auto' }}>
+        <div>
+          <Text strong style={{ fontSize: 20, color: '#1677ff' }}>{product.price.toLocaleString('vi-VN')} đ</Text>
+        </div>
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<ShoppingCartOutlined />}
+          size="large"
+          loading={isCartLoading}
+          style={{ backgroundColor: '#1677ff' }}
+          onClick={handleCartClick}
+        />
+      </Flex>
+    </Card>
+  );
+}

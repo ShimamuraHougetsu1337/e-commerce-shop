@@ -1,0 +1,168 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User, UserDocument } from './schemas/user.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
+import { ADMIN_ROLE } from '@/databases/samples';
+import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { Product, ProductDocument } from '@/products/schemas/product.schema';
+import aqp from 'api-query-params';
+
+@Injectable()
+export class UsersService {
+
+  constructor(
+    @InjectModel(User.name) private userModel: SoftDeleteModel<UserDocument>,
+    @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+  ) { }
+
+  hashPassword = (plainPassword: string) => {
+    const salt = genSaltSync(10);
+    const hashedPassword = hashSync(plainPassword, salt);
+    return hashedPassword;
+  }
+
+  validatePassword(password: string, hashedPassword: string) {
+    return compareSync(password, hashedPassword)
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    let isEmailExisted = await this.userModel.exists({ email: createUserDto.email });
+    if (isEmailExisted) {
+      throw new BadRequestException('Email already exists');
+    }
+    let isUsernameExisted = await this.userModel.exists({ name: createUserDto.name });
+    if (isUsernameExisted) {
+      throw new BadRequestException('Username already exists');
+    }
+    let hashedPassword = this.hashPassword(createUserDto.password);
+    const user = await this.userModel.create({
+      ...createUserDto,
+      password: hashedPassword
+    });
+    return user;
+  }
+
+  async createSocialUser(email: string, name: string) {
+    let isEmailExisted = await this.userModel.exists({ email });
+    if (isEmailExisted) {
+      throw new BadRequestException('Email already exists');
+    }
+    
+    // Tạo mật khẩu ngẫu nhiên cho social user
+    const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+    const hashedPassword = this.hashPassword(randomPassword);
+
+    const user = await this.userModel.create({
+      email,
+      name,
+      password: hashedPassword,
+      role: ADMIN_ROLE === 'SUPER_ADMIN' ? 'NORMAL_USER' : 'NORMAL_USER' // fallback to normal user
+    });
+    return user;
+  }
+
+  async findAll(current: number, pageSize: number, qs: string) {
+    const { filter, sort, projection, population } = aqp(qs);
+    delete filter.current;
+    delete filter.pageSize;
+    let offset = (+current - 1) * (+pageSize);
+    let defaultLimit = +pageSize ? +pageSize : 10;
+
+    const totalItems = (await this.userModel.find(filter)).length;
+    const totalPages = Math.ceil(totalItems / defaultLimit);
+
+    const result = await this.userModel.find(filter)
+      .skip(offset)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .populate(population)
+      .exec();
+
+    return {
+      meta: {
+        current: current,
+        pageSize: pageSize,
+        pages: totalPages,
+        total: totalItems
+      },
+      result
+    }
+  }
+
+  findOne(id: string) {
+    return this.userModel.findById(id).populate('wishlist').select('-password');
+  }
+
+  update(updateUserDto: UpdateUserDto) {
+    return this.userModel.updateOne({ _id: updateUserDto.id }, {
+      ...updateUserDto
+    });
+  }
+
+  remove(id: string) {
+    return this.userModel.softDelete({ _id: id });
+  }
+
+  findOneByEmail(email: string) {
+    return this.userModel.findOne({ email }).populate('wishlist');
+  }
+
+  async addToWishlist(userId: string, productId: string) {
+    const product = await this.productModel.findById(productId);
+    if (!product) {
+      throw new NotFoundException(`Product with id '${productId}' not found`);
+    }
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $addToSet: { wishlist: productId } }
+    );
+    return { productId };
+  }
+
+  async removeFromWishlist(userId: string, productId: string) {
+    const product = await this.productModel.findById(productId);
+    if (!product) {
+      throw new NotFoundException(`Product with id '${productId}' not found`);
+    }
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $pull: { wishlist: productId } }
+    );
+    return { productId };
+  }
+
+  async getWishlist(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .populate('wishlist')
+      .select('wishlist')
+      .lean();
+    return user?.wishlist ?? [];
+  }
+
+  async updateProfile(userId: string, data: { name?: string, oldPassword?: string, newPassword?: string }) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
+    }
+
+    const updateData: any = {};
+    if (data.name) {
+      updateData.name = data.name;
+    }
+
+    if (data.oldPassword && data.newPassword) {
+      const isPasswordValid = this.validatePassword(data.oldPassword, user.password);
+      if (!isPasswordValid) {
+        throw new BadRequestException('Mật khẩu cũ không chính xác');
+      }
+      updateData.password = this.hashPassword(data.newPassword);
+    }
+
+    return await this.userModel.updateOne({ _id: userId }, { ...updateData });
+  }
+
+}
