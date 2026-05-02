@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Row, Col, Typography, Flex } from 'antd';
-import { RocketOutlined, SyncOutlined, SafetyCertificateOutlined, MessageOutlined } from '@ant-design/icons';
+import { MessageOutlined, RocketOutlined, SafetyCertificateOutlined, SyncOutlined } from '@ant-design/icons';
+import { Col, Flex, Row, Typography } from 'antd';
 
 const { Title, Text } = Typography;
 

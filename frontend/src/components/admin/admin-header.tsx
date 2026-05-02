@@ -1,14 +1,12 @@
 "use client";
 
-import React from 'react';
-import { Layout, Button, Avatar, Dropdown, Space, Typography } from 'antd';
 import {
-    MenuUnfoldOutlined,
-    MenuFoldOutlined,
-    LogoutOutlined,
-    UserOutlined,
-    BellOutlined
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  UserOutlined
 } from '@ant-design/icons';
+import { Avatar, Button, Dropdown, Layout, Space, Typography } from 'antd';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 

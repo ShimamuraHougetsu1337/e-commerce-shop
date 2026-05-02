@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { Card, Typography, Skeleton, Flex, Empty } from 'antd';
-import { Column } from '@ant-design/plots';
-import { useSession } from 'next-auth/react';
 import { fetchAdminStats } from '@/utils/admin.api';
+import { Column } from '@ant-design/plots';
+import { Card, Empty, Flex, Skeleton, Typography } from 'antd';
 import dayjs from 'dayjs';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 const { Title } = Typography;
 

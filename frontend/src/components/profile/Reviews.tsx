@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Card, Typography, Flex, Rate, Spin, Empty, List, Avatar } from 'antd';
 import { getMyReviewsApi } from '@/utils/user.api';
+import { Card, Empty, Flex, List, Rate, Spin, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const { Title, Paragraph, Text } = Typography;
 

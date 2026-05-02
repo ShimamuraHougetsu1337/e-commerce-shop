@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { Row, Col, Typography, Button } from 'antd';
+import { Button, Col, Row, Typography } from 'antd';
 import Link from 'next/link';
 
 const { Title, Text } = Typography;

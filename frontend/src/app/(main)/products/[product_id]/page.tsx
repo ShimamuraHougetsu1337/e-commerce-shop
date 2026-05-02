@@ -1,8 +1,7 @@
-import React from 'react';
-import ProductContentWrapper from './product-content-wapper';
 import { sendRequest } from '@/utils/api';
-import { Result, Button } from 'antd';
+import { Button, Result } from 'antd';
 import Link from 'next/link';
+import ProductContentWrapper from './product-content-wapper';
 
 
 

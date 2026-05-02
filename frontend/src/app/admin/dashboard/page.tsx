@@ -1,8 +1,7 @@
-import React from 'react';
-import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { redirect } from 'next/navigation';
 import DashboardContent from '@/components/admin/dashboard/dashboard-content';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
 
 export default async function AdminDashboardPage() {
     const session = await getServerSession(authOptions);

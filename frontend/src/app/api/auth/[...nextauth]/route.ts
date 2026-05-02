@@ -1,8 +1,8 @@
+import { login } from "@/utils/auth.api"
 import NextAuth, { AuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
 import GithubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { login } from "@/utils/auth.api"
 
 export const authOptions: AuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
@@ -61,7 +61,7 @@ export const authOptions: AuthOptions = {
                     });
 
                     const responseData = await res.json();
-                    
+
                     if (res.ok && responseData.data) {
                         token.user = responseData.data.user;
                         token.accessToken = responseData.data.accessToken;
@@ -69,7 +69,7 @@ export const authOptions: AuthOptions = {
                 } catch (error) {
                     console.error("Lỗi khi đồng bộ Social Login với backend:", error);
                 }
-            } 
+            }
             // Xử lý Credentials Login
             else if (user) {
                 // @ts-ignore

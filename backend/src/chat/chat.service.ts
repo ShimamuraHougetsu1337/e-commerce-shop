@@ -1,8 +1,8 @@
-import { Injectable, InternalServerErrorException, GatewayTimeoutException, ServiceUnavailableException } from '@nestjs/common';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GatewayTimeoutException, Injectable, InternalServerErrorException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Product, ProductDocument } from '../products/schemas/product.schema';
 
 @Injectable()

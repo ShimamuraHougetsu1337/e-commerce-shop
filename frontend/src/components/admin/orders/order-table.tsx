@@ -1,36 +1,33 @@
 'use client'
-import {
-    Table,
-    Button,
-    Input,
-    Space,
-    Tag,
-    Typography,
-    Card,
-    Breadcrumb,
-    Flex,
-    Tooltip,
-    Modal,
-    Descriptions,
-    Divider,
-    Select,
-    message
-} from 'antd';
-import {
-    EyeOutlined,
-    PrinterOutlined,
-    CheckCircleOutlined,
-    SyncOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    EditOutlined
-} from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import { OrderTableRow, OrderListResponse } from '@/types/admin';
-import dayjs from 'dayjs';
-import { useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { OrderListResponse, OrderTableRow } from '@/types/admin';
 import { fetchOrdersList, updateOrderStatus } from '@/utils/admin.api';
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PrinterOutlined,
+  SyncOutlined
+} from '@ant-design/icons';
+import {
+  Button,
+  Descriptions,
+  Divider,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+  message
+} from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import dayjs from 'dayjs';
+import { useSession } from 'next-auth/react';
+import { useCallback, useState } from 'react';
 
 const { Title, Text } = Typography;
 
@@ -213,39 +210,27 @@ export default function OrderTable({ initialData }: OrderTableProps) {
     ];
 
     return (
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <Flex justify="space-between" align="center">
-                <Breadcrumb items={[{ title: 'Admin' }, { title: 'Orders' }]} />
-            </Flex>
-
-            <Title level={3}>Quản lý đơn hàng</Title>
-
-            <Card styles={{ body: { padding: '24px' } }} style={{ borderRadius: 12, border: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
-                <Flex gap={16} style={{ marginBottom: 24 }} wrap="wrap">
+        <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h2>Quản lý đơn hàng</h2>
+                <Space>
                     <Input.Search
-                        placeholder="Tìm kiếm theo mã đơn hoặc tên khách..."
-                        style={{ maxWidth: 400, borderRadius: 8 }}
-                        size="large"
+                        placeholder="Tìm kiếm đơn hàng..."
                         onSearch={handleSearch}
-                        enterButton
                         allowClear
                     />
-                </Flex>
+                </Space>
+            </div>
 
-                <Table
-                    columns={columns}
-                    dataSource={dataSource}
-                    rowKey="_id"
-                    loading={loading}
-                    pagination={{
-                        ...pagination,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Tổng số ${total} đơn hàng`,
-                    }}
-                    onChange={handleTableChange}
-                    scroll={{ x: 1000 }}
-                />
-            </Card>
+            <Table
+                columns={columns}
+                dataSource={dataSource}
+                rowKey="_id"
+                loading={loading}
+                pagination={pagination}
+                onChange={handleTableChange}
+                scroll={{ x: 1000 }}
+            />
 
             <Modal
                 title={`Chi tiết đơn hàng #${selectedOrder?._id || ''}`}
@@ -265,6 +250,19 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                             <Descriptions.Item label="Địa chỉ giao hàng" span={2}>{selectedOrder.shippingAddress}</Descriptions.Item>
                             <Descriptions.Item label="Phương thức thanh toán">{selectedOrder.paymentMethod}</Descriptions.Item>
                             <Descriptions.Item label="Trạng thái">{getStatusTag(selectedOrder.status)}</Descriptions.Item>
+                            {(selectedOrder as any).couponCode && (
+                                <Descriptions.Item label="Mã giảm giá">
+                                    <Space direction="vertical" size={0}>
+                                        <Tag color="gold" style={{ margin: 0 }}>{(selectedOrder as any).couponCode.toUpperCase()}</Tag>
+                                        {(selectedOrder as any).discountType && (
+                                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                                Giảm {(selectedOrder as any).discountType === 'PERCENTAGE' ? `${(selectedOrder as any).discountValue}%` : `${(selectedOrder as any).discountValue?.toLocaleString('vi-VN')} đ`} 
+                                                <br/>(Đơn tối thiểu: {(selectedOrder as any).minOrderValue?.toLocaleString('vi-VN')} đ)
+                                            </Text>
+                                        )}
+                                    </Space>
+                                </Descriptions.Item>
+                            )}
                         </Descriptions>
 
                         <Divider orientation="left">Danh sách sản phẩm</Divider>
@@ -321,7 +319,7 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                     />
                 </div>
             </Modal>
-        </Space>
+        </div>
     );
 }
 

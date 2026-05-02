@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UsersModule } from './users/users.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { DatabasesModule } from './databases/databases.module';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { AuthModule } from './auth/auth.module';
-import { ProductsModule } from './products/products.module';
-import { CategoriesModule } from './categories/categories.module';
 import { CartsModule } from './carts/carts.module';
-import { OrdersModule } from './orders/orders.module';
-import { ReviewsModule } from './reviews/reviews.module';
+import { CategoriesModule } from './categories/categories.module';
 import { ChatModule } from './chat/chat.module';
+import { CouponsModule } from './coupons/coupons.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DatabasesModule } from './databases/databases.module';
 import { FilesModule } from './files/files.module';
+import { OrdersModule } from './orders/orders.module';
+import { ProductsModule } from './products/products.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { FilesModule } from './files/files.module';
     ChatModule,
     DashboardModule,
     FilesModule,
+    CouponsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

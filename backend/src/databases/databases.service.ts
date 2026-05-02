@@ -1,10 +1,10 @@
-import { Product, ProductDocument } from '@/products/schemas/product.schema';
 import { Category, CategoryDocument } from '@/categories/schemas/category.schema';
+import { Product, ProductDocument } from '@/products/schemas/product.schema';
+import { Review, ReviewDocument } from '@/reviews/schemas/review.schema';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { Review, ReviewDocument } from '@/reviews/schemas/review.schema';
 import { SAMPLE_CATEGORIES, SAMPLE_PRODUCTS } from './samples';
 
 @Injectable()

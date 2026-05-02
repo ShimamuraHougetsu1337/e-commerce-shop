@@ -1,14 +1,13 @@
-import React from 'react';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import CustomerTable from '@/components/admin/customers/customer-table';
 import { fetchCustomersList } from '@/utils/admin.api';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 
 export default async function CustomersPage() {
     // Lấy session từ server để lấy accessToken
     const session = await getServerSession(authOptions);
-    
+
     // Kiểm tra quyền hạn (Role check)
     if (!session || (session.user as any).role === 'NORMAL_USER') {
         redirect('/');

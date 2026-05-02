@@ -1,6 +1,4 @@
-import React from 'react';
-import { Tabs } from 'antd';
-import { Typography } from 'antd';
+import { Tabs, Typography } from 'antd';
 
 import ProductReviews from './product-reviews';
 

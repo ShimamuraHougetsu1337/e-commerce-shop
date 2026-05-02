@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { Result, Spin } from "antd";
 import { useSession } from "next-auth/react";
-import { Spin, Result } from "antd";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const pathName = usePathname()

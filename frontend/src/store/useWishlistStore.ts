@@ -1,5 +1,5 @@
+import { addToWishlist, getWishlist, removeFromWishlist } from '@/utils/user.api';
 import { create } from 'zustand';
-import { getWishlist, removeFromWishlist, addToWishlist } from '@/utils/user.api';
 
 interface WishlistStore {
     items: IProduct[];

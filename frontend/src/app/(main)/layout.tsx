@@ -1,15 +1,16 @@
-import React from 'react';
 import AppFooter from '@/components/public/footer';
 import AppHeader from '@/components/public/header';
 import { Layout } from 'antd';
+import React from 'react';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     return (
-        <Layout style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
+        <Layout style={{ minHeight: '100vh', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
             <AppHeader />
-            {children}
-            <AppFooter
-            />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {children}
+            </div>
+            <AppFooter />
         </Layout>
     );
 };

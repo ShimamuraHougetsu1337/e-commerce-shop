@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
-import { Flex, Space, Button, Typography, Carousel } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { Button, Carousel, Flex, Space, Typography } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import ProductCard from './product-card';
 
 const { Title } = Typography;

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Result } from 'antd';
+import { useEffect } from 'react';
 
 export default function Error({ error, reset }: {
     error: Error & { digest?: string };

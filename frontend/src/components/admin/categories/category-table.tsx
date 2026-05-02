@@ -1,34 +1,31 @@
 'use client'
 
-import {
-    Table,
-    Button,
-    Input,
-    Space,
-    Tag,
-    Typography,
-    Card,
-    Breadcrumb,
-    Flex,
-    Tooltip,
-    Modal,
-    Form,
-    Select,
-    message,
-    Popconfirm
-} from 'antd';
-import {
-    EditOutlined,
-    DeleteOutlined,
-    EyeOutlined,
-    PlusOutlined
-} from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import { CategoryTableRow, CategoryListResponse } from '@/types/admin';
-import dayjs from 'dayjs';
-import { useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { CategoryListResponse, CategoryTableRow } from '@/types/admin';
 import { createCategory, deleteCategory, fetchCategoriesList, updateCategory } from '@/utils/admin.api';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined
+} from '@ant-design/icons';
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
+  Typography
+} from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import dayjs from 'dayjs';
+import { useSession } from 'next-auth/react';
+import { useCallback, useState } from 'react';
 
 const { Title, Text } = Typography;
 
@@ -214,43 +211,30 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
     ];
 
     return (
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <Flex justify="space-between" align="center">
-                <Breadcrumb items={[{ title: 'Admin' }, { title: 'Categories' }]} />
-            </Flex>
-
-            <Title level={3} style={{ marginTop: 0 }}>Quản lý danh mục</Title>
-
-            <Card styles={{ body: { padding: '24px' } }} style={{ borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)' }}>
-                <Flex gap={16} style={{ marginBottom: 24, justifyContent: 'space-between' }} wrap="wrap">
+        <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h2>Quản lý danh mục</h2>
+                <Space>
                     <Input.Search
                         placeholder="Tìm kiếm danh mục..."
-                        style={{ maxWidth: 400 }}
-                        size="large"
                         onSearch={handleSearch}
-                        enterButton
                         allowClear
                     />
-                    <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => showModal()}>
-                        Thêm danh mục
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+                        Thêm mới
                     </Button>
-                </Flex>
+                </Space>
+            </div>
 
-                <Table
-                    columns={columns}
-                    dataSource={dataSource}
-                    rowKey="_id"
-                    loading={loading}
-                    size="middle"
-                    pagination={{
-                        ...pagination,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Tổng số ${total} danh mục`,
-                    }}
-                    onChange={handleTableChange}
-                    scroll={{ x: 800 }}
-                />
-            </Card>
+            <Table
+                columns={columns}
+                dataSource={dataSource}
+                rowKey="_id"
+                loading={loading}
+                pagination={pagination}
+                onChange={handleTableChange}
+                scroll={{ x: 800 }}
+            />
             <Modal
                 title={editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
                 open={isModalOpen}
@@ -278,7 +262,7 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
                     </Form.Item>
                 </Form>
             </Modal>
-        </Space>
+        </div>
     );
 }
 

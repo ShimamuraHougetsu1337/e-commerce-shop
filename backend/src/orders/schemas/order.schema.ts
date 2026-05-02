@@ -1,8 +1,8 @@
 
+import { Product } from '@/products/schemas/product.schema';
+import { User } from '@/users/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { User } from '@/users/schemas/user.schema';
-import { Product } from '@/products/schemas/product.schema';
 
 export type OrderDocument = HydratedDocument<Order>;
 
@@ -47,6 +47,18 @@ export class Order {
 
     @Prop({ type: String, default: 'COD' })
     paymentMethod: string;
+
+    @Prop({ type: String })
+    couponCode?: string;
+
+    @Prop({ type: Number })
+    discountValue?: number;
+
+    @Prop({ type: String })
+    discountType?: string;
+
+    @Prop({ type: Number })
+    minOrderValue?: number;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

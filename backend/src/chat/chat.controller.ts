@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Sse, MessageEvent } from '@nestjs/common';
+import { Body, Controller, MessageEvent, Post, Sse } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Public } from '../decorator/customize';
 import { ChatService } from './chat.service';

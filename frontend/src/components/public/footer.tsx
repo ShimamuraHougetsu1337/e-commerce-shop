@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Layout, Typography } from 'antd';
 
 const { Footer: AntFooter } = Layout;
@@ -12,7 +11,7 @@ export default function AppFooter() {
       backgroundColor: '#fff',
       textAlign: 'center',
       padding: '10px 0',
-      borderTop: '1px solid #f0f0f0'
+      borderTop: '1px solid #f0f0f0',
     }}>
       <Text style={{
         color: '#8c8c8c',

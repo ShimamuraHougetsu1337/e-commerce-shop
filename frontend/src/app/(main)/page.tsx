@@ -1,4 +1,3 @@
-import React from 'react';
 import BenefitsBar from '@/components/homepage/benefits.bar';
 import CategorySection from '@/components/homepage/category.section';
 import HeroBanner from '@/components/homepage/hero.banner';

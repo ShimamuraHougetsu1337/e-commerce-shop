@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Breadcrumb, Row, Col, Divider, Space, Spin } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
-import ProductInfo from '@/components/product/product-info';
+import ProductActions from '@/components/product/product-actions';
 import ProductDetailsTabs from '@/components/product/product-details-tabs';
 import ProductImageGallery from '@/components/product/product-image-gallery';
-import ProductActions from '@/components/product/product-actions';
+import ProductInfo from '@/components/product/product-info';
 import RelatedProductsCarousel from '@/components/product/related-products-carousel';
-import Link from 'next/link';
 import { sendRequest } from '@/utils/api';
+import { HomeOutlined } from '@ant-design/icons';
+import { Breadcrumb, Col, Divider, Layout, Row, Space } from 'antd';
+import Link from 'next/link';
+import { useCallback, useState } from 'react';
 
 const { Content } = Layout;
 

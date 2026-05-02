@@ -1,11 +1,10 @@
 'use client'
-import React from 'react';
-import { Typography, Row, Col, Button, Flex } from 'antd';
+import { Button, Col, Flex, Row, Typography } from 'antd';
 
 import ProductCard from '@/components/product/product-card';
+import Link from 'next/link';
 
 const { Title } = Typography;
-import Link from 'next/link';
 
 interface ProductSectionProps {
   title: string,

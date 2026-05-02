@@ -1,9 +1,9 @@
 import { USER_ROLE } from '@/databases/samples';
 import { CreateUserDto, RegisterUserDto } from '@/users/dto/create-user.dto';
 import { UsersService } from '@/users/users.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SocialLoginInput, OAuthResponseData } from './dto/social-login.dto';
+import { OAuthResponseData, SocialLoginInput } from './dto/social-login.dto';
 
 @Injectable()
 export class AuthService {

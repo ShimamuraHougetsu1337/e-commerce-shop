@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import { GithubOutlined, GoogleOutlined } from "@ant-design/icons";
 import { Button, Flex, theme } from "antd";
-import { GoogleOutlined, GithubOutlined } from "@ant-design/icons";
 import { signIn } from "next-auth/react";
 
 const { useToken } = theme;

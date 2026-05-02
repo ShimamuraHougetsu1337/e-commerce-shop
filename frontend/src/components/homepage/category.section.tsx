@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { Typography, Carousel } from 'antd'; 
+import { Carousel, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;

@@ -1,14 +1,14 @@
+import { ADMIN_ROLE } from '@/databases/samples';
+import { Product, ProductDocument } from '@/products/schemas/product.schema';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import aqp from 'api-query-params';
+import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
+import { Model } from 'mongoose';
+import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
-import { ADMIN_ROLE } from '@/databases/samples';
-import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { Product, ProductDocument } from '@/products/schemas/product.schema';
-import aqp from 'api-query-params';
 
 @Injectable()
 export class UsersService {

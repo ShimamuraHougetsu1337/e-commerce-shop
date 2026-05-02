@@ -1,6 +1,6 @@
-import React from 'react';
 import AdminLayoutWrapper from '@/components/admin/admin-layout-wrapper';
 import { Metadata } from 'next';
+import React from 'react';
 
 export const metadata: Metadata = {
     title: 'Admin Dashboard | E-Commerce',

@@ -256,3 +256,72 @@ export async function fetchAdminStats(accessToken: string): Promise<IBackendRes<
     return response.json();
 }
 
+export async function fetchCouponsList({
+    current = 1,
+    pageSize = 10,
+    query = "",
+    sort = "",
+    accessToken
+}: {
+    current?: number;
+    pageSize?: number;
+    query?: string;
+    sort?: string;
+    accessToken?: string;
+}): Promise<IBackendRes<IModelPaginate<ICoupon>>> {
+    const params = new URLSearchParams({
+        current: current.toString(),
+        pageSize: pageSize.toString(),
+        sort: sort || "-createdAt"
+    });
+    if (query) params.append("code", `/${query}/i`);
+
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons?${params.toString()}`;
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        next: { tags: ['coupons-list'], revalidate: 60 }
+    });
+    return response.json();
+}
+
+export async function createCoupon(data: any, accessToken: string): Promise<IBackendRes<ICoupon>> {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(data)
+    });
+    return response.json();
+}
+
+export async function updateCoupon(id: string, data: any, accessToken: string): Promise<IBackendRes<ICoupon>> {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons/${id}`;
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(data)
+    });
+    return response.json();
+}
+
+export async function deleteCoupon(id: string, accessToken: string): Promise<IBackendRes<any>> {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons/${id}`;
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+    return response.json();
+}
+

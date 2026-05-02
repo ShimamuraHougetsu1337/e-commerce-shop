@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Row, Col } from 'antd';
+import { Col, Row } from 'antd';
 import Image from 'next/image';
+import { useState } from 'react';
 
 interface ProductImageGalleryProps {
     images: string[];

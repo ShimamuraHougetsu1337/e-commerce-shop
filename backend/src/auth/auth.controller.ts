@@ -1,10 +1,10 @@
+import { Public, ResponseMessage } from '@/decorator/customize';
+import { RegisterUserDto } from '@/users/dto/create-user.dto';
+import { UsersService } from '@/users/users.service';
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterUserDto } from '@/users/dto/create-user.dto';
-import { LocalAuthGuard } from './guard/local-auth.guard';
-import { Public, ResponseMessage } from '@/decorator/customize';
-import { UsersService } from '@/users/users.service';
 import { SocialLoginInput } from './dto/social-login.dto';
+import { LocalAuthGuard } from './guard/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {

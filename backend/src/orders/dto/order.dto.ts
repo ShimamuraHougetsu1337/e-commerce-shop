@@ -1,15 +1,15 @@
 
 import { Type } from 'class-transformer';
 import {
-    IsArray,
-    IsEnum,
-    IsMongoId,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
-    Min,
-    ValidateNested,
+  IsArray,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 import { OrderStatus } from '../schemas/order.schema';
 
@@ -48,6 +48,22 @@ export class CreateOrderDto {
     @IsOptional()
     @IsString()
     paymentMethod?: string;
+
+    @IsOptional()
+    @IsString()
+    couponCode?: string;
+
+    @IsOptional()
+    @IsNumber()
+    discountValue?: number;
+
+    @IsOptional()
+    @IsString()
+    discountType?: string;
+
+    @IsOptional()
+    @IsNumber()
+    minOrderValue?: number;
 }
 
 export class UpdateOrderStatusDto {

@@ -70,3 +70,21 @@ export const clearCartApi = (accessToken: string) => {
         }
     });
 }
+
+export const applyCouponApi = (code: string, orderValue: number, accessToken: string) => {
+    return sendRequest<IBackendRes<any>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons/apply`,
+        method: "POST",
+        body: { code, orderValue },
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+}
+
+export const getActiveCouponsApi = () => {
+    return sendRequest<IBackendRes<ICoupon[]>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons/active`,
+        method: "GET"
+    });
+}

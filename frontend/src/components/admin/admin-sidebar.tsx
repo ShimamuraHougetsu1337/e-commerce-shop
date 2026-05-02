@@ -1,16 +1,15 @@
 "use client";
 
-import React from 'react';
-import { Layout, Menu } from 'antd';
 import {
-    DashboardOutlined,
-    ShoppingCartOutlined,
-    ShoppingOutlined,
-    UserOutlined,
-    TagsOutlined,
+  DashboardOutlined,
+  ShoppingCartOutlined,
+  ShoppingOutlined,
+  TagsOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
-import { usePathname, useRouter } from 'next/navigation';
+import { Layout, Menu } from 'antd';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 const { Sider } = Layout;
 
@@ -24,6 +23,7 @@ export default function AdminSidebar({ collapsed }: { collapsed: boolean }) {
         { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Products' },
         { key: '/admin/categories', icon: <TagsOutlined />, label: 'Categories' },
         { key: '/admin/customers', icon: <UserOutlined />, label: 'Customers' },
+        { key: '/admin/coupons', icon: <TagsOutlined />, label: 'Coupons' },
     ];
 
     return (

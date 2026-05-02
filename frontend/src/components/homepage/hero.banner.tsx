@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { Carousel, Typography, Button, Row, Col } from 'antd';
+import { Button, Carousel, Col, Row, Typography } from 'antd';
 import Link from 'next/link';
 
 const { Title, Paragraph } = Typography;

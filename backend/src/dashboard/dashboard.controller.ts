@@ -1,6 +1,6 @@
+import { ResponseMessage } from '@/decorator/customize';
 import { Controller, Get } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
-import { ResponseMessage } from '@/decorator/customize';
 
 @Controller('dashboard')
 export class DashboardController {

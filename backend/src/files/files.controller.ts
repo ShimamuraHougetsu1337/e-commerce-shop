@@ -1,8 +1,8 @@
-import { Controller, Post, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator } from '@nestjs/common';
+import { Public } from '@/decorator/customize';
+import { Controller, FileTypeValidator, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { Public } from '@/decorator/customize';
 import { FilesService } from './files.service';
 
 @Controller('files')

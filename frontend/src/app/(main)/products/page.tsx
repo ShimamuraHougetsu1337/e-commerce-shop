@@ -1,16 +1,29 @@
 'use client';
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import {
-  Layout, Typography, Checkbox, InputNumber, Collapse,
-  Button, Flex, Spin, Row, Col, Pagination, Space, Breadcrumb, Drawer, Select
-} from 'antd';
-import {
-  FilterOutlined, HomeOutlined, AppstoreOutlined
-} from '@ant-design/icons';
-import Link from 'next/link';
 import ProductCard from '@/components/product/product-card';
 import { fetchCategories, fetchProductsPagination } from '@/utils/auth.api';
+import {
+  FilterOutlined, HomeOutlined
+} from '@ant-design/icons';
+import {
+  Breadcrumb,
+  Button,
+  Checkbox,
+  Col,
+  Collapse,
+  Drawer,
+  Flex,
+  InputNumber,
+  Layout,
+  Pagination,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Typography
+} from 'antd';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 const { Content, Sider } = Layout;
 const { Text } = Typography;

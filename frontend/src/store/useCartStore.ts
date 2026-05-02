@@ -1,5 +1,5 @@
+import { addToCartApi, clearCartApi, getCartApi, removeFromCartApi, updateQuantityApi } from '@/utils/user.api';
 import { create } from 'zustand';
-import { getCartApi, addToCartApi, updateQuantityApi, removeFromCartApi, clearCartApi } from '@/utils/user.api';
 
 export interface CartItem {
     _id: string;

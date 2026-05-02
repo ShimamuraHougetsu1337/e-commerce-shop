@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { Card, Col, Row, Typography, Flex, Skeleton } from 'antd';
-import {
-    RiseOutlined,
-    DollarCircleOutlined,
-    ShoppingCartOutlined,
-    UserOutlined,
-    AppstoreOutlined
-} from '@ant-design/icons';
 import { fetchAdminStats } from '@/utils/admin.api';
+import {
+  AppstoreOutlined,
+  DollarCircleOutlined,
+  ShoppingCartOutlined,
+  UserOutlined
+} from '@ant-design/icons';
+import { Card, Col, Flex, Row, Skeleton, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
+import React, { useEffect, useState } from 'react';
 
 const { Text } = Typography;
 

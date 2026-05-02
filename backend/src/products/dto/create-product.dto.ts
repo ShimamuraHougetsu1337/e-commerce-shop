@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, IsMongoId, IsArray, IsBoolean } from 'class-validator';
+import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateProductDto {
     @IsString({ message: 'Tên sản phẩm phải là chuỗi' })

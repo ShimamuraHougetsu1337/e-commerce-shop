@@ -1,11 +1,11 @@
-import React from 'react';
-import { AntdRegistry } from '@ant-design/nextjs-registry';
-import { AntdProvider } from '@/providers/antd.provider';
-import './globals.css';
-import NextAuthWrapper from '@/providers/next.auth.wrapper';
-import { getServerSession } from 'next-auth';
-import { authOptions } from './api/auth/[...nextauth]/route';
 import ChatWidget from '@/components/chat/chat-widget';
+import { AntdProvider } from '@/providers/antd.provider';
+import NextAuthWrapper from '@/providers/next.auth.wrapper';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { getServerSession } from 'next-auth';
+import React from 'react';
+import { authOptions } from './api/auth/[...nextauth]/route';
+import './globals.css';
 
 export const metadata = {
   title: 'E-commerce',

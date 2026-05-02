@@ -1,10 +1,9 @@
+import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
 import { join } from 'path';
-import { config } from 'process';
-import { ConfigService } from '@nestjs/config';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { AppModule } from './app.module';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
 import { TransformInterceptor } from './core/transform.interceptor';
 

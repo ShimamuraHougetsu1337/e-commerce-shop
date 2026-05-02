@@ -1,21 +1,21 @@
 'use client';
 
-import React from 'react';
-import type { MenuProps } from 'antd';
-import { Layout, Flex, Badge, Button, Dropdown, Typography, Tooltip, Avatar } from 'antd';
 import {
-  ShoppingOutlined,
-  HeartOutlined,
-  UserOutlined,
-  LogoutOutlined,
   DashboardOutlined,
+  HeartOutlined,
+  LogoutOutlined,
+  ShoppingOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
-import { usePathname, useRouter } from 'next/navigation';
+import type { MenuProps } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Flex, Layout, Tooltip, Typography } from 'antd';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
 
-import { useSession, signOut } from 'next-auth/react';
-import { useWishlistStore } from '@/store/useWishlistStore';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
+import { signOut, useSession } from 'next-auth/react';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;

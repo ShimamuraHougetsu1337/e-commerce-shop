@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import aqp from 'api-query-params';
+import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { InjectModel } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './schemas/category.schema';
-import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import aqp from 'api-query-params';
 
 @Injectable()
 export class CategoriesService {

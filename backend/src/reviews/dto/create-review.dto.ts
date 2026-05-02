@@ -1,5 +1,5 @@
 
-import { IsInt, Min, Max, IsNotEmpty, IsString, IsMongoId, IsOptional, IsArray } from 'class-validator';
+import { IsArray, IsInt, IsMongoId, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
     @IsMongoId({ message: 'productId không hợp lệ' })

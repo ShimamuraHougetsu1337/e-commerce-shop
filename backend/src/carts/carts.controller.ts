@@ -1,8 +1,8 @@
 
-import { Controller, Get, Post, Body, Delete, Param, Patch } from '@nestjs/common';
+import { ResponseMessage, User, type IUser } from '@/decorator/customize';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CartsService } from './carts.service';
-import { User, type IUser, ResponseMessage, Public } from '@/decorator/customize';
-import { AddToCartDto, SyncCartDto } from './dto/cart.dto';
+import { AddToCartDto } from './dto/cart.dto';
 
 @Controller('carts')
 export class CartsController {

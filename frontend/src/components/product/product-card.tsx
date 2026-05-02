@@ -1,12 +1,12 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { Card, Rate, Button, Flex, Typography, message } from 'antd';
-import { ShoppingCartOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
+import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
+import { HeartFilled, HeartOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { Button, Card, Flex, Rate, Typography, message } from 'antd';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useWishlistStore } from '@/store/useWishlistStore';
-import { useCartStore } from '@/store/useCartStore';
+import React, { useState } from 'react';
 
 const { Title, Text } = Typography;
 

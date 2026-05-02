@@ -1,15 +1,32 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { createReviewApi, getMyOrdersApi } from '@/utils/user.api';
 import {
-    Card, Typography, Tag, Button, Spin, Result, Flex, Divider, Modal, Badge, Rate, Form, Input, App
-} from 'antd';
-import {
-    ReloadOutlined, ShoppingOutlined, ClockCircleOutlined,
-    CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, EnvironmentOutlined, CreditCardOutlined,
-    StarOutlined, MessageOutlined
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  CreditCardOutlined,
+  EnvironmentOutlined,
+  MessageOutlined,
+  ReloadOutlined, ShoppingOutlined,
+  StarOutlined,
+  SyncOutlined
 } from '@ant-design/icons';
-import { getMyOrdersApi, createReviewApi } from '@/utils/user.api';
+import {
+  App,
+  Button,
+  Card,
+  Divider,
+  Flex,
+  Form, Input,
+  Modal,
+  Rate,
+  Result,
+  Spin,
+  Tag,
+  Typography
+} from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -33,6 +50,10 @@ interface Order {
     status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled';
     paymentMethod: string;
     shippingAddress: string;
+    couponCode?: string;
+    discountValue?: number;
+    discountType?: string;
+    minOrderValue?: number;
     createdAt: string;
 }
 
@@ -127,9 +148,11 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                         <Flex key={idx} justify="space-between" align="center" style={{ padding: '8px 0', gap: 12 }}>
                             <Flex align="center" gap={12} style={{ flex: 1, minWidth: 0 }}>
                                 <img
-                                    src={item.product.images?.[0]?.startsWith('http') 
-                                        ? item.product.images[0] 
-                                        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images?.[0]}`}
+                                    src={item.product?.images?.[0] 
+                                        ? (item.product.images[0].startsWith('http') 
+                                            ? item.product.images[0] 
+                                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
+                                        : 'https://placehold.co/100x100?text=No+Image'}
                                     alt={item.productName}
                                     style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', background: '#fff', border: '1px solid #f0f0f0' }}
                                     onError={(e) => {
@@ -205,9 +228,11 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                         <React.Fragment key={idx}>
                             <Flex justify="space-between" align="flex-start" style={{ padding: '12px 0', gap: '16px' }}>
                                 <img
-                                    src={item.product.images?.[0]?.startsWith('http') 
-                                        ? item.product.images[0] 
-                                        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images?.[0]}`}
+                                    src={item.product?.images?.[0] 
+                                        ? (item.product.images[0].startsWith('http') 
+                                            ? item.product.images[0] 
+                                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
+                                        : 'https://placehold.co/100x100?text=No+Image'}
                                     alt={item.productName}
                                     style={{ width: 60, height: 60, borderRadius: 8, objectFit: 'cover', background: '#fff', border: '1px solid #f0f0f0' }}
                                     onError={(e) => {
@@ -237,7 +262,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                                                 size="small"
                                                 icon={<StarOutlined />}
                                                 style={{ padding: 0, height: 'auto' }}
-                                                onClick={() => handleOpenReview(item.product._id, item.productName)}
+                                                onClick={() => item.product?._id && handleOpenReview(item.product._id, item.productName)}
                                             >
                                                 Viết đánh giá
                                             </Button>
@@ -254,6 +279,20 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                         </React.Fragment>
                     ))}
                 </div>
+
+                {order.couponCode && (
+                    <Flex justify="space-between" align="center" style={{ background: '#fffbeb', borderRadius: 10, padding: '12px 16px', marginBottom: 12, border: '1px solid #fde68a' }}>
+                        <div>
+                            <Text strong style={{ fontSize: 14, color: '#d97706', display: 'block' }}>Mã giảm giá đã áp dụng</Text>
+                            {order.discountType && order.discountValue !== undefined && order.minOrderValue !== undefined && (
+                                <Text style={{ fontSize: 12, color: '#92400e' }}>
+                                    Giảm {order.discountType === 'PERCENTAGE' ? `${order.discountValue}%` : `${order.discountValue.toLocaleString('vi-VN')} đ`} (Đơn tối thiểu: {order.minOrderValue.toLocaleString('vi-VN')} đ)
+                                </Text>
+                            )}
+                        </div>
+                        <Tag color="gold" style={{ margin: 0, fontSize: 14, padding: '2px 8px' }}>{order.couponCode.toUpperCase()}</Tag>
+                    </Flex>
+                )}
 
                 <Flex justify="space-between" align="center" style={{ background: '#f0fdf4', borderRadius: 10, padding: '12px 16px' }}>
                     <Text strong style={{ fontSize: 15 }}>Tổng thanh toán</Text>

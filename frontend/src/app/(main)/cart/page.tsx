@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
-import { Typography, Row, Col, Button, Empty, Flex, Layout, App, Breadcrumb, Space, InputNumber, Divider, Card, Result, Spin } from 'antd';
-import { DeleteOutlined, HomeOutlined, ShoppingCartOutlined, CreditCardOutlined, CheckCircleFilled, ArrowLeftOutlined } from '@ant-design/icons';
 import { useCartStore } from '@/store/useCartStore';
+import { applyCouponApi, getActiveCouponsApi } from '@/utils/cart.api';
 import { createOrderApi } from '@/utils/user.api';
+import { ArrowLeftOutlined, CreditCardOutlined, DeleteOutlined, GiftOutlined, HomeOutlined, ShoppingCartOutlined, TagOutlined } from '@ant-design/icons';
+import { App, Breadcrumb, Button, Card, Col, Divider, Empty, Flex, Input, InputNumber, Layout, List, Modal, Result, Row, Space, Spin, Typography } from 'antd';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import React, { useEffect, useRef } from 'react';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
@@ -20,6 +21,11 @@ export default function CartPage() {
     const fetchInitiated = useRef(false);
 
     const [isCheckoutSuccess, setIsCheckoutSuccess] = React.useState(false);
+    const [couponCode, setCouponCode] = React.useState('');
+    const [appliedCoupon, setAppliedCoupon] = React.useState<any>(null);
+    const [applyingCoupon, setApplyingCoupon] = React.useState(false);
+    const [isCouponsModalVisible, setIsCouponsModalVisible] = React.useState(false);
+    const [activeCoupons, setActiveCoupons] = React.useState<ICoupon[]>([]);
 
     useEffect(() => {
         if (status === 'authenticated' && session?.accessToken && !fetchInitiated.current) {
@@ -28,10 +34,44 @@ export default function CartPage() {
         }
     }, [status, session?.accessToken, fetchCart]);
 
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const res = await getActiveCouponsApi();
+                if (res.data) setActiveCoupons(res.data);
+            } catch (err) {}
+        };
+        fetchCoupons();
+    }, []);
+
     const handleRemove = async (id: string, name: string) => {
         if (!session?.accessToken) return;
         await removeItem(id, session.accessToken);
         message.info(`Đã xóa ${name} khỏi giỏ hàng`);
+        if (appliedCoupon) setAppliedCoupon(null);
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!session?.accessToken) {
+            message.warning('Vui lòng đăng nhập để áp dụng mã giảm giá!');
+            router.push('/auth/login');
+            return;
+        }
+        if (!couponCode) return;
+        setApplyingCoupon(true);
+        try {
+            const res = await applyCouponApi(couponCode, getTotalPrice(), session.accessToken);
+            if (res && res.data) {
+                setAppliedCoupon(res.data);
+                message.success('Áp dụng mã giảm giá thành công!');
+            } else {
+                message.error(res?.message || 'Mã giảm giá không hợp lệ');
+            }
+        } catch (error: any) {
+            message.error(error.message || 'Mã giảm giá không hợp lệ');
+        } finally {
+            setApplyingCoupon(false);
+        }
     };
 
     const handleCheckout = async () => {
@@ -47,6 +87,7 @@ export default function CartPage() {
         }
 
         try {
+            const finalTotal = appliedCoupon ? appliedCoupon.finalTotal : getTotalPrice();
             const orderPayload = {
                 items: items.map(item => ({
                     product: item._id,
@@ -54,8 +95,12 @@ export default function CartPage() {
                     quantity: item.quantity,
                     price: item.price,
                 })),
-                totalAmount: getTotalPrice(),
+                totalAmount: finalTotal,
                 paymentMethod: 'COD',
+                couponCode: appliedCoupon ? appliedCoupon.coupon.code : undefined,
+                discountValue: appliedCoupon ? appliedCoupon.coupon.discountValue : undefined,
+                discountType: appliedCoupon ? appliedCoupon.coupon.discountType : undefined,
+                minOrderValue: appliedCoupon ? appliedCoupon.coupon.minOrderValue : undefined,
             };
 
             const res = await createOrderApi(orderPayload, session.accessToken);
@@ -97,7 +142,7 @@ export default function CartPage() {
 
     if (status === 'loading') {
         return (
-            <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
+            <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
                 <Spin size="large" />
             </Flex>
         );
@@ -105,7 +150,7 @@ export default function CartPage() {
 
     if (status === 'unauthenticated') {
         return (
-            <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
+            <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
                 <Result
                     status="403"
                     title="Bạn chưa đăng nhập"
@@ -122,7 +167,7 @@ export default function CartPage() {
 
     if (isLoading || (status === 'authenticated' && !fetchInitiated.current)) {
         return (
-            <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
+            <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
                 <Spin size="large" tip="Đang tải giỏ hàng..." />
             </Flex>
         );
@@ -130,7 +175,7 @@ export default function CartPage() {
 
     if (error) {
         return (
-            <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
+            <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
                 <Result
                     status="error"
                     title="Không thể tải giỏ hàng"
@@ -147,7 +192,7 @@ export default function CartPage() {
 
     if (isCheckoutSuccess) {
         return (
-            <Flex vertical align="center" justify="center" style={{ minHeight: '60vh', padding: '24px' }}>
+            <Flex vertical align="center" justify="center" style={{ flex: 1, minHeight: '60vh', padding: '24px' }}>
                 <Result
                     status="success"
                     title="Thanh toán thành công!"
@@ -164,7 +209,7 @@ export default function CartPage() {
 
     if (items.length === 0) {
         return (
-            <Flex vertical align="center" justify="center" style={{ minHeight: '60vh', padding: '24px' }}>
+            <Flex vertical align="center" justify="center" style={{ flex: 1, minHeight: '60vh', padding: '24px' }}>
                 <Empty
                     description={<Text type="secondary" style={{ fontSize: 16 }}>Giỏ hàng của bạn đang trống</Text>}
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -272,11 +317,47 @@ export default function CartPage() {
                                 <Text type="secondary">Phí vận chuyển:</Text>
                                 <Text>Miễn phí</Text>
                             </Flex>
+
+                            <div style={{ marginBottom: 16 }}>
+                                <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
+                                    <Text strong>Mã giảm giá</Text>
+                                    <Button type="link" icon={<GiftOutlined />} onClick={() => setIsCouponsModalVisible(true)} style={{ padding: 0 }}>
+                                        Xem mã khả dụng
+                                    </Button>
+                                </Flex>
+                                <Space.Compact style={{ width: '100%' }}>
+                                    <Input 
+                                        placeholder="Nhập mã giảm giá" 
+                                        prefix={<TagOutlined />} 
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value)}
+                                        disabled={!!appliedCoupon}
+                                        style={{ textTransform: 'uppercase' }}
+                                    />
+                                    {appliedCoupon ? (
+                                        <Button danger onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}>
+                                            Hủy
+                                        </Button>
+                                    ) : (
+                                        <Button type="primary" onClick={handleApplyCoupon} loading={applyingCoupon}>
+                                            Áp dụng
+                                        </Button>
+                                    )}
+                                </Space.Compact>
+                            </div>
+
+                            {appliedCoupon && (
+                                <Flex justify="space-between" style={{ marginBottom: 12 }}>
+                                    <Text type="success">Mã giảm giá ({appliedCoupon.coupon.code}):</Text>
+                                    <Text type="success">-{appliedCoupon.discountAmount.toLocaleString('vi-VN')} đ</Text>
+                                </Flex>
+                            )}
+
                             <Divider />
                             <Flex justify="space-between" style={{ marginBottom: 24 }}>
                                 <Text strong style={{ fontSize: 18 }}>Thành tiền:</Text>
                                 <Text strong style={{ fontSize: 20, color: '#f5222d' }}>
-                                    {getTotalPrice().toLocaleString('vi-VN')} đ
+                                    {(appliedCoupon ? appliedCoupon.finalTotal : getTotalPrice()).toLocaleString('vi-VN')} đ
                                 </Text>
                             </Flex>
                             <Button
@@ -294,6 +375,70 @@ export default function CartPage() {
                     </Col>
                 </Row>
             </div>
+
+            <Modal
+                title={<span><GiftOutlined /> Mã giảm giá dành cho bạn</span>}
+                open={isCouponsModalVisible}
+                onCancel={() => setIsCouponsModalVisible(false)}
+                footer={null}
+                bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
+            >
+                {activeCoupons.length === 0 ? (
+                    <Empty description="Hiện tại không có mã giảm giá nào" />
+                ) : (
+                    <List
+                        dataSource={activeCoupons}
+                        renderItem={(coupon) => {
+                            const userId = (session?.user as any)?.id || (session?.user as any)?._id;
+                            const isUsed = coupon.usedBy && userId && coupon.usedBy.includes(userId);
+
+                            return (
+                                <List.Item
+                                    actions={[
+                                        isUsed ? (
+                                            <Button key="used" size="small" disabled style={{ color: '#ff4d4f', background: '#fff1f0', border: '1px solid #ffa39e' }}>
+                                                Đã sử dụng
+                                            </Button>
+                                        ) : (
+                                            <Button 
+                                                key="use" 
+                                                type="primary" 
+                                                size="small"
+                                                disabled={getTotalPrice() < coupon.minOrderValue}
+                                                onClick={() => {
+                                                    setCouponCode(coupon.code);
+                                                    setIsCouponsModalVisible(false);
+                                                }}
+                                            >
+                                                Dùng ngay
+                                            </Button>
+                                        )
+                                    ]}
+                                >
+                                    <List.Item.Meta
+                                        title={
+                                            <Space>
+                                                <TagOutlined style={{ color: '#1677ff' }} />
+                                                <Text strong style={{ fontSize: 16, textTransform: 'uppercase' }}>{coupon.code}</Text>
+                                            </Space>
+                                        }
+                                        description={
+                                            <div>
+                                                <div style={{ color: '#f5222d', fontWeight: 500, marginBottom: 4 }}>
+                                                    Giảm {coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `${coupon.discountValue.toLocaleString('vi-VN')}đ`}
+                                                </div>
+                                                <div style={{ fontSize: 12 }}>
+                                                    Đơn tối thiểu: {coupon.minOrderValue.toLocaleString('vi-VN')}đ
+                                                </div>
+                                            </div>
+                                        }
+                                    />
+                                </List.Item>
+                            );
+                        }}
+                    />
+                )}
+            </Modal>
         </Content>
     );
 }

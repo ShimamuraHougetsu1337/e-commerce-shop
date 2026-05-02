@@ -1,10 +1,9 @@
 "use client";
 
-import React from 'react';
-import { Typography, Space, Row, Col } from 'antd';
 import MetricsCards from '@/components/admin/dashboard/metrics-cards';
-import dynamic from 'next/dynamic';
 import RecentOrders from '@/components/admin/dashboard/recent-orders';
+import { Col, Row, Space, Typography } from 'antd';
+import dynamic from 'next/dynamic';
 
 const RevenueChart = dynamic(() => import('@/components/admin/dashboard/revenue-chart'), { ssr: false });
 const OrderStatusChart = dynamic(() => import('@/components/admin/dashboard/order-status-chart'), { ssr: false });

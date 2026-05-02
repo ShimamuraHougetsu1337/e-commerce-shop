@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, Typography, Form, Input, Button, Row, Col, Divider, App } from 'antd';
-import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { updateProfileApi } from '@/utils/user.api';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { App, Button, Card, Col, Divider, Form, Input, Row, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 
 const { Title, Text } = Typography;
 

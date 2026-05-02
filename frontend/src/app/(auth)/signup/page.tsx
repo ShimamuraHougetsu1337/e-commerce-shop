@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
-import { Card, Divider, Typography, Flex, theme, ConfigProvider } from "antd";
-import Link from "next/link";
 import SignupForm from "@/components/auth/signup-form";
 import SocialButtons from "@/components/auth/social-buttons";
+import { Card, ConfigProvider, Divider, Flex, theme, Typography } from "antd";
+import Link from "next/link";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;

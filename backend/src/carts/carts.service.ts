@@ -1,9 +1,9 @@
+import { IUser } from '@/decorator/customize';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { AddToCartDto } from './dto/cart.dto';
 import { Cart, CartDocument } from './schemas/cart.schema';
-import { IUser } from '@/decorator/customize';
-import { AddToCartDto, SyncCartDto } from './dto/cart.dto';
 
 @Injectable()
 export class CartsService {

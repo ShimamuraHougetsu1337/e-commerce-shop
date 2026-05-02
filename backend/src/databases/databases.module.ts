@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { DatabasesService } from './databases.service';
-import { DatabasesController } from './databases.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Product, ProductSchema } from '@/products/schemas/product.schema';
 import { Category, CategorySchema } from '@/categories/schemas/category.schema';
+import { Product, ProductSchema } from '@/products/schemas/product.schema';
 import { Review, ReviewSchema } from '@/reviews/schemas/review.schema';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { DatabasesController } from './databases.controller';
+import { DatabasesService } from './databases.service';
 
 @Module({
   imports: [

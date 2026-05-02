@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { type IUser, ResponseMessage, User } from '@/decorator/customize';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { type IUser, User, ResponseMessage } from '@/decorator/customize';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {

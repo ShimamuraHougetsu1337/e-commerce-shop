@@ -1,5 +1,5 @@
 
-import { IsNotEmpty, IsNumber, IsMongoId, Min } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class AddToCartDto {
     @IsNotEmpty({ message: 'ProductId không được để trống' })

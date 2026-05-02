@@ -1,17 +1,19 @@
+import { Coupon, CouponDocument } from '@/coupons/schemas/coupon.schema';
+import { IUser } from '@/decorator/customize';
+import { User, UserDocument } from '@/users/schemas/user.schema';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Order, OrderDocument } from './schemas/order.schema';
-import { User, UserDocument } from '@/users/schemas/user.schema';
-import { CreateOrderDto } from './dto/order.dto';
-import { IUser } from '@/decorator/customize';
 import aqp from 'api-query-params';
 import mongoose, { Model } from 'mongoose';
+import { CreateOrderDto } from './dto/order.dto';
+import { Order, OrderDocument } from './schemas/order.schema';
 
 @Injectable()
 export class OrdersService {
     constructor(
         @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
-        @InjectModel(User.name) private userModel: Model<UserDocument>
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Coupon.name) private couponModel: Model<CouponDocument>
     ) { }
 
     async createOrder(user: IUser, createOrderDto: CreateOrderDto): Promise<Order> {
@@ -19,6 +21,17 @@ export class OrdersService {
             userId: user._id,
             ...createOrderDto,
         });
+
+        if (createOrderDto.couponCode) {
+            await this.couponModel.updateOne(
+                { code: createOrderDto.couponCode.toUpperCase() },
+                { 
+                    $inc: { usedCount: 1 },
+                    $push: { usedBy: user._id }
+                }
+            );
+        }
+
         return order;
     }
 

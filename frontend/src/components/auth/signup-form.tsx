@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { Form, Input, Button, theme, App } from "antd";
-import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
 import { register } from "@/utils/auth.api";
+import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
+import { App, Button, Form, Input, theme } from "antd";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const { useToken } = theme;
 

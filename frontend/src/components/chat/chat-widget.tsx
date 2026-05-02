@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Button, Card, Input, Flex, Typography, Avatar, Spin, Space, notification } from 'antd';
 import {
-  MessageOutlined, CloseOutlined, UserOutlined, RobotOutlined,
-  SendOutlined, WarningOutlined, ReloadOutlined, CustomerServiceOutlined
+  CloseOutlined,
+  MessageOutlined,
+  RobotOutlined,
+  SendOutlined,
+  UserOutlined
 } from '@ant-design/icons';
+import { Avatar, Button, Card, Flex, Input, Spin, Typography } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 const { Text } = Typography;

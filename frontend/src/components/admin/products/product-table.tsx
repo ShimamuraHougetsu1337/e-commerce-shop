@@ -1,14 +1,13 @@
 "use client";
 
-import { Table, Button, Input, Space, Tag, Typography, Card, Breadcrumb, Flex, Tooltip, Image, Modal, Form, InputNumber, Select, message, Popconfirm, Col, Row, Drawer, Descriptions, Upload } from 'antd';
-import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined, FilterOutlined, UploadOutlined, LoadingOutlined } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { UploadChangeParam, UploadFile, UploadProps } from 'antd/es/upload';
-import { ProductTableRow, ProductListResponse } from '@/types/admin';
-import dayjs from 'dayjs';
-import { useState, useCallback, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { ProductListResponse, ProductTableRow } from '@/types/admin';
 import { createProduct, deleteProduct, fetchProductsList, updateProduct } from '@/utils/admin.api';
+import { DeleteOutlined, EditOutlined, EyeOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Descriptions, Drawer, Flex, Form, Image, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography, Upload } from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import dayjs from 'dayjs';
+import { useSession } from 'next-auth/react';
+import { useCallback, useEffect, useState } from 'react';
 
 const { Title, Text } = Typography;
 
@@ -331,43 +330,30 @@ export default function ProductTable({ initialData }: ProductTableProps) {
     ];
 
     return (
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <Flex justify="space-between" align="center">
-                <Breadcrumb items={[{ title: 'Admin' }, { title: 'Products' }]} />
-            </Flex>
-
-            <Title level={3} style={{ marginTop: 0 }}>Quản lý sản phẩm</Title>
-
-            <Card styles={{ body: { padding: '24px' } }} style={{ borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)' }}>
-                <Flex gap={16} style={{ marginBottom: 24, justifyContent: 'space-between' }} wrap="wrap">
+        <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h2>Quản lý sản phẩm</h2>
+                <Space>
                     <Input.Search
                         placeholder="Tìm kiếm sản phẩm..."
-                        style={{ maxWidth: 400 }}
-                        size="large"
                         onSearch={handleSearch}
-                        enterButton
                         allowClear
                     />
-                    <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => showModal()}>
-                        Thêm sản phẩm
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+                        Thêm mới
                     </Button>
-                </Flex>
+                </Space>
+            </div>
 
-                <Table<ProductTableRow>
-                    columns={columns}
-                    dataSource={dataSource}
-                    rowKey="_id"
-                    loading={loading}
-                    size="middle"
-                    pagination={{
-                        ...pagination,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Tổng số ${total} sản phẩm`,
-                    }}
-                    onChange={handleTableChange}
-                    scroll={{ x: 1000 }}
-                />
-            </Card>
+            <Table<ProductTableRow>
+                columns={columns}
+                dataSource={dataSource}
+                rowKey="_id"
+                loading={loading}
+                pagination={pagination}
+                onChange={handleTableChange}
+                scroll={{ x: 1000 }}
+            />
 
             <Modal
                 title={editingProduct ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
@@ -531,6 +517,6 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                     </Space>
                 )}
             </Drawer>
-        </Space>
+        </div>
     );
 }

@@ -1,20 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Menu, Card, Avatar, Breadcrumb, Badge, Button, Flex, Spin, Typography } from 'antd';
-import {
-    UserOutlined,
-    ShoppingOutlined,
-    StarOutlined,
-    HomeOutlined,
-    LogoutOutlined
-} from '@ant-design/icons';
-import { signOut } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
 import AccountSettings from '@/components/profile/AccountSettings';
 import OrderHistory from '@/components/profile/order-history';
 import Reviews from '@/components/profile/Reviews';
+import {
+  HomeOutlined,
+  LogoutOutlined,
+  ShoppingOutlined,
+  StarOutlined,
+  UserOutlined
+} from '@ant-design/icons';
+import { Avatar, Badge, Breadcrumb, Button, Card, Flex, Menu, Spin, Typography } from 'antd';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ProfileClient({ session }: { session: any }) {
     const searchParams = useSearchParams();

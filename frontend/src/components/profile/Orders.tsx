@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Card, Typography, Table, Badge, Button, Tag } from 'antd';
 import { RightOutlined } from '@ant-design/icons';
+import { Badge, Button, Card, Table, Tag, Typography } from 'antd';
 
 const { Title, Text } = Typography;
 

@@ -1,8 +1,7 @@
-import React from 'react';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import ProductTable from '@/components/admin/products/product-table';
 import { fetchProductsList } from '@/utils/admin.api';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 
 export default async function ProductsPage() {

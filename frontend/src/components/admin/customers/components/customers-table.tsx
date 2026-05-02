@@ -1,8 +1,8 @@
 'use client';
-import React, { useState } from 'react';
-import { Table, Tag, Space, Input, Button, Card, Avatar, Typography, message } from 'antd';
+import { DeleteOutlined, EditOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, Input, Space, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useState } from 'react';
 
 const { Text } = Typography;
 

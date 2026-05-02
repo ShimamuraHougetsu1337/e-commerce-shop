@@ -58,4 +58,19 @@ declare global {
         updatedAt: string;
     }
 
+    interface ICoupon {
+        _id: string;
+        code: string;
+        discountType: 'PERCENTAGE' | 'FIXED';
+        discountValue: number;
+        minOrderValue: number;
+        maxUsage: number;
+        usedCount: number;
+        usedBy?: string[];
+        expiryDate: string;
+        isActive: boolean;
+        createdAt: string;
+        updatedAt: string;
+    }
+
 }
