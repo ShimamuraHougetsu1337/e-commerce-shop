@@ -26,6 +26,7 @@ export default function CartPage() {
     const [applyingCoupon, setApplyingCoupon] = React.useState(false);
     const [isCouponsModalVisible, setIsCouponsModalVisible] = React.useState(false);
     const [activeCoupons, setActiveCoupons] = React.useState<ICoupon[]>([]);
+    const [shippingAddress, setShippingAddress] = React.useState('');
 
     useEffect(() => {
         if (status === 'authenticated' && session?.accessToken && !fetchInitiated.current) {
@@ -86,6 +87,18 @@ export default function CartPage() {
             return;
         }
 
+        if (!shippingAddress.trim()) {
+            message.warning('Vui lòng nhập địa chỉ giao hàng!');
+            return;
+        }
+
+        // Kiểm tra tồn kho trước khi thanh toán
+        const outOfStockItems = items.filter(item => item.quantity > item.stock_quantity);
+        if (outOfStockItems.length > 0) {
+            message.error(`Sản phẩm "${outOfStockItems[0].name}" hiện không đủ hàng tồn kho!`);
+            return;
+        }
+
         try {
             const finalTotal = appliedCoupon ? appliedCoupon.finalTotal : getTotalPrice();
             const orderPayload = {
@@ -97,6 +110,7 @@ export default function CartPage() {
                 })),
                 totalAmount: finalTotal,
                 paymentMethod: 'COD',
+                shippingAddress: shippingAddress.trim(),
                 couponCode: appliedCoupon ? appliedCoupon.coupon.code : undefined,
                 discountValue: appliedCoupon ? appliedCoupon.coupon.discountValue : undefined,
                 discountType: appliedCoupon ? appliedCoupon.coupon.discountType : undefined,
@@ -352,6 +366,17 @@ export default function CartPage() {
                                     <Text type="success">-{appliedCoupon.discountAmount.toLocaleString('vi-VN')} đ</Text>
                                 </Flex>
                             )}
+
+                            <div style={{ marginBottom: 24 }}>
+                                <Text strong style={{ display: 'block', marginBottom: 8 }}>Địa chỉ giao hàng</Text>
+                                <Input.TextArea
+                                    placeholder="Nhập địa chỉ nhận hàng của bạn"
+                                    value={shippingAddress}
+                                    onChange={(e) => setShippingAddress(e.target.value)}
+                                    rows={3}
+                                    style={{ borderRadius: 8 }}
+                                />
+                            </div>
 
                             <Divider />
                             <Flex justify="space-between" style={{ marginBottom: 24 }}>

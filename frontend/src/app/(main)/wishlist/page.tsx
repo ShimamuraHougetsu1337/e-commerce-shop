@@ -1,5 +1,6 @@
 "use client";
 
+import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import { ArrowLeftOutlined, DeleteOutlined, HomeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { App, Breadcrumb, Button, Card, Col, Empty, Flex, Layout, Result, Row, Space, Spin, Typography } from 'antd';
@@ -13,6 +14,7 @@ const { Content } = Layout;
 
 export default function WishlistPage() {
     const { items, isLoading, error, fetchWishlist, removeItem } = useWishlistStore();
+    const { addItem: addToCart } = useCartStore();
     const { message } = App.useApp();
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -25,11 +27,21 @@ export default function WishlistPage() {
         }
     }, [status, session?.accessToken, fetchWishlist]);
 
-    const handleAddToCart = (productName: string) => {
-        message.success({
-            content: `Đã thêm ${productName} vào giỏ hàng!`,
-            duration: 3
-        });
+    const handleAddToCart = async (product: IProduct) => {
+        if (!session?.accessToken) {
+            message.warning('Vui lòng đăng nhập để thực hiện!');
+            return;
+        }
+
+        try {
+            await addToCart(product, 1, session.accessToken);
+            message.success({
+                content: `Đã thêm ${product.name} vào giỏ hàng!`,
+                duration: 3
+            });
+        } catch (error: any) {
+            message.error(error.message || 'Không thể thêm vào giỏ hàng');
+        }
     };
 
     const handleRemove = async (productId: string, productName: string) => {
@@ -145,12 +157,29 @@ export default function WishlistPage() {
                                 hoverable
                                 cover={
                                     <div style={{ position: 'relative', width: '100%', height: '250px', overflow: 'hidden' }}>
-                                        <img
-                                            src={product.images?.[0] ?? '/placeholder.png'}
-                                            alt={product.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    </div>
+                                            <img
+                                                src={product.images?.[0] ?? '/placeholder.png'}
+                                                alt={product.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: product.stock_quantity <= 0 ? 0.5 : 1 }}
+                                            />
+                                            {product.stock_quantity <= 0 && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    backgroundColor: 'rgba(0,0,0,0.4)',
+                                                    color: 'white',
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    HẾT HÀNG
+                                                </div>
+                                            )}
+                                        </div>
                                 }
                                 onClick={() => { router.push(`/products/${product._id}`) }}
                                 actions={[
@@ -160,9 +189,10 @@ export default function WishlistPage() {
                                         icon={<ShoppingCartOutlined />}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleAddToCart(product.name);
+                                            handleAddToCart(product);
                                         }}
-                                        style={{ color: '#1890ff' }}
+                                        disabled={product.stock_quantity <= 0}
+                                        style={{ color: product.stock_quantity > 0 ? '#1890ff' : '#d9d9d9' }}
                                     >
                                         Thêm giỏ hàng
                                     </Button>,

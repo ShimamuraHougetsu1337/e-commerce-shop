@@ -1,5 +1,5 @@
-
 import { Coupon, CouponSchema } from '@/coupons/schemas/coupon.schema';
+import { Product, ProductSchema } from '@/products/schemas/product.schema';
 import { User, UserSchema } from '@/users/schemas/user.schema';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -12,7 +12,8 @@ import { Order, OrderSchema } from './schemas/order.schema';
         MongooseModule.forFeature([
             { name: Order.name, schema: OrderSchema },
             { name: User.name, schema: UserSchema },
-            { name: Coupon.name, schema: CouponSchema }
+            { name: Coupon.name, schema: CouponSchema },
+            { name: Product.name, schema: ProductSchema }
         ])
     ],
     controllers: [OrdersController],

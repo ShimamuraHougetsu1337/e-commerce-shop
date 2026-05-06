@@ -26,6 +26,7 @@ export default function ProductContentWrapper({ product: initialProduct, related
             const res = await sendRequest<IBackendRes<any>>({
                 url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${initialProduct._id}`,
                 method: "GET",
+                nextOption: { cache: 'no-store' }
             });
             if (res && res.data) {
                 setProduct(res.data);
@@ -76,6 +77,7 @@ export default function ProductContentWrapper({ product: initialProduct, related
                             rating={product.averageRating || 0}
                             reviewsCount={product.totalReviews || 0}
                             description={product.short_description}
+                            stock_quantity={product.stock_quantity}
                         />
                         <div style={{ marginTop: 'auto' }}>
                             <ProductActions product={product} />

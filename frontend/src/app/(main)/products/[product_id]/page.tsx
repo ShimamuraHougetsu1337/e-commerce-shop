@@ -11,6 +11,7 @@ export default async function ProductDetailPage({ params }: { params: { product_
     const res = await sendRequest<IBackendRes<IProduct>>({
         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${product_id}`,
         method: "GET",
+        nextOption: { cache: 'no-store' }
     });
 
     const productData = res?.data;

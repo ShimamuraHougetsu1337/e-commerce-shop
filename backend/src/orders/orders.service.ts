@@ -1,7 +1,8 @@
 import { Coupon, CouponDocument } from '@/coupons/schemas/coupon.schema';
 import { IUser } from '@/decorator/customize';
+import { Product, ProductDocument } from '@/products/schemas/product.schema';
 import { User, UserDocument } from '@/users/schemas/user.schema';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
 import mongoose, { Model } from 'mongoose';
@@ -13,23 +14,48 @@ export class OrdersService {
     constructor(
         @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
-        @InjectModel(Coupon.name) private couponModel: Model<CouponDocument>
+        @InjectModel(Coupon.name) private couponModel: Model<CouponDocument>,
+        @InjectModel(Product.name) private productModel: Model<ProductDocument>
     ) { }
 
     async createOrder(user: IUser, createOrderDto: CreateOrderDto): Promise<Order> {
+        // 1. Kiểm tra tồn kho của tất cả sản phẩm trong đơn hàng
+        for (const item of createOrderDto.items) {
+            const product = await this.productModel.findById(item.product);
+            if (!product) {
+                throw new NotFoundException(`Sản phẩm ${item.productName} không tồn tại`);
+            }
+            if (product.stock_quantity < item.quantity) {
+                throw new BadRequestException(`Sản phẩm ${item.productName} không đủ số lượng trong kho (Còn lại: ${product.stock_quantity})`);
+            }
+        }
+
+        // 2. Tạo đơn hàng
         const order = await this.orderModel.create({
             userId: user._id,
             ...createOrderDto,
         });
 
-        if (createOrderDto.couponCode) {
-            await this.couponModel.updateOne(
-                { code: createOrderDto.couponCode.toUpperCase() },
-                { 
-                    $inc: { usedCount: 1 },
-                    $push: { usedBy: user._id }
-                }
-            );
+        // 3. Cập nhật số lượng tồn kho và xử lý coupon
+        if (order) {
+            // Cập nhật tồn kho cho từng sản phẩm
+            for (const item of createOrderDto.items) {
+                await this.productModel.updateOne(
+                    { _id: item.product },
+                    { $inc: { stock_quantity: -item.quantity } }
+                );
+            }
+
+            // Xử lý Coupon nếu có
+            if (createOrderDto.couponCode) {
+                await this.couponModel.updateOne(
+                    { code: createOrderDto.couponCode.toUpperCase() },
+                    { 
+                        $inc: { usedCount: 1 },
+                        $push: { usedBy: user._id }
+                    }
+                );
+            }
         }
 
         return order;

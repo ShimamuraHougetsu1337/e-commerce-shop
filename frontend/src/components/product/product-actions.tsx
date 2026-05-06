@@ -5,6 +5,7 @@ import { useWishlistStore } from '@/store/useWishlistStore';
 import { HeartFilled, HeartOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { Button, Flex, Typography, message } from 'antd';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const { Text } = Typography;
@@ -20,6 +21,9 @@ export default function ProductActions({ product }: ProductActionsProps) {
     const { addItem: addToCart } = useCartStore();
     const [isCartLoading, setIsCartLoading] = useState(false);
     const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+
+    const router = useRouter();
+    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
 
     const isLiked = items.some(item => item._id === product._id);
 
@@ -37,6 +41,22 @@ export default function ProductActions({ product }: ProductActionsProps) {
             message.error('Có lỗi xảy ra khi thêm vào giỏ hàng!');
         } finally {
             setIsCartLoading(false);
+        }
+    };
+
+    const handleBuyNow = async () => {
+        if (!session?.accessToken) {
+            message.warning('Vui lòng đăng nhập để mua hàng!');
+            return;
+        }
+
+        setIsBuyNowLoading(true);
+        try {
+            await addToCart(product, quantity, session.accessToken);
+            router.push('/cart');
+        } catch (error) {
+            message.error('Có lỗi xảy ra, vui lòng thử lại!');
+            setIsBuyNowLoading(false);
         }
     };
 
@@ -64,38 +84,44 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
     return (
         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: '24px' }}>
-            <Flex
-                align="center"
-                style={{
-                    border: '1px solid #d9d9d9',
-                    borderRadius: '6px',
-                    height: '48px',
-                    flexShrink: 0,
-                }}
-            >
-                <Button
-                    type="text"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    style={{ height: '100%' }}
+            <Flex vertical>
+                <Flex
+                    align="center"
+                    style={{
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '6px',
+                        height: '48px',
+                        flexShrink: 0,
+                    }}
                 >
-                    −
-                </Button>
-                <Text style={{ width: '40px', textAlign: 'center', fontWeight: 'bold' }}>
-                    {quantity}
-                </Text>
-                <Button
-                    type="text"
-                    onClick={() => setQuantity(quantity + 1)}
-                    style={{ height: '100%' }}
-                >
-                    +
-                </Button>
+                    <Button
+                        type="text"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        style={{ height: '100%' }}
+                    >
+                        −
+                    </Button>
+                    <Text style={{ width: '40px', textAlign: 'center', fontWeight: 'bold' }}>
+                        {quantity}
+                    </Text>
+                    <Button
+                        type="text"
+                        onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
+                        style={{ height: '100%' }}
+                        disabled={quantity >= product.stock_quantity}
+                    >
+                        +
+                    </Button>
+                </Flex>
             </Flex>
 
             <Button
                 type="primary"
                 size="large"
                 style={{ height: '48px', flex: '1', backgroundColor: '#2f54eb' }}
+                onClick={handleBuyNow}
+                loading={isBuyNowLoading}
+                disabled={product.stock_quantity <= 0}
             >
                 Mua ngay
             </Button>
@@ -106,6 +132,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
                 style={{ height: '48px', flex: '1' }}
                 onClick={handleAddToCart}
                 loading={isCartLoading}
+                disabled={product.stock_quantity <= 0}
             >
                 Thêm vào giỏ hàng
             </Button>
