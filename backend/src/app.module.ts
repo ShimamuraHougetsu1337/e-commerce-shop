@@ -12,6 +12,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DatabasesModule } from './databases/databases.module';
 import { FilesModule } from './files/files.module';
+import { MailModule } from './mail/mail.module';
 import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -45,6 +46,7 @@ import { UsersModule } from './users/users.module';
     DashboardModule,
     FilesModule,
     CouponsModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

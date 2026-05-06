@@ -1,5 +1,6 @@
 import { Coupon, CouponDocument } from '@/coupons/schemas/coupon.schema';
 import { IUser } from '@/decorator/customize';
+import { MailService } from '@/mail/mail.service';
 import { Product, ProductDocument } from '@/products/schemas/product.schema';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
@@ -15,7 +16,8 @@ export class OrdersService {
         @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Coupon.name) private couponModel: Model<CouponDocument>,
-        @InjectModel(Product.name) private productModel: Model<ProductDocument>
+        @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+        private mailService: MailService
     ) { }
 
     async createOrder(user: IUser, createOrderDto: CreateOrderDto): Promise<Order> {
@@ -56,6 +58,12 @@ export class OrdersService {
                     }
                 );
             }
+        }
+
+        // 4. Gửi email xác nhận (không làm gián đoạn luồng chính)
+        if (order) {
+            const fullUser = await this.userModel.findById(user._id);
+            this.mailService.sendOrderConfirmation(order, fullUser || user);
         }
 
         return order;

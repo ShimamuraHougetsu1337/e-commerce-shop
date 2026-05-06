@@ -9,7 +9,9 @@ import { sendRequest } from '@/utils/api';
 import { HomeOutlined } from '@ant-design/icons';
 import { Breadcrumb, Col, Divider, Layout, Row, Space } from 'antd';
 import Link from 'next/link';
-import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect } from 'react';
+import useSWR from 'swr';
 
 const { Content } = Layout;
 
@@ -19,22 +21,35 @@ interface ProductContentWrapperProps {
 }
 
 export default function ProductContentWrapper({ product: initialProduct, relatedProducts }: ProductContentWrapperProps) {
-    const [product, setProduct] = useState(initialProduct);
+    const router = useRouter();
+
+    const fetcher = async (url: string) => {
+        const res = await sendRequest<IBackendRes<IProduct>>({
+            url,
+            method: "GET",
+            nextOption: { cache: 'no-store' }
+        });
+        return res.data;
+    };
+
+    const { data: product, mutate } = useSWR(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${initialProduct._id}`,
+        fetcher,
+        {
+            fallbackData: initialProduct,
+            revalidateOnFocus: true,
+            revalidateOnMount: true
+        }
+    );
+
+    // Refresh Router Cache on mount to handle stale navigation cache
+    useEffect(() => {
+        router.refresh();
+    }, [router]);
 
     const refreshProductData = useCallback(async () => {
-        try {
-            const res = await sendRequest<IBackendRes<any>>({
-                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${initialProduct._id}`,
-                method: "GET",
-                nextOption: { cache: 'no-store' }
-            });
-            if (res && res.data) {
-                setProduct(res.data);
-            }
-        } catch (error) {
-            console.error('Refresh product data error:', error);
-        }
-    }, [initialProduct._id]);
+        await mutate();
+    }, [mutate]);
 
     return (
         <Content>
@@ -57,7 +72,7 @@ export default function ProductContentWrapper({ product: initialProduct, related
                             title: <Link href="/products">Cửa hàng</Link>,
                         },
                         {
-                            title: product.slug,
+                            title: product?.slug || initialProduct.slug,
                         },
                     ]}
                 />
@@ -65,29 +80,29 @@ export default function ProductContentWrapper({ product: initialProduct, related
                 <Row gutter={[48, 24]}>
                     <Col xs={24} md={12}>
                         <ProductImageGallery
-                            images={product.images}
-                            title={product.slug}
+                            images={product?.images || initialProduct.images}
+                            title={product?.slug || initialProduct.slug}
                         />
                     </Col>
 
                     <Col xs={24} md={12} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                         <ProductInfo
-                            name={product.name}
-                            price={product.price}
-                            rating={product.averageRating || 0}
-                            reviewsCount={product.totalReviews || 0}
-                            description={product.short_description}
-                            stock_quantity={product.stock_quantity}
+                            name={product?.name || initialProduct.name}
+                            price={product?.price || initialProduct.price}
+                            rating={product?.averageRating || 0}
+                            reviewsCount={product?.totalReviews || 0}
+                            description={product?.short_description || initialProduct.short_description}
+                            stock_quantity={product?.stock_quantity ?? initialProduct.stock_quantity}
                         />
                         <div style={{ marginTop: 'auto' }}>
-                            <ProductActions product={product} />
+                            <ProductActions product={product || initialProduct} />
                         </div>
                     </Col>
                 </Row>
 
                 <ProductDetailsTabs 
-                    productId={product._id} 
-                    description={product.long_description} 
+                    productId={product?._id || initialProduct._id} 
+                    description={product?.long_description || initialProduct.long_description} 
                     onReviewSuccess={refreshProductData}
                 />
 
