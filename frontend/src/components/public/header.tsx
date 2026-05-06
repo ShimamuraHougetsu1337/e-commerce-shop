@@ -16,6 +16,7 @@ import React from 'react';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import { signOut, useSession } from 'next-auth/react';
+import SearchAutocomplete from './search.autocomplete';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
@@ -98,9 +99,10 @@ export default function AppHeader() {
         justify="space-between"
         style={{ width: '100%', maxWidth: 1200, margin: '0 auto', padding: '12px 24px' }}
         wrap="wrap"
+        gap="middle"
       >
 
-        <Flex align="center" gap="large">
+        <Flex align="center" gap="large" style={{ flexShrink: 0 }}>
           <Link href={'/'} style={{ textDecoration: 'none' }}>
             <Flex align="center" gap="small">
               <div style={{
@@ -117,15 +119,19 @@ export default function AppHeader() {
               }}>
                 E
               </div>
-              <Title level={3} style={{ margin: 0, color: '#000' }}>E-Commerce</Title>
+              <Title level={3} style={{ margin: 0, color: '#000' }} className="desktop-only-block">E-Commerce</Title>
             </Flex>
           </Link>
         </Flex>
 
-        <Flex align="center" gap="middle">
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 20px' }}>
+          <SearchAutocomplete />
+        </div>
+
+        <Flex align="center" gap="middle" style={{ flexShrink: 0 }}>
           {status === 'authenticated' ? (
             <>
-              <Badge count={wishlistItems?.length} showZero>
+              <Badge count={wishlistItems?.length} showZero size="small">
                 <Tooltip title="Danh sách yêu thích">
                   <Link href={'/wishlist'}>
                     <Button type="text" icon={<HeartOutlined style={{ fontSize: 20 }} />} />
@@ -133,7 +139,7 @@ export default function AppHeader() {
                 </Tooltip>
               </Badge>
 
-              <Badge count={cartItems?.length} showZero>
+              <Badge count={cartItems?.length} showZero size="small">
                 <Tooltip title="Giỏ hàng">
                   <Link href={'/cart'}>
                     <Button type="text" icon={<ShoppingOutlined style={{ fontSize: 20 }} />} />

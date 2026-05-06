@@ -38,11 +38,12 @@ export const socialLogin = (email: string, name: string, provider: string, provi
     })
 }
 
-export const fetchProductsPagination = ({ current, pageSize, sort, category, minPrice, maxPrice }: { current: number, pageSize: number, sort?: string, category?: string, minPrice?: number, maxPrice?: number }) => {
+export const fetchProductsPagination = ({ current, pageSize, sort, category, minPrice, maxPrice, name }: { current: number, pageSize: number, sort?: string, category?: string, minPrice?: number, maxPrice?: number, name?: string }) => {
 
     let paramsObj: any = { current, pageSize };
     if (sort) paramsObj.sort = sort;
     if (category) paramsObj.category = category;
+    if (name) paramsObj.name = `/${name}/i`; // Case-insensitive search using aqp
 
     let qs = new URLSearchParams(paramsObj).toString();
 

@@ -42,11 +42,6 @@ export default function ProductContentWrapper({ product: initialProduct, related
         }
     );
 
-    // Refresh Router Cache on mount to handle stale navigation cache
-    useEffect(() => {
-        router.refresh();
-    }, [router]);
-
     const refreshProductData = useCallback(async () => {
         await mutate();
     }, [mutate]);
@@ -100,9 +95,9 @@ export default function ProductContentWrapper({ product: initialProduct, related
                     </Col>
                 </Row>
 
-                <ProductDetailsTabs 
-                    productId={product?._id || initialProduct._id} 
-                    description={product?.long_description || initialProduct.long_description} 
+                <ProductDetailsTabs
+                    productId={product?._id || initialProduct._id}
+                    description={product?.long_description || initialProduct.long_description}
                     onReviewSuccess={refreshProductData}
                 />
 

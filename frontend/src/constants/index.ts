@@ -2,7 +2,7 @@
 
 export const APP_NAME = "E-Commerce";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 export const ROUTES = {
   HOME: "/",
