@@ -1,7 +1,7 @@
 
 import { IUser } from '@/decorator/customize';
 import { Product, ProductDocument } from '@/products/schemas/product.schema';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -41,10 +41,11 @@ export class ReviewsService {
 
     async findByProduct(productId: string, current: number, pageSize: number) {
         const offset = (current - 1) * pageSize;
-        const totalItems = await this.reviewModel.countDocuments({ productId });
+        const filter = { productId, isHidden: { $ne: true } };
+        const totalItems = await this.reviewModel.countDocuments(filter);
         const totalPages = Math.ceil(totalItems / pageSize);
 
-        const result = await this.reviewModel.find({ productId })
+        const result = await this.reviewModel.find(filter)
             .populate('userId', 'name email avatar')
             .skip(offset)
             .limit(pageSize)
@@ -77,6 +78,99 @@ export class ReviewsService {
         await this.updateProductStats(review.productId.toString());
 
         return updatedReview;
+    }
+
+    async delete(id: string, user: IUser) {
+        const review = await this.reviewModel.findById(id);
+        if (!review) {
+            throw new BadRequestException('Không tìm thấy đánh giá');
+        }
+
+        // Only allow owner or admin to delete
+        if (review.userId.toString() !== user._id && user.role !== 'ADMIN') {
+            throw new ForbiddenException('Bạn không có quyền xóa đánh giá này');
+        }
+
+        const productId = review.productId.toString();
+        await this.reviewModel.findByIdAndDelete(id);
+
+        // Sync product stats
+        await this.updateProductStats(productId);
+
+        return { deleted: true };
+    }
+
+    // === ADMIN METHODS ===
+
+    async findAllAdmin(current: number, pageSize: number, query?: string) {
+        const offset = (current - 1) * pageSize;
+        const filter: any = {};
+
+        if (query) {
+            filter.$or = [
+                { comment: { $regex: query, $options: 'i' } },
+            ];
+        }
+
+        const totalItems = await this.reviewModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalItems / pageSize);
+
+        const result = await this.reviewModel.find(filter)
+            .populate('userId', 'name email avatar')
+            .populate('productId', 'name images slug')
+            .skip(offset)
+            .limit(pageSize)
+            .sort({ createdAt: -1 });
+
+        return {
+            meta: {
+                current,
+                pageSize,
+                pages: totalPages,
+                total: totalItems
+            },
+            result
+        };
+    }
+
+    async adminReply(id: string, reply: string) {
+        const review = await this.reviewModel.findById(id);
+        if (!review) {
+            throw new BadRequestException('Không tìm thấy đánh giá');
+        }
+
+        return await this.reviewModel.findByIdAndUpdate(
+            id,
+            { adminReply: reply, adminReplyAt: new Date() },
+            { new: true }
+        );
+    }
+
+    async toggleHidden(id: string) {
+        const review = await this.reviewModel.findById(id);
+        if (!review) {
+            throw new BadRequestException('Không tìm thấy đánh giá');
+        }
+
+        return await this.reviewModel.findByIdAndUpdate(
+            id,
+            { isHidden: !review.isHidden },
+            { new: true }
+        );
+    }
+
+    async adminDelete(id: string) {
+        const review = await this.reviewModel.findById(id);
+        if (!review) {
+            throw new BadRequestException('Không tìm thấy đánh giá');
+        }
+
+        const productId = review.productId.toString();
+        await this.reviewModel.findByIdAndDelete(id);
+
+        await this.updateProductStats(productId);
+
+        return { deleted: true };
     }
 
     /**

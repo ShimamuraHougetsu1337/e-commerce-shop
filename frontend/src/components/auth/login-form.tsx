@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { getSession, signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 
 const { useToken } = theme;
 
@@ -16,6 +17,7 @@ type FieldType = {
 };
 
 export default function LoginForm() {
+  const t = useTranslations('LoginForm');
   const { token } = useToken();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { message, notification } = App.useApp();
@@ -39,7 +41,7 @@ export default function LoginForm() {
       if (response?.error) {
 
         notification.error({
-          message: "Đăng nhập thất bại",
+          message: t('loginFailed'),
           description: response.error,
           placement: "topRight",
         });
@@ -48,7 +50,7 @@ export default function LoginForm() {
         const session = await getSession();
 
         const redirectPath = session?.user?.role === ADMIN_ROLE ? '/admin/dashboard' : callbackUrl;
-        message.success({ content: "Đăng nhập thành công", duration: 3 });
+        message.success({ content: t('loginSuccess'), duration: 3 });
 
         router.push(redirectPath);
 
@@ -56,8 +58,8 @@ export default function LoginForm() {
       }
     } catch (error: any) {
       notification.error({
-        message: "Lỗi mạng",
-        description: "Đã có lỗi xảy ra, vui lòng thử lại"
+        message: t('networkError'),
+        description: t('networkErrorDesc')
       });
       setIsLoading(false);
     }
@@ -76,23 +78,23 @@ export default function LoginForm() {
       <Form.Item<FieldType>
         name="email"
         rules={[
-          { required: true, message: "Vui lòng nhập email!" },
-          { type: "email", message: "Vui lòng nhập email hợp lệ!" },
+          { required: true, message: t('emailRequired') },
+          { type: "email", message: t('emailInvalid') },
         ]}
       >
         <Input
           prefix={<MailOutlined style={{ color: token.colorTextQuaternary, marginRight: token.marginXXS }} />}
-          placeholder="Email"
+          placeholder={t('emailPlaceholder')}
         />
       </Form.Item>
 
       <Form.Item<FieldType>
         name="password"
-        rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+        rules={[{ required: true, message: t('passwordRequired') }]}
       >
         <Input.Password
           prefix={<LockOutlined style={{ color: token.colorTextQuaternary, marginRight: token.marginXXS }} />}
-          placeholder="Password"
+          placeholder={t('passwordPlaceholder')}
         />
       </Form.Item>
 
@@ -104,7 +106,7 @@ export default function LoginForm() {
           style={{ fontWeight: 600 }}
           loading={isLoading}
         >
-          Đăng nhập
+          {t('loginButton')}
         </Button>
       </Form.Item>
     </Form>

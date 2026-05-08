@@ -10,6 +10,7 @@ import {
 import { Card, Col, Flex, Row, Skeleton, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Text } = Typography;
 
@@ -86,6 +87,7 @@ const MetricCard = ({ title, value, icon, color, description, loading }: MetricC
 );
 
 export default function MetricsCards() {
+    const t = useTranslations('AdminDashboard');
     const { data: session } = useSession();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -110,32 +112,32 @@ export default function MetricsCards() {
 
     const metrics = [
         {
-            title: 'Tổng doanh thu',
+            title: t('totalRevenue'),
             value: stats?.totalRevenue ? `${stats.totalRevenue.toLocaleString('vi-VN')} đ` : '0 đ',
             icon: <DollarCircleOutlined />,
             color: '#1677ff',
-            description: 'Tính đến hiện tại'
+            description: t('upToNow')
         },
         {
-            title: 'Tổng đơn hàng',
+            title: t('totalOrders'),
             value: stats?.totalOrders?.toLocaleString('vi-VN') || 0,
             icon: <ShoppingCartOutlined />,
             color: '#52c41a',
-            description: 'Đã hoàn thành'
+            description: t('completed')
         },
         {
-            title: 'Tổng khách hàng',
+            title: t('totalCustomers'),
             value: stats?.totalCustomers?.toLocaleString('vi-VN') || 0,
             icon: <UserOutlined />,
             color: '#722ed1',
-            description: 'Tài khoản đăng ký'
+            description: t('registeredAccounts')
         },
         {
-            title: 'Tổng sản phẩm',
+            title: t('totalProducts'),
             value: stats?.totalProducts?.toLocaleString('vi-VN') || 0,
             icon: <AppstoreOutlined />,
             color: '#fa8c16',
-            description: 'Trong kho hàng'
+            description: t('inStock')
         }
     ];
 

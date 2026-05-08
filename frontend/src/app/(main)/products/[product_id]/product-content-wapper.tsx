@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import useSWR from 'swr';
+import { useTranslations } from 'next-intl';
 
 const { Content } = Layout;
 
@@ -21,6 +22,7 @@ interface ProductContentWrapperProps {
 }
 
 export default function ProductContentWrapper({ product: initialProduct, relatedProducts }: ProductContentWrapperProps) {
+    const t = useTranslations('ProductContentWrapper');
     const router = useRouter();
 
     const fetcher = async (url: string) => {
@@ -58,13 +60,13 @@ export default function ProductContentWrapper({ product: initialProduct, related
                                 <Link href="/">
                                     <Space size="small">
                                         <HomeOutlined />
-                                        <span>Trang chủ</span>
+                                        <span>{t('home')}</span>
                                     </Space>
                                 </Link>
                             ),
                         },
                         {
-                            title: <Link href="/products">Cửa hàng</Link>,
+                            title: <Link href="/products">{t('store')}</Link>,
                         },
                         {
                             title: product?.slug || initialProduct.slug,

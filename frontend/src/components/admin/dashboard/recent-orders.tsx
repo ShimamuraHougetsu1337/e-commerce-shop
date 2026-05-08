@@ -7,22 +7,25 @@ import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
-const getStatusTag = (status: string) => {
-    const statusMap: Record<string, { color: string, text: string }> = {
-        'PENDING': { color: 'warning', text: 'Chờ xử lý' },
-        'CONFIRMED': { color: 'processing', text: 'Đã xác nhận' },
-        'SHIPPING': { color: 'cyan', text: 'Đang giao' },
-        'COMPLETED': { color: 'success', text: 'Hoàn thành' },
-        'CANCELLED': { color: 'error', text: 'Đã hủy' }
-    };
-    const { color, text } = statusMap[status] || { color: 'default', text: status };
-    return <Tag color={color} bordered={false} style={{ borderRadius: 4, fontWeight: 500 }}>{text}</Tag>;
-};
-
 export default function RecentOrders() {
+    const t = useTranslations('AdminDashboard');
+    
+    const getStatusTag = (status: string) => {
+        const statusMap: Record<string, { color: string, text: string }> = {
+            'PENDING': { color: 'warning', text: t('statusPending') },
+            'CONFIRMED': { color: 'processing', text: t('statusConfirmed') },
+            'SHIPPING': { color: 'cyan', text: t('statusShipping') },
+            'COMPLETED': { color: 'success', text: t('statusCompleted') },
+            'CANCELLED': { color: 'error', text: t('statusCancelled') }
+        };
+        const { color, text } = statusMap[status] || { color: 'default', text: status };
+        return <Tag color={color} bordered={false} style={{ borderRadius: 4, fontWeight: 500 }}>{text}</Tag>;
+    };
+
     const { data: session } = useSession();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,11 +57,11 @@ export default function RecentOrders() {
 
     const columns = [
         {
-            title: 'Mã đơn hàng',
+            title: t('orderId'),
             dataIndex: '_id',
             key: 'id',
             render: (id: string) => (
-                <Tooltip title="Click để sao chép">
+                <Tooltip title={t('copyTooltip')}>
                     <Text copyable={{ text: id }} strong style={{ color: '#1f2937', fontFamily: 'monospace' }}>
                         {id.substring(0, 8).toUpperCase()}
                     </Text>
@@ -66,41 +69,41 @@ export default function RecentOrders() {
             ),
         },
         {
-            title: 'Khách hàng',
+            title: t('customer'),
             key: 'customer',
             render: (_: any, record: any) => (
                 <Space direction="vertical" size={0}>
-                    <Text strong style={{ color: '#1f2937' }}>{record.userId?.name || 'Khách vãng lai'}</Text>
+                    <Text strong style={{ color: '#1f2937' }}>{record.userId?.name || t('guest')}</Text>
                     <Text type="secondary" style={{ fontSize: 12 }}>{record.userId?.email || ''}</Text>
                 </Space>
             ),
         },
         {
-            title: 'Ngày đặt',
+            title: t('orderDate'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             render: (date: string) => <Text type="secondary">{dayjs(date).format('DD/MM/YYYY HH:mm')}</Text>,
         },
         {
-            title: 'Tổng tiền',
+            title: t('totalAmount'),
             dataIndex: 'totalAmount',
             key: 'totalAmount',
             align: 'right' as const,
             render: (total: number) => <Text strong style={{ color: '#cf1322' }}>{total?.toLocaleString('vi-VN')} đ</Text>,
         },
         {
-            title: <div style={{ textAlign: 'center' }}>Trạng thái</div>,
+            title: <div style={{ textAlign: 'center' }}>{t('status')}</div>,
             dataIndex: 'status',
             key: 'status',
             align: 'center' as const,
             render: (status: string) => getStatusTag(status),
         },
         {
-            title: <div style={{ textAlign: 'center' }}>Thao tác</div>,
+            title: <div style={{ textAlign: 'center' }}>{t('action')}</div>,
             key: 'action',
             align: 'center' as const,
             render: (_: any, record: any) => (
-                <Tooltip title="Xem chi tiết">
+                <Tooltip title={t('viewDetail')}>
                     <Button
                         type="text"
                         shape="circle"
@@ -115,11 +118,11 @@ export default function RecentOrders() {
     return (
         <>
             <Card
-                title={<Title level={4} style={{ margin: 0, fontSize: 18 }}>Đơn hàng gần đây</Title>}
+                title={<Title level={4} style={{ margin: 0, fontSize: 18 }}>{t('recentOrders')}</Title>}
                 extra={
                     <Link href="/admin/orders">
                         <Button type="link" icon={<RightOutlined />} iconPosition="end" style={{ padding: 0 }}>
-                            Xem tất cả
+                            {t('viewAll')}
                         </Button>
                     </Link>
                 }
@@ -142,37 +145,37 @@ export default function RecentOrders() {
             <Modal
                 title={
                     <Space>
-                        <Title level={4} style={{ margin: 0 }}>Chi tiết đơn hàng</Title>
+                        <Title level={4} style={{ margin: 0 }}>{t('orderDetail')}</Title>
                         <Text type="secondary" style={{ fontSize: 14 }}>#{selectedOrder?._id?.toUpperCase()}</Text>
                     </Space>
                 }
                 open={isDetailOpen}
                 onCancel={() => setIsDetailOpen(false)}
                 footer={[
-                    <Button key="close" onClick={() => setIsDetailOpen(false)}>Đóng</Button>,
-                    <Button key="print" type="primary" icon={<PrinterOutlined />}>In hóa đơn</Button>
+                    <Button key="close" onClick={() => setIsDetailOpen(false)}>{t('close')}</Button>,
+                    <Button key="print" type="primary" icon={<PrinterOutlined />}>{t('printInvoice')}</Button>
                 ]}
                 width={800}
                 centered
             >
                 {selectedOrder && (
                     <div style={{ marginTop: 24 }}>
-                        <Descriptions title="Thông tin giao hàng" bordered column={2} size="middle">
-                            <Descriptions.Item label="Khách hàng">{selectedOrder.userId?.name || 'N/A'}</Descriptions.Item>
-                            <Descriptions.Item label="Số điện thoại">{selectedOrder.userId?.phone || 'N/A'}</Descriptions.Item>
-                            <Descriptions.Item label="Email" span={2}>{selectedOrder.userId?.email || 'N/A'}</Descriptions.Item>
-                            <Descriptions.Item label="Địa chỉ" span={2}>{selectedOrder.shippingAddress || 'N/A'}</Descriptions.Item>
-                            <Descriptions.Item label="Ngày đặt">{dayjs(selectedOrder.createdAt).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
-                            <Descriptions.Item label="Trạng thái">{getStatusTag(selectedOrder.status)}</Descriptions.Item>
-                            <Descriptions.Item label="Thanh toán">{selectedOrder.paymentMethod || 'COD'}</Descriptions.Item>
-                            <Descriptions.Item label="Tổng giá trị">
+                        <Descriptions title={t('shippingInfo')} bordered column={2} size="middle">
+                            <Descriptions.Item label={t('customer')}>{selectedOrder.userId?.name || 'N/A'}</Descriptions.Item>
+                            <Descriptions.Item label={t('phone')}>{selectedOrder.userId?.phone || 'N/A'}</Descriptions.Item>
+                            <Descriptions.Item label={t('email')} span={2}>{selectedOrder.userId?.email || 'N/A'}</Descriptions.Item>
+                            <Descriptions.Item label={t('address')} span={2}>{selectedOrder.shippingAddress || 'N/A'}</Descriptions.Item>
+                            <Descriptions.Item label={t('orderDate')}>{dayjs(selectedOrder.createdAt).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
+                            <Descriptions.Item label={t('status')}>{getStatusTag(selectedOrder.status)}</Descriptions.Item>
+                            <Descriptions.Item label={t('payment')}>{selectedOrder.paymentMethod || 'COD'}</Descriptions.Item>
+                            <Descriptions.Item label={t('totalValue')}>
                                 <Text strong type="danger" style={{ fontSize: 16 }}>
                                     {selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ
                                 </Text>
                             </Descriptions.Item>
                         </Descriptions>
 
-                        <Divider orientation="left" style={{ marginTop: 32 }}>Sản phẩm đã đặt</Divider>
+                        <Divider orientation="left" style={{ marginTop: 32 }}>{t('orderedProducts')}</Divider>
 
                         <Table
                             dataSource={selectedOrder.items}
@@ -180,26 +183,26 @@ export default function RecentOrders() {
                             rowKey="product"
                             columns={[
                                 {
-                                    title: 'Sản phẩm',
+                                    title: t('product'),
                                     dataIndex: 'productName',
                                     key: 'name',
                                     render: (text) => <Text strong>{text}</Text>
                                 },
                                 {
-                                    title: 'Đơn giá',
+                                    title: t('unitPrice'),
                                     dataIndex: 'price',
                                     key: 'price',
                                     align: 'right',
                                     render: (p) => `${p?.toLocaleString('vi-VN')} đ`
                                 },
                                 {
-                                    title: 'Số lượng',
+                                    title: t('quantity'),
                                     dataIndex: 'quantity',
                                     key: 'quantity',
                                     align: 'center'
                                 },
                                 {
-                                    title: 'Thành tiền',
+                                    title: t('subtotal'),
                                     key: 'subtotal',
                                     align: 'right',
                                     render: (_: any, record: any) => (
@@ -212,10 +215,10 @@ export default function RecentOrders() {
 
                         <div style={{ textAlign: 'right', marginTop: 24 }}>
                             <Space direction="vertical" align="end">
-                                <Text type="secondary">Tổng tiền hàng: {selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text>
-                                <Text type="secondary">Phí vận chuyển: 0 đ</Text>
+                                <Text type="secondary">{t('totalGoods')}: {selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text>
+                                <Text type="secondary">{t('shippingFee')}: {t('free')}</Text>
                                 <Title level={3} style={{ margin: '8px 0' }}>
-                                    Tổng cộng: <Text type="danger">{selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text>
+                                    {t('total')}: <Text type="danger">{selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text>
                                 </Title>
                             </Space>
                         </div>

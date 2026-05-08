@@ -6,10 +6,12 @@ import { Card, Empty, Flex, Skeleton, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title } = Typography;
 
 export default function RevenueChart() {
+    const t = useTranslations('AdminDashboard');
     const { data: session } = useSession();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -95,15 +97,15 @@ export default function RevenueChart() {
                     <div style={{ padding: '12px 8px' }}>
                         <div style={{ marginBottom: 12, fontWeight: 600, color: '#1f2937' }}>{title}</div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, gap: 24 }}>
-                            <span style={{ color: '#595959' }}>Doanh thu:</span>
+                            <span style={{ color: '#595959' }}>{t('revenue')}</span>
                             <span style={{ fontWeight: 600, color: '#1677ff' }}>
                                 {datum.revenue.toLocaleString('vi-VN')} đ
                             </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#595959' }}>Số đơn hàng:</span>
+                            <span style={{ color: '#595959' }}>{t('numOrders')}</span>
                             <span style={{ fontWeight: 600, color: '#1f2937' }}>
-                                {datum.orders} đơn
+                                {datum.orders} {t('orders')}
                             </span>
                         </div>
                     </div>
@@ -116,7 +118,7 @@ export default function RevenueChart() {
 
     return (
         <Card
-            title={<Title level={4} style={{ margin: 0, fontSize: 18 }}>Doanh thu 7 ngày gần nhất</Title>}
+            title={<Title level={4} style={{ margin: 0, fontSize: 18 }}>{t('revenue7Days')}</Title>}
             bordered={false}
             hoverable
             style={{ borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', height: '100%' }}
@@ -125,7 +127,7 @@ export default function RevenueChart() {
                 <Skeleton active paragraph={{ rows: 8 }} />
             ) : !hasData ? (
                 <Flex justify="center" align="center" style={{ height: 350 }}>
-                    <Empty description="Chưa có dữ liệu doanh thu" />
+                    <Empty description={t('noRevenueData')} />
                 </Flex>
             ) : (
                 <div style={{ height: 350 }}>

@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CheckoutModal from './checkout-modal';
+import { useTranslations } from 'next-intl';
 
 const { Text } = Typography;
 
@@ -14,6 +15,7 @@ interface ProductActionsProps {
 }
 
 export default function ProductActions({ product }: ProductActionsProps) {
+    const t = useTranslations('ProductActions');
     const [quantity, setQuantity] = useState(1);
     const { data: session } = useSession();
     const { items, addItem, removeItem } = useWishlistStore();
@@ -29,16 +31,16 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
     const handleAddToCart = async () => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+            message.warning(t('loginToAddCart'));
             return;
         }
 
         setIsCartLoading(true);
         try {
             await addToCart(product, quantity, session.accessToken);
-            message.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
+            message.success(t('addedToCart', { quantity }));
         } catch (error) {
-            message.error('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+            message.error(t('addToCartError'));
         } finally {
             setIsCartLoading(false);
         }
@@ -46,7 +48,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
     const handleBuyNow = async () => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để mua hàng!');
+            message.warning(t('loginToBuy'));
             router.push('/login');
             return;
         }
@@ -55,7 +57,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
     const handleWishlistClick = async () => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để thêm vào yêu thích!');
+            message.warning(t('loginToAddWishlist'));
             return;
         }
 
@@ -63,13 +65,13 @@ export default function ProductActions({ product }: ProductActionsProps) {
             setIsWishlistLoading(true);
             if (isLiked) {
                 await removeItem(product._id, session.accessToken);
-                message.success('Đã gỡ khỏi danh sách yêu thích!');
+                message.success(t('removedFromWishlist'));
             } else {
                 await addItem(product, session.accessToken);
-                message.success('Đã thêm vào danh sách yêu thích!');
+                message.success(t('addedToWishlist'));
             }
         } catch (error) {
-            message.error('Có lỗi xảy ra, vui lòng thử lại!');
+            message.error(t('wishlistError'));
         } finally {
             setIsWishlistLoading(false);
         }
@@ -117,7 +119,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
                     loading={isBuyNowLoading}
                     disabled={product.stock_quantity <= 0}
                 >
-                    Mua ngay
+                    {t('buyNow')}
                 </Button>
 
                 <Button
@@ -128,7 +130,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
                     loading={isCartLoading}
                     disabled={product.stock_quantity <= 0}
                 >
-                    Thêm vào giỏ hàng
+                    {t('addToCart')}
                 </Button>
 
                 <Button

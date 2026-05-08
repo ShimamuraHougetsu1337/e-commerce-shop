@@ -4,10 +4,12 @@ import { ProductListResponse, ProductTableRow } from '@/types/admin';
 import { createProduct, deleteProduct, fetchProductsList, updateProduct } from '@/utils/admin.api';
 import { DeleteOutlined, EditOutlined, EyeOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Descriptions, Drawer, Flex, Form, Image, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Space, Table, Tag, Tooltip, Typography, Upload } from 'antd';
+import NextImage from 'next/image';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -16,6 +18,7 @@ interface ProductTableProps {
 }
 
 export default function ProductTable({ initialData }: ProductTableProps) {
+    const t = useTranslations('AdminProducts');
     const { data: session } = useSession();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
@@ -86,7 +89,7 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                 });
             }
         } catch (error) {
-            message.error('Không thể tải danh sách sản phẩm');
+            message.error(t('fetchError'));
         } finally {
             setLoading(false);
         }
@@ -150,13 +153,13 @@ export default function ProductTable({ initialData }: ProductTableProps) {
         try {
             const res = await deleteProduct(id, session.accessToken);
             if (res.data) {
-                message.success('Xóa sản phẩm thành công');
+                message.success(t('deleteSuccess'));
                 loadData(pagination.current, pagination.pageSize, searchText);
             } else {
-                message.error(res.message || 'Lỗi khi xóa sản phẩm');
+                message.error(res.message || t('deleteError'));
             }
         } catch (error) {
-            message.error('Lỗi kết nối server');
+            message.error(t('serverError'));
         } finally {
             setLoading(false);
         }
@@ -181,16 +184,16 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                 setImageUrl(data.data.fileName);
                 form.setFieldValue('thumbnail', data.data.fileName);
                 onSuccess("Ok");
-                message.success('Upload ảnh thành công');
+                message.success(t('uploadSuccess'));
             } else {
                 onError("Error");
                 // Hiển thị lỗi chi tiết từ server nếu có
-                const errorMsg = data.message || (Array.isArray(data.message) ? data.message[0] : 'Upload ảnh thất bại');
+                const errorMsg = data.message || (Array.isArray(data.message) ? data.message[0] : t('uploadFailed'));
                 message.error(errorMsg);
             }
         } catch (error) {
             onError(error);
-            message.error('Lỗi kết nối server khi upload');
+            message.error(t('serverError'));
         } finally {
             setUploading(false);
         }
@@ -220,11 +223,11 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             }
 
             if (res.data) {
-                message.success(`${editingProduct ? 'Cập nhật' : 'Thêm'} sản phẩm thành công`);
+                message.success(editingProduct ? t('updateSuccess') : t('addSuccess'));
                 setIsModalOpen(false);
                 loadData(pagination.current, pagination.pageSize, searchText);
             } else {
-                message.error(res.message || 'Có lỗi xảy ra');
+                message.error(res.message || t('errorOccurred'));
             }
         } catch (error) {
             console.error('Validation failed:', error);
@@ -235,7 +238,7 @@ export default function ProductTable({ initialData }: ProductTableProps) {
 
     const columns: ColumnsType<ProductTableRow> = [
         {
-            title: 'Sản phẩm',
+            title: t('product'),
             key: 'product',
             width: 320,
             align: 'center',
@@ -257,7 +260,7 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             ),
         },
         {
-            title: 'Giá',
+            title: t('price'),
             dataIndex: 'price',
             key: 'price',
             width: 140,
@@ -266,7 +269,7 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             sorter: true,
         },
         {
-            title: 'Số lượng',
+            title: t('stock'),
             dataIndex: 'stock_quantity',
             key: 'stock_quantity',
             align: 'center',
@@ -278,19 +281,19 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             ),
         },
         {
-            title: 'Trạng thái',
+            title: t('status'),
             dataIndex: 'isActive',
             key: 'isActive',
             align: 'center',
             width: 150,
             render: (isActive) => (
                 <Tag color={isActive ? 'success' : 'error'} bordered={false} style={{ borderRadius: 4 }}>
-                    {isActive ? 'Đang bán' : 'Ngừng bán'}
+                    {isActive ? t('onSale') : t('stopSelling')}
                 </Tag>
             ),
         },
         {
-            title: 'Ngày tạo',
+            title: t('createdAt'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 150,
@@ -298,29 +301,29 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             render: (date) => <Text type="secondary">{dayjs(date).format('DD/MM/YYYY HH:mm')}</Text>,
         },
         {
-            title: 'Hành động',
+            title: t('action'),
             key: 'action',
             width: 120,
             align: 'center',
             fixed: 'right',
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Xem chi tiết">
+                    <Tooltip title={t('viewDetail')}>
                         <Button type="text" shape="circle" icon={<EyeOutlined />} onClick={() => showViewDrawer(record)} />
                     </Tooltip>
-                    <Tooltip title="Chỉnh sửa">
+                    <Tooltip title={t('edit')}>
                         <Button type="text" shape="circle" icon={<EditOutlined style={{ color: '#1677ff' }} />} onClick={() => showModal(record)} />
                     </Tooltip>
                     <Popconfirm
-                        title="Xóa sản phẩm"
-                        description="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+                        title={t('deleteTitle')}
+                        description={t('deleteConfirm')}
                         onConfirm={() => handleDelete(record._id)}
-                        okText="Xóa"
-                        cancelText="Hủy"
+                        okText={t('delete')}
+                        cancelText={t('cancel')}
                         okButtonProps={{ danger: true, loading }}
                         placement="topRight"
                     >
-                        <Tooltip title="Xóa">
+                        <Tooltip title={t('delete')}>
                             <Button type="text" shape="circle" icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} />
                         </Tooltip>
                     </Popconfirm>
@@ -332,15 +335,15 @@ export default function ProductTable({ initialData }: ProductTableProps) {
     return (
         <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2>Quản lý sản phẩm</h2>
+                <h2>{t('manageProducts')}</h2>
                 <Space>
                     <Input.Search
-                        placeholder="Tìm kiếm sản phẩm..."
+                        placeholder={t('searchPlaceholder')}
                         onSearch={handleSearch}
                         allowClear
                     />
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-                        Thêm mới
+                        {t('addNew')}
                     </Button>
                 </Space>
             </div>
@@ -356,7 +359,7 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             />
 
             <Modal
-                title={editingProduct ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+                title={editingProduct ? t('editProduct') : t('addProduct')}
                 open={isModalOpen}
                 onOk={handleModalOk}
                 onCancel={() => setIsModalOpen(false)}
@@ -372,21 +375,21 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                 >
                     <Row gutter={16}>
                         <Col span={16}>
-                            <Form.Item label="Tên sản phẩm" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm' }]}>
-                                <Input placeholder="Ví dụ: iPhone 15 Pro Max" />
+                            <Form.Item label={t('productName')} name="name" rules={[{ required: true, message: t('productNameRequired') }]}>
+                                <Input placeholder={t('productNamePlaceholder')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item label="Slug (URL)" name="slug" rules={[{ required: true, message: 'Vui lòng nhập slug' }]}>
+                            <Form.Item label="Slug (URL)" name="slug" rules={[{ required: true, message: t('slugRequired') }]}>
                                 <Input placeholder="iphone-15-pro-max" />
                             </Form.Item>
                         </Col>
                     </Row>
                     <Row gutter={16}>
                         <Col span={24}>
-                            <Form.Item label="Danh mục sản phẩm" name="category_id" rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}>
+                            <Form.Item label={t('category')} name="category_id" rules={[{ required: true, message: t('categoryRequired') }]}>
                                 <Select
-                                    placeholder="Chọn danh mục cho sản phẩm"
+                                    placeholder={t('categoryPlaceholder')}
                                     options={categories}
                                     showSearch
                                     filterOption={(input, option) =>
@@ -398,25 +401,25 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                     </Row>
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Form.Item label="Giá bán (đ)" name="price" rules={[{ required: true }]}>
+                            <Form.Item label={t('priceTitle')} name="price" rules={[{ required: true }]}>
                                 <InputNumber style={{ width: '100%' }} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item label="Số lượng tồn kho" name="stock_quantity" rules={[{ required: true }]}>
+                            <Form.Item label={t('stockTitle')} name="stock_quantity" rules={[{ required: true }]}>
                                 <InputNumber style={{ width: '100%' }} min={0} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item label="Trạng thái" name="isActive" rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}>
-                                <Select options={[{ label: 'Đang bán', value: true }, { label: 'Ngừng bán', value: false }]} />
+                            <Form.Item label={t('status')} name="isActive" rules={[{ required: true, message: t('statusRequired') }]}>
+                                <Select options={[{ label: t('onSale'), value: true }, { label: t('stopSelling'), value: false }]} />
                             </Form.Item>
                         </Col>
                     </Row>
 
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item label="Ảnh sản phẩm">
+                            <Form.Item label={t('productImage')}>
                                 <Upload
                                     name="file"
                                     listType="picture-card"
@@ -427,21 +430,28 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                                     beforeUpload={(file) => {
                                         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
                                         if (!isJpgOrPng) {
-                                            message.error('Bạn chỉ có thể upload file ảnh JPG/PNG!');
+                                            message.error(t('uploadErrorMsg'));
                                         }
                                         const isLt2M = file.size / 1024 / 1024 < 5;
                                         if (!isLt2M) {
-                                            message.error('Ảnh phải nhỏ hơn 5MB!');
+                                            message.error(t('sizeError'));
                                         }
                                         return isJpgOrPng && isLt2M;
                                     }}
                                 >
                                     {imageUrl ? (
-                                        <img src={getImageUrl(imageUrl)} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
+                                        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                            <NextImage
+                                                src={getImageUrl(imageUrl)}
+                                                alt="avatar"
+                                                fill
+                                                style={{ objectFit: 'cover', borderRadius: 8 }}
+                                            />
+                                        </div>
                                     ) : (
                                         <div>
                                             {uploading ? <LoadingOutlined /> : <PlusOutlined />}
-                                            <div style={{ marginTop: 8 }}>Upload</div>
+                                            <div style={{ marginTop: 8 }}>{t('uploadImage')}</div>
                                         </div>
                                     )}
                                 </Upload>
@@ -451,7 +461,7 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item label="Hoặc nhập Link ảnh" name="thumbnail">
+                            <Form.Item label={t('orImageLink')} name="thumbnail">
                                 <Input
                                     placeholder="https://example.com/image.png"
                                     onChange={(e) => setImageUrl(e.target.value)}
@@ -460,14 +470,14 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                         </Col>
                     </Row>
 
-                    <Form.Item label="Mô tả ngắn" name="short_description">
-                        <Input.TextArea rows={3} placeholder="Mô tả tóm tắt về sản phẩm..." />
+                    <Form.Item label={t('shortDescription')} name="short_description">
+                        <Input.TextArea rows={3} placeholder={t('shortDescriptionPlaceholder')} />
                     </Form.Item>
                 </Form>
             </Modal>
 
             <Drawer
-                title="Chi tiết sản phẩm"
+                title={t('productDetail')}
                 placement="right"
                 onClose={() => setIsViewDrawerOpen(false)}
                 open={isViewDrawerOpen}
@@ -485,34 +495,34 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                             />
                             <Title level={4}>{viewingProduct.name}</Title>
                             <Tag color={viewingProduct.isActive ? 'success' : 'error'} bordered={false} style={{ borderRadius: 4 }}>
-                                {viewingProduct.isActive ? 'Đang bán' : 'Ngừng bán'}
+                                {viewingProduct.isActive ? t('onSale') : t('stopSelling')}
                             </Tag>
                         </Flex>
 
                         <Descriptions bordered column={1} size="small">
                             <Descriptions.Item label="ID">{viewingProduct._id}</Descriptions.Item>
                             <Descriptions.Item label="Slug">{viewingProduct.slug}</Descriptions.Item>
-                            <Descriptions.Item label="Giá">
+                            <Descriptions.Item label={t('price')}>
                                 <Text strong style={{ color: '#1677ff' }}>
                                     {viewingProduct.price?.toLocaleString('vi-VN')} đ
                                 </Text>
                             </Descriptions.Item>
-                            <Descriptions.Item label="Kho hàng">
+                            <Descriptions.Item label={t('stock')}>
                                 <Text strong style={{ color: viewingProduct.stock_quantity <= 10 ? '#ff4d4f' : 'inherit' }}>
                                     {viewingProduct.stock_quantity?.toLocaleString('vi-VN')}
                                 </Text>
                             </Descriptions.Item>
-                            <Descriptions.Item label="Ngày tạo">
+                            <Descriptions.Item label={t('createdAt')}>
                                 {dayjs(viewingProduct.createdAt).format('DD/MM/YYYY HH:mm:ss')}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Cập nhật cuối">
+                            <Descriptions.Item label={t('lastUpdate')}>
                                 {dayjs(viewingProduct.updatedAt).format('DD/MM/YYYY HH:mm:ss')}
                             </Descriptions.Item>
                         </Descriptions>
 
-                        <Title level={5} style={{ marginTop: 16, marginBottom: 8 }}>Mô tả ngắn</Title>
+                        <Title level={5} style={{ marginTop: 16, marginBottom: 8 }}>{t('shortDescription')}</Title>
                         <Card size="small" style={{ backgroundColor: '#fafafa', borderRadius: 8 }}>
-                            <Text type="secondary">{viewingProduct.short_description || 'Không có mô tả'}</Text>
+                            <Text type="secondary">{viewingProduct.short_description || t('noDescription')}</Text>
                         </Card>
                     </Space>
                 )}

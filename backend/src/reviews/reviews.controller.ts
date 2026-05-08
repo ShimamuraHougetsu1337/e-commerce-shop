@@ -1,6 +1,6 @@
 
 import { Public, ResponseMessage, User, type IUser } from '@/decorator/customize';
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewsService } from './reviews.service';
 
@@ -39,5 +39,41 @@ export class ReviewsController {
         @Body() updateReviewDto: Partial<CreateReviewDto>
     ) {
         return this.reviewsService.update(id, user, updateReviewDto);
+    }
+
+    @Delete(':id')
+    @ResponseMessage('Xóa đánh giá thành công')
+    delete(@Param('id') id: string, @User() user: IUser) {
+        return this.reviewsService.delete(id, user);
+    }
+
+    // === ADMIN ENDPOINTS ===
+
+    @Get('admin/all')
+    @ResponseMessage('Lấy danh sách đánh giá thành công (Admin)')
+    findAllAdmin(
+        @Query('current') current: string,
+        @Query('pageSize') pageSize: string,
+        @Query('query') query: string
+    ) {
+        return this.reviewsService.findAllAdmin(+current || 1, +pageSize || 10, query);
+    }
+
+    @Patch('admin/:id/reply')
+    @ResponseMessage('Phản hồi đánh giá thành công')
+    adminReply(@Param('id') id: string, @Body('reply') reply: string) {
+        return this.reviewsService.adminReply(id, reply);
+    }
+
+    @Patch('admin/:id/toggle-hidden')
+    @ResponseMessage('Cập nhật trạng thái ẩn/hiện đánh giá thành công')
+    toggleHidden(@Param('id') id: string) {
+        return this.reviewsService.toggleHidden(id);
+    }
+
+    @Delete('admin/:id')
+    @ResponseMessage('Xóa đánh giá thành công (Admin)')
+    adminDelete(@Param('id') id: string) {
+        return this.reviewsService.adminDelete(id);
     }
 }

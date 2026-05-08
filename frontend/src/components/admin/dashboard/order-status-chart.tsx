@@ -5,18 +5,20 @@ import { Pie } from '@ant-design/plots';
 import { Card, Empty, Flex, Skeleton, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title } = Typography;
 
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-    'PENDING': { label: 'Chờ xử lý', color: '#faad14' },
-    'CONFIRMED': { label: 'Đã xác nhận', color: '#1677ff' },
-    'SHIPPING': { label: 'Đang giao', color: '#13c2c2' },
-    'COMPLETED': { label: 'Hoàn thành', color: '#52c41a' },
-    'CANCELLED': { label: 'Đã hủy', color: '#ff4d4f' }
-};
-
 export default function OrderStatusChart() {
+    const t = useTranslations('AdminDashboard');
+    const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+        'PENDING': { label: t('statusPending'), color: '#faad14' },
+        'CONFIRMED': { label: t('statusConfirmed'), color: '#1677ff' },
+        'SHIPPING': { label: t('statusShipping'), color: '#13c2c2' },
+        'COMPLETED': { label: t('statusCompleted'), color: '#52c41a' },
+        'CANCELLED': { label: t('statusCancelled'), color: '#ff4d4f' }
+    };
+
     const { data: session } = useSession();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -70,13 +72,13 @@ export default function OrderStatusChart() {
         },
         tooltip: {
             title: 'type',
-            items: [{ field: 'value', name: 'Số lượng' }],
+            items: [{ field: 'value', name: t('quantity') }],
         },
         annotations: [
             {
                 type: 'text',
                 style: {
-                    text: 'Tổng đơn\n' + totalOrders.toLocaleString('vi-VN'),
+                    text: t('totalOrdersChart') + '\n' + totalOrders.toLocaleString('vi-VN'),
                     x: '50%',
                     y: '50%',
                     textAlign: 'center',
@@ -92,7 +94,7 @@ export default function OrderStatusChart() {
 
     return (
         <Card
-            title={<Title level={4} style={{ margin: 0 }}>Trạng thái đơn hàng</Title>}
+            title={<Title level={4} style={{ margin: 0 }}>{t('orderStatus')}</Title>}
             bordered={false}
             hoverable
             style={{ borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', height: '100%' }}
@@ -101,7 +103,7 @@ export default function OrderStatusChart() {
                 <Skeleton active paragraph={{ rows: 8 }} />
             ) : totalOrders === 0 ? (
                 <Flex justify="center" align="center" style={{ height: 350 }}>
-                    <Empty description="Chưa có dữ liệu đơn hàng" />
+                    <Empty description={t('noOrderData')} />
                 </Flex>
             ) : (
                 <div style={{ height: 350 }}>

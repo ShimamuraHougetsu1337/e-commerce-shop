@@ -3,12 +3,15 @@
 import { getMyReviewsApi } from '@/utils/user.api';
 import { Card, Empty, Flex, List, Rate, Spin, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Paragraph, Text } = Typography;
 
 const Reviews = () => {
+    const t = useTranslations('Reviews');
     const { data: session } = useSession();
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -34,7 +37,7 @@ const Reviews = () => {
     if (loading) {
         return (
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <Spin size="large" tip="Đang tải đánh giá..." />
+                <Spin size="large" tip={t('loading')} />
             </div>
         );
     }
@@ -42,13 +45,13 @@ const Reviews = () => {
     return (
         <Card bordered={false} className="profile-card">
             <div style={{ marginBottom: 24 }}>
-                <Title level={4} style={{ margin: 0 }}>Đánh giá của tôi</Title>
-                <Text type="secondary">Quản lý các nhận xét bạn đã để lại cho sản phẩm</Text>
+                <Title level={4} style={{ margin: 0 }}>{t('myReviews')}</Title>
+                <Text type="secondary">{t('myReviewsDesc')}</Text>
             </div>
 
             {reviews.length === 0 ? (
                 <Empty
-                    description="Bạn chưa có đánh giá nào"
+                    description={t('noReviews')}
                     style={{ padding: '40px 0' }}
                 />
             ) : (
@@ -67,22 +70,21 @@ const Reviews = () => {
                             }}
                         >
                             <Flex gap="large" align="flex-start">
-                                <div style={{ width: 80, height: 80, flexShrink: 0 }}>
-                                    <Link href={`/products/${item.productId?._id}`}>
-                                        <img
-                                            src={item.productId?.images?.[0] || '/placeholder.png'}
-                                            alt={item.productId?.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                                borderRadius: 12,
-                                                border: '1px solid #f1f5f9',
-                                                cursor: 'pointer'
-                                            }}
-                                        />
-                                    </Link>
-                                </div>
+                                    <div style={{ width: 80, height: 80, flexShrink: 0, position: 'relative' }}>
+                                        <Link href={`/products/${item.productId?._id}`}>
+                                            <Image
+                                                src={item.productId?.images?.[0] || '/placeholder.png'}
+                                                alt={item.productId?.name || 'product'}
+                                                fill
+                                                style={{
+                                                    objectFit: 'cover',
+                                                    borderRadius: 12,
+                                                    border: '1px solid #f1f5f9',
+                                                    cursor: 'pointer'
+                                                }}
+                                            />
+                                        </Link>
+                                    </div>
                                 <div style={{ flex: 1 }}>
                                     <Flex justify="space-between" align="flex-start">
                                         <div>
@@ -114,12 +116,14 @@ const Reviews = () => {
                                     {item.images && item.images.length > 0 && (
                                         <Flex gap="small" style={{ marginTop: 12 }}>
                                             {item.images.map((img: string, idx: number) => (
-                                                <img
-                                                    key={idx}
-                                                    src={img}
-                                                    alt={`review-${idx}`}
-                                                    style={{ width: 60, height: 60, borderRadius: 8, objectFit: 'cover' }}
-                                                />
+                                                <div key={idx} style={{ position: 'relative', width: 60, height: 60 }}>
+                                                    <Image
+                                                        src={img}
+                                                        alt={`review-${idx}`}
+                                                        fill
+                                                        style={{ borderRadius: 8, objectFit: 'cover' }}
+                                                    />
+                                                </div>
                                             ))}
                                         </Flex>
                                     )}

@@ -25,6 +25,7 @@ import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -33,6 +34,7 @@ interface CustomerTableProps {
 }
 
 export default function CustomerTable({ initialData }: CustomerTableProps) {
+    const t = useTranslations('AdminCustomers');
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
     const [dataSource, setDataSource] = useState(initialData.data?.result || []);
@@ -66,7 +68,7 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
                 });
             }
         } catch (error) {
-            message.error('Không thể tải danh sách khách hàng');
+            message.error(t('fetchError'));
         } finally {
             setLoading(false);
         }
@@ -92,13 +94,13 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
         try {
             const res = await deleteUser(id, session.accessToken);
             if (res.data) {
-                message.success('Xóa người dùng thành công');
+                message.success(t('deleteSuccess'));
                 loadData(pagination.current, pagination.pageSize, searchText);
             } else {
-                message.error(res.message || 'Lỗi khi xóa người dùng');
+                message.error(res.message || t('deleteError'));
             }
         } catch (error) {
-            message.error('Lỗi kết nối server');
+            message.error(t('serverError'));
         } finally {
             setLoading(false);
         }
@@ -111,7 +113,7 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
 
     const columns: ColumnsType<CustomerTableRow> = [
         {
-            title: <div style={{ textAlign: 'center' }}>Khách hàng</div>,
+            title: <div style={{ textAlign: 'center' }}>{t('customer')}</div>,
             key: 'customer',
             align: "left",
             render: (_, record) => (
@@ -125,7 +127,7 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
             ),
         },
         {
-            title: 'Vai trò',
+            title: t('role'),
             dataIndex: 'role',
             key: 'role',
             align: "center",
@@ -136,7 +138,7 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
             ),
         },
         {
-            title: 'Ngày tạo',
+            title: t('createdAt'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             align: "center",
@@ -144,37 +146,37 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
             sorter: true,
         },
         {
-            title: 'Trạng thái',
+            title: t('status'),
             dataIndex: 'isDeleted',
             align: "center",
             key: 'status',
             render: (isDeleted) => (
                 <Tag color={isDeleted ? 'error' : 'success'} bordered={false} style={{ borderRadius: 4 }}>
-                    {isDeleted ? 'Đã khóa' : 'Hoạt động'}
+                    {isDeleted ? t('locked') : t('active')}
                 </Tag>
             ),
         },
         {
-            title: 'Hành động',
+            title: t('action'),
             key: 'action',
             fixed: 'right',
             align: "center",
             width: 120,
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Lịch sử mua hàng">
+                    <Tooltip title={t('purchaseHistory')}>
                         <Button type="text" shape="circle" icon={<EyeOutlined />} onClick={() => showHistory(record)} />
                     </Tooltip>
                     <Popconfirm
-                        title="Xóa người dùng"
-                        description="Bạn có chắc chắn muốn xóa người dùng này không?"
+                        title={t('deleteUser')}
+                        description={t('deleteConfirm')}
                         onConfirm={() => handleDelete(record._id)}
-                        okText="Xóa"
-                        cancelText="Hủy"
+                        okText={t('delete')}
+                        cancelText={t('cancel')}
                         okButtonProps={{ danger: true, loading }}
                         placement="topRight"
                     >
-                        <Tooltip title="Xóa">
+                        <Tooltip title={t('delete')}>
                             <Button type="text" shape="circle" icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} />
                         </Tooltip>
                     </Popconfirm>
@@ -186,15 +188,15 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
     return (
         <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2>Quản lý khách hàng</h2>
+                <h2>{t('manageCustomers')}</h2>
                 <Space>
                     <Input.Search
-                        placeholder="Tìm kiếm khách hàng..."
+                        placeholder={t('searchPlaceholder')}
                         onSearch={handleSearch}
                         allowClear
                     />
                     <Button type="primary" icon={<PlusOutlined />}>
-                        Thêm mới
+                        {t('addNew')}
                     </Button>
                 </Space>
             </div>
@@ -210,10 +212,10 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
             />
 
             <Modal
-                title={`Lịch sử mua hàng: ${selectedCustomer?.name}`}
+                title={`${t('historyTitle')}${selectedCustomer?.name}`}
                 open={isHistoryOpen}
                 onCancel={() => setIsHistoryOpen(false)}
-                footer={[<Button key="close" onClick={() => setIsHistoryOpen(false)}>Đóng</Button>]}
+                footer={[<Button key="close" onClick={() => setIsHistoryOpen(false)}>{t('close')}</Button>]}
                 width={700}
             >
                 <Table
@@ -225,10 +227,10 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
                     rowKey="id"
                     size="middle"
                     columns={[
-                        { title: 'Mã đơn', dataIndex: 'id', key: 'id' },
-                        { title: 'Ngày đặt', dataIndex: 'date', key: 'date', render: (date) => <Text type="secondary">{dayjs(date).format('DD/MM/YYYY')}</Text> },
-                        { title: 'Tổng tiền', dataIndex: 'amount', key: 'amount', render: (val) => <Text strong>{val.toLocaleString()} đ</Text> },
-                        { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (s) => <Tag color="success" bordered={false} style={{ borderRadius: 4 }}>{s}</Tag> },
+                        { title: t('orderId'), dataIndex: 'id', key: 'id' },
+                        { title: t('orderDate'), dataIndex: 'date', key: 'date', render: (date) => <Text type="secondary">{dayjs(date).format('DD/MM/YYYY')}</Text> },
+                        { title: t('totalAmount'), dataIndex: 'amount', key: 'amount', render: (val) => <Text strong>{val.toLocaleString()} đ</Text> },
+                        { title: t('orderStatus'), dataIndex: 'status', key: 'status', render: (s) => <Tag color="success" bordered={false} style={{ borderRadius: 4 }}>{s}</Tag> },
                     ]}
                 />
             </Modal>

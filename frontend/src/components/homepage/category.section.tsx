@@ -1,6 +1,7 @@
 'use client';
 
 import { Carousel, Typography } from 'antd';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
@@ -65,13 +66,17 @@ export default function CategorySection(props: IProps) {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                     overflow: 'hidden',
                     margin: '0 auto',
+                    position: 'relative'
                   }}
                 >
-                  <img
-                    src={cat.thumbnail}
-                    alt={cat.name}
-                    style={{ width: '60%', height: '60%', objectFit: 'contain' }}
-                  />
+                  <div style={{ position: 'relative', width: '60%', height: '60%' }}>
+                    <Image
+                      src={cat.thumbnail}
+                      alt={cat.name}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
                 </div>
                 <Text strong style={{ fontSize: 16 }}>{cat.name}</Text>
               </div>

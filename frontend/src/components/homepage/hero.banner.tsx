@@ -1,7 +1,9 @@
 'use client';
 
 import { Button, Carousel, Col, Row, Typography } from 'antd';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 const { Title, Paragraph } = Typography;
 
@@ -10,6 +12,7 @@ interface HeroBannerProps {
 }
 
 export default function HeroBanner({ products }: HeroBannerProps) {
+  const t = useTranslations('HeroBanner');
   // Nếu không có sản phẩm truyền vào, hiển thị banner mặc định
   const displayProducts = products && products.length > 0 ? products.slice(0, 3) : null;
 
@@ -27,7 +30,7 @@ export default function HeroBanner({ products }: HeroBannerProps) {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <Title style={{ color: '#fff' }}>Chào mừng đến với cửa hàng của chúng tôi</Title>
+            <Title style={{ color: '#fff' }}>{t('welcome')}</Title>
           </div>
         </div>
       </div>
@@ -60,7 +63,7 @@ export default function HeroBanner({ products }: HeroBannerProps) {
                     fontWeight: 600,
                     marginBottom: 16
                   }}>
-                    SẢN PHẨM MỚI
+                    {t('newProductTag')}
                   </div>
                   <Title level={1} style={{
                     color: '#111827',
@@ -103,7 +106,7 @@ export default function HeroBanner({ products }: HeroBannerProps) {
                         boxShadow: '0 10px 15px -3px rgba(22, 119, 255, 0.3)'
                       }}
                     >
-                      Khám phá ngay
+                      {t('discoverNow')}
                     </Button>
                   </Link>
                 </Col>
@@ -120,17 +123,17 @@ export default function HeroBanner({ products }: HeroBannerProps) {
                     justifyContent: 'center'
                   }}>
                     {product.images && product.images.length > 0 ? (
-                      <img
-                        src={product.images[0].startsWith('http') ? product.images[0] : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`}
-                        alt={product.name}
-                        style={{
-                          width: '100%',
-                          height: 'auto',
-                          maxHeight: 350,
-                          objectFit: 'contain',
-                          filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.15))'
-                        }}
-                      />
+                      <div style={{ position: 'relative', width: '100%', height: 350 }}>
+                        <Image
+                          src={product.images[0].startsWith('http') ? product.images[0] : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`}
+                          alt={product.name}
+                          fill
+                          style={{
+                            objectFit: 'contain',
+                            filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.15))'
+                          }}
+                        />
+                      </div>
                     ) : (
                       <div style={{ width: 200, height: 200, backgroundColor: '#ddd', borderRadius: '50%' }}></div>
                     )}

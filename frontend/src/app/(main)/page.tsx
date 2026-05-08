@@ -4,8 +4,11 @@ import HeroBanner from '@/components/homepage/hero.banner';
 import ProductSection from '@/components/homepage/product.section';
 import PromoSection from '@/components/homepage/promo.section';
 import { fetchCategories, fetchProductsPagination } from '@/utils/auth.api';
+import { getTranslations } from 'next-intl/server';
 
 export default async function Home() {
+
+  const t = await getTranslations('HomePage');
 
   const newProductsResponse = await fetchProductsPagination({ current: 1, pageSize: 8, sort: '-createdAt' });
   const newProducts = newProductsResponse.data?.result
@@ -29,10 +32,10 @@ export default async function Home() {
         <CategorySection categoryList={categoryList} />
 
         <div className="bg-[#fafbfc] pt-5">
-          <ProductSection title="Hàng Mới" productList={newProducts} viewAllHref="/products?sort=newest" />
+          <ProductSection title={t('newProducts')} productList={newProducts} viewAllHref="/products?sort=newest" />
         </div>
 
-        <ProductSection title="Hàng Bán Chạy" productList={popularProducts} viewAllHref="/products?sort=popular" />
+        <ProductSection title={t('popularProducts')} productList={popularProducts} viewAllHref="/products?sort=popular" />
       </main>
     </div>
   );

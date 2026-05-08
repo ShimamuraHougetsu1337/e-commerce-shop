@@ -26,7 +26,9 @@ import {
   Tag,
   Typography
 } from 'antd';
+import Image from 'next/image';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -61,20 +63,21 @@ interface OrdersProps {
     accessToken: string;
 }
 
-const STATUS_CONFIG: Record<Order['status'], { color: string; label: string; icon: React.ReactNode; bg: string }> = {
-    Pending: { color: '#d97706', label: 'Chờ xác nhận', icon: <ClockCircleOutlined />, bg: '#fffbeb' },
-    Processing: { color: '#2563eb', label: 'Đang xử lý', icon: <SyncOutlined spin />, bg: '#eff6ff' },
-    Completed: { color: '#16a34a', label: 'Hoàn thành', icon: <CheckCircleOutlined />, bg: '#f0fdf4' },
-    Cancelled: { color: '#dc2626', label: 'Đã hủy', icon: <CloseCircleOutlined />, bg: '#fef2f2' },
-};
-
 const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }) => {
+    const t = useTranslations('OrderHistory');
     const { message } = App.useApp();
     const [detailOpen, setDetailOpen] = useState(false);
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<{ id: string, name: string } | null>(null);
     const [submittingReview, setSubmittingReview] = useState(false);
     const [form] = Form.useForm();
+
+    const STATUS_CONFIG: Record<Order['status'], { color: string; label: string; icon: React.ReactNode; bg: string }> = {
+        Pending: { color: '#d97706', label: t('statusPending'), icon: <ClockCircleOutlined />, bg: '#fffbeb' },
+        Processing: { color: '#2563eb', label: t('statusProcessing'), icon: <SyncOutlined spin />, bg: '#eff6ff' },
+        Completed: { color: '#16a34a', label: t('statusCompleted'), icon: <CheckCircleOutlined />, bg: '#f0fdf4' },
+        Cancelled: { color: '#dc2626', label: t('statusCancelled'), icon: <CloseCircleOutlined />, bg: '#fef2f2' },
+    };
 
     const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.Pending;
 
@@ -98,14 +101,14 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
             }, accessToken);
 
             if (res && res.statusCode === 201) {
-                message.success('Cảm ơn bạn đã đánh giá sản phẩm!');
+                message.success(t('reviewSuccess'));
                 setReviewModalOpen(false);
                 form.resetFields();
             } else {
-                message.error(res?.message || 'Có lỗi xảy ra khi gửi đánh giá');
+                message.error(res?.message || t('reviewError'));
             }
         } catch (error) {
-            message.error('Bạn đã đánh giá sản phẩm này rồi hoặc có lỗi xảy ra');
+            message.error(t('reviewConflict'));
         } finally {
             setSubmittingReview(false);
         }
@@ -121,7 +124,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                             {cfg.icon}
                         </div>
                         <div>
-                            <Text strong style={{ fontSize: 13, color: '#64748b', display: 'block', lineHeight: 1.2 }}>Mã đơn hàng</Text>
+                            <Text strong style={{ fontSize: 13, color: '#64748b', display: 'block', lineHeight: 1.2 }}>{t('orderId')}</Text>
                             <Text strong style={{ color: '#3b82f6', fontFamily: 'monospace', fontSize: 15 }}>
                                 #{order._id}
                             </Text>
@@ -147,24 +150,24 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                     {order.items.slice(0, 2).map((item, idx) => (
                         <Flex key={idx} justify="space-between" align="center" style={{ padding: '8px 0', gap: 12 }}>
                             <Flex align="center" gap={12} style={{ flex: 1, minWidth: 0 }}>
-                                <img
-                                    src={item.product?.images?.[0] 
-                                        ? (item.product.images[0].startsWith('http') 
-                                            ? item.product.images[0] 
-                                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
-                                        : 'https://placehold.co/100x100?text=No+Image'}
-                                    alt={item.productName}
-                                    style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', background: '#fff', border: '1px solid #f0f0f0' }}
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=No+Image';
-                                    }}
-                                />
+                                <div style={{ width: 40, height: 40, borderRadius: 6, position: 'relative', overflow: 'hidden', background: '#fff', border: '1px solid #f0f0f0' }}>
+                                    <Image
+                                        src={item.product?.images?.[0] 
+                                            ? (item.product.images[0].startsWith('http') 
+                                                ? item.product.images[0] 
+                                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
+                                            : 'https://placehold.co/100x100?text=No+Image'}
+                                        alt={item.productName}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                    />
+                                </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <Text ellipsis={{ tooltip: item.productName }} style={{ display: 'block', fontSize: 14, color: '#374151' }}>
                                         {item.productName}
                                     </Text>
                                     <Text type="secondary" style={{ fontSize: 12 }}>
-                                        Số lượng: {item.quantity}
+                                        {t('quantity')}: {item.quantity}
                                     </Text>
                                 </div>
                             </Flex>
@@ -175,7 +178,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                     ))}
                     {order.items.length > 2 && (
                         <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
-                            +{order.items.length - 2} sản phẩm khác
+                            {t('moreProducts', { count: order.items.length - 2 })}
                         </Text>
                     )}
                 </div>
@@ -197,7 +200,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                             {order.totalAmount.toLocaleString('vi-VN')} đ
                         </Text>
                         <Button size="small" onClick={() => setDetailOpen(true)} style={{ borderRadius: 8 }}>
-                            Chi tiết
+                            {t('details')}
                         </Button>
                     </Flex>
                 </Flex>
@@ -208,12 +211,12 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                 title={
                     <Flex align="center" gap={10}>
                         <ShoppingOutlined style={{ color: '#3b82f6' }} />
-                        <span>Chi tiết đơn hàng <Text style={{ color: '#3b82f6', fontFamily: 'monospace' }}>#{order._id}</Text></span>
+                        <span>{t('orderDetails')} <Text style={{ color: '#3b82f6', fontFamily: 'monospace' }}>#{order._id}</Text></span>
                     </Flex>
                 }
                 open={detailOpen}
                 onCancel={() => setDetailOpen(false)}
-                footer={<Button onClick={() => setDetailOpen(false)}>Đóng</Button>}
+                footer={<Button onClick={() => setDetailOpen(false)}>{t('close')}</Button>}
                 width={520}
             >
                 <Flex align="center" gap={8} style={{ margin: '16px 0' }}>
@@ -227,18 +230,18 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                     {order.items.map((item, idx) => (
                         <React.Fragment key={idx}>
                             <Flex justify="space-between" align="flex-start" style={{ padding: '12px 0', gap: '16px' }}>
-                                <img
-                                    src={item.product?.images?.[0] 
-                                        ? (item.product.images[0].startsWith('http') 
-                                            ? item.product.images[0] 
-                                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
-                                        : 'https://placehold.co/100x100?text=No+Image'}
-                                    alt={item.productName}
-                                    style={{ width: 60, height: 60, borderRadius: 8, objectFit: 'cover', background: '#fff', border: '1px solid #f0f0f0' }}
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=No+Image';
-                                    }}
-                                />
+                                <div style={{ width: 60, height: 60, borderRadius: 8, position: 'relative', overflow: 'hidden', background: '#fff', border: '1px solid #f0f0f0' }}>
+                                    <Image
+                                        src={item.product?.images?.[0] 
+                                            ? (item.product.images[0].startsWith('http') 
+                                                ? item.product.images[0] 
+                                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
+                                            : 'https://placehold.co/100x100?text=No+Image'}
+                                        alt={item.productName}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                    />
+                                </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <Text
                                         strong
@@ -264,7 +267,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                                                 style={{ padding: 0, height: 'auto' }}
                                                 onClick={() => item.product?._id && handleOpenReview(item.product._id, item.productName)}
                                             >
-                                                Viết đánh giá
+                                                {t('writeReview')}
                                             </Button>
                                         )}
                                     </Flex>
@@ -283,10 +286,13 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                 {order.couponCode && (
                     <Flex justify="space-between" align="center" style={{ background: '#fffbeb', borderRadius: 10, padding: '12px 16px', marginBottom: 12, border: '1px solid #fde68a' }}>
                         <div>
-                            <Text strong style={{ fontSize: 14, color: '#d97706', display: 'block' }}>Mã giảm giá đã áp dụng</Text>
+                            <Text strong style={{ fontSize: 14, color: '#d97706', display: 'block' }}>{t('couponApplied')}</Text>
                             {order.discountType && order.discountValue !== undefined && order.minOrderValue !== undefined && (
                                 <Text style={{ fontSize: 12, color: '#92400e' }}>
-                                    Giảm {order.discountType === 'PERCENTAGE' ? `${order.discountValue}%` : `${order.discountValue.toLocaleString('vi-VN')} đ`} (Đơn tối thiểu: {order.minOrderValue.toLocaleString('vi-VN')} đ)
+                                    {t('discountMsg', { 
+                                        value: order.discountType === 'PERCENTAGE' ? `${order.discountValue}%` : `${order.discountValue.toLocaleString('vi-VN')} đ`,
+                                        min: order.minOrderValue.toLocaleString('vi-VN')
+                                    })}
                                 </Text>
                             )}
                         </div>
@@ -295,7 +301,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                 )}
 
                 <Flex justify="space-between" align="center" style={{ background: '#f0fdf4', borderRadius: 10, padding: '12px 16px' }}>
-                    <Text strong style={{ fontSize: 15 }}>Tổng thanh toán</Text>
+                    <Text strong style={{ fontSize: 15 }}>{t('totalPayment')}</Text>
                     <Text strong style={{ fontSize: 18, color: '#16a34a' }}>
                         {order.totalAmount.toLocaleString('vi-VN')} đ
                     </Text>
@@ -306,9 +312,9 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                 <Flex gap={8} align="flex-start">
                     <EnvironmentOutlined style={{ color: '#94a3b8', marginTop: 2 }} />
                     <div style={{ flex: 1 }}>
-                        <Text strong style={{ fontSize: 13 }}>Địa chỉ giao hàng</Text>
+                        <Text strong style={{ fontSize: 13 }}>{t('shippingAddress')}</Text>
                         <Text type="secondary" style={{ display: 'block', fontSize: 13, wordBreak: 'break-word' }}>
-                            {order.shippingAddress || 'Chưa có địa chỉ'}
+                            {order.shippingAddress || t('noAddress')}
                         </Text>
                     </div>
                 </Flex>
@@ -319,7 +325,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                 title={
                     <Flex align="center" gap={10}>
                         <StarOutlined style={{ color: '#fadb14' }} />
-                        <span>Đánh giá sản phẩm</span>
+                        <span>{t('reviewProduct')}</span>
                     </Flex>
                 }
                 open={reviewModalOpen}
@@ -339,34 +345,34 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                 >
                     <Form.Item
                         name="rating"
-                        label="Chất lượng sản phẩm"
-                        rules={[{ required: true, message: 'Vui lòng chọn số sao' }]}
+                        label={t('productQuality')}
+                        rules={[{ required: true, message: t('selectStarRequired') }]}
                     >
                         <Rate style={{ fontSize: 32 }} />
                     </Form.Item>
 
                     <Form.Item
                         name="comment"
-                        label="Nhận xét của bạn"
-                        rules={[{ required: true, message: 'Vui lòng nhập nhận xét' }]}
+                        label={t('yourComment')}
+                        rules={[{ required: true, message: t('commentRequired') }]}
                     >
                         <TextArea
                             rows={4}
-                            placeholder="Sản phẩm có tốt không? Bạn thích điều gì nhất?"
+                            placeholder={t('commentPlaceholder')}
                             maxLength={500}
                             showCount
                         />
                     </Form.Item>
 
                     <Flex justify="end" gap={12}>
-                        <Button onClick={() => setReviewModalOpen(false)}>Hủy</Button>
+                        <Button onClick={() => setReviewModalOpen(false)}>{t('cancel')}</Button>
                         <Button
                             type="primary"
                             htmlType="submit"
                             loading={submittingReview}
                             icon={<MessageOutlined />}
                         >
-                            Gửi đánh giá
+                            {t('submitReview')}
                         </Button>
                     </Flex>
                 </Form>
@@ -378,6 +384,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
 
 
 const OrderHistory = ({ accessToken }: OrdersProps) => {
+    const t = useTranslations('OrderHistory');
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -416,9 +423,9 @@ const OrderHistory = ({ accessToken }: OrdersProps) => {
             return (
                 <Result
                     status="error"
-                    title="Không thể tải đơn hàng"
-                    subTitle="Đã xảy ra lỗi khi lấy danh sách đơn hàng của bạn."
-                    extra={<Button icon={<ReloadOutlined />} onClick={fetchOrders}>Thử lại</Button>}
+                    title={t('loadError')}
+                    subTitle={t('loadErrorDesc')}
+                    extra={<Button icon={<ReloadOutlined />} onClick={fetchOrders}>{t('retry')}</Button>}
                 />
             );
         }
@@ -427,7 +434,7 @@ const OrderHistory = ({ accessToken }: OrdersProps) => {
             return (
                 <Flex vertical align="center" justify="center" style={{ padding: '60px 0' }} gap={8}>
                     <ShoppingOutlined style={{ fontSize: 52, color: '#d1d5db' }} />
-                    <Text type="secondary" style={{ fontSize: 15 }}>Bạn chưa có đơn hàng nào</Text>
+                    <Text type="secondary" style={{ fontSize: 15 }}>{t('noOrders')}</Text>
                 </Flex>
             );
         }
@@ -445,12 +452,12 @@ const OrderHistory = ({ accessToken }: OrdersProps) => {
         <Card bordered={false} className="profile-card">
             <Flex justify="space-between" align="flex-start" style={{ marginBottom: 24 }}>
                 <div>
-                    <Title level={4} style={{ margin: 0 }}>Lịch sử đơn hàng</Title>
-                    <Text type="secondary">Xem và theo dõi các đơn hàng bạn đã đặt</Text>
+                    <Title level={4} style={{ margin: 0 }}>{t('orderHistory')}</Title>
+                    <Text type="secondary">{t('orderHistoryDesc')}</Text>
                 </div>
                 {!loading && !error && (
                     <Button icon={<ReloadOutlined />} onClick={fetchOrders} size="small" type="text">
-                        Làm mới
+                        {t('refresh')}
                     </Button>
                 )}
             </Flex>

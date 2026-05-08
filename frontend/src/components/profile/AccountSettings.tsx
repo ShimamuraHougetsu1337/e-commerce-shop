@@ -5,6 +5,7 @@ import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { App, Button, Card, Col, Divider, Form, Input, Row, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -15,6 +16,7 @@ interface AccountSettingsProps {
 }
 
 const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsProps) => {
+    const t = useTranslations('AccountSettings');
     const { message } = App.useApp();
     const { update } = useSession();
     const [profileForm] = Form.useForm();
@@ -28,15 +30,15 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
         try {
             const res = await updateProfileApi({ name: values.displayName }, accessToken);
             if (res && res.data) {
-                message.success('Cập nhật tên hiển thị thành công!');
+                message.success(t('updateNameSuccess'));
                 onNameUpdate?.(values.displayName);
                 // Cập nhật JWT token để tên mới tồn tại sau khi refresh trang
                 await update({ name: values.displayName });
             } else {
-                message.error(res?.message || 'Có lỗi xảy ra khi cập nhật tên');
+                message.error(res?.message || t('updateNameError'));
             }
         } catch (error) {
-            message.error('Lỗi hệ thống, vui lòng thử lại sau');
+            message.error(t('systemError'));
         } finally {
             setIsProfileLoading(false);
         }
@@ -51,13 +53,13 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
             }, accessToken);
 
             if (res && res.data) {
-                message.success('Đổi mật khẩu thành công!');
+                message.success(t('changePasswordSuccess'));
                 passwordForm.resetFields();
             } else {
-                message.error(res?.message || 'Mật khẩu cũ không chính xác hoặc có lỗi xảy ra');
+                message.error(res?.message || t('changePasswordError'));
             }
         } catch (error) {
-            message.error('Lỗi hệ thống, vui lòng thử lại sau');
+            message.error(t('systemError'));
         } finally {
             setIsPasswordLoading(false);
         }
@@ -67,8 +69,8 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
         <Card bordered={false} className="profile-card">
             {/* Form Cập nhật thông tin */}
             <div style={{ marginBottom: 32 }}>
-                <Title level={4} style={{ margin: 0 }}>Thông tin cá nhân</Title>
-                <Text type="secondary">Quản lý tên hiển thị và email của bạn</Text>
+                <Title level={4} style={{ margin: 0 }}>{t('personalInfoTitle')}</Title>
+                <Text type="secondary">{t('personalInfoDesc')}</Text>
             </div>
 
             <Form
@@ -80,14 +82,14 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
                 }}
                 onFinish={handleUpdateProfile}
             >
-                <Form.Item label="Tên hiển thị" name="displayName" rules={[{ required: true, message: 'Vui lòng nhập tên hiển thị' }]}>
-                    <Input size="large" placeholder="Tên hiển thị trên website" />
+                <Form.Item label={t('displayName')} name="displayName" rules={[{ required: true, message: t('displayNameRequired') }]}>
+                    <Input size="large" placeholder={t('displayNamePlaceholder')} />
                 </Form.Item>
 
                 <Form.Item 
-                    label="Địa chỉ Email" 
+                    label={t('emailAddress')} 
                     name="email" 
-                    extra="Email không thể thay đổi để đảm bảo tính bảo mật."
+                    extra={t('emailNotChangeable')}
                 >
                     <Input 
                         size="large" 
@@ -103,7 +105,7 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
                     className="action-btn" 
                     loading={isProfileLoading}
                 >
-                    Lưu thay đổi
+                    {t('saveChanges')}
                 </Button>
             </Form>
 
@@ -111,8 +113,8 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
 
             {/* Form Đổi mật khẩu */}
             <div style={{ marginBottom: 32 }}>
-                <Title level={4} style={{ margin: 0 }}>Thay đổi mật khẩu</Title>
-                <Text type="secondary">Đảm bảo an toàn cho tài khoản của bạn</Text>
+                <Title level={4} style={{ margin: 0 }}>{t('changePasswordTitle')}</Title>
+                <Text type="secondary">{t('changePasswordDesc')}</Text>
             </div>
 
             <Form
@@ -121,9 +123,9 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
                 onFinish={handleChangePassword}
             >
                 <Form.Item 
-                    label="Mật khẩu hiện tại" 
+                    label={t('currentPassword')} 
                     name="oldPassword"
-                    rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại' }]}
+                    rules={[{ required: true, message: t('currentPasswordRequired') }]}
                 >
                     <Input.Password size="large" prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="••••••••" />
                 </Form.Item>
@@ -131,34 +133,34 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
                 <Row gutter={24}>
                     <Col xs={24} sm={12}>
                         <Form.Item 
-                            label="Mật khẩu mới" 
+                            label={t('newPassword')} 
                             name="newPassword"
                             rules={[
-                                { required: true, message: 'Vui lòng nhập mật khẩu mới' },
-                                { min: 6, message: 'Mật khẩu phải ít nhất 6 ký tự' }
+                                { required: true, message: t('newPasswordRequired') },
+                                { min: 6, message: t('newPasswordMinLength') }
                             ]}
                         >
-                            <Input.Password size="large" prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="Mật khẩu mới" />
+                            <Input.Password size="large" prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder={t('newPassword')} />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
                         <Form.Item 
-                            label="Xác nhận mật khẩu" 
+                            label={t('confirmPassword')} 
                             name="confirmPassword"
                             dependencies={['newPassword']}
                             rules={[
-                                { required: true, message: 'Vui lòng xác nhận mật khẩu mới' },
+                                { required: true, message: t('confirmPasswordRequired') },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
                                         if (!value || getFieldValue('newPassword') === value) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                                        return Promise.reject(new Error(t('passwordMismatch')));
                                     },
                                 }),
                             ]}
                         >
-                            <Input.Password size="large" prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="Nhập lại mật khẩu mới" />
+                            <Input.Password size="large" prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder={t('reenterNewPassword')} />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -171,7 +173,7 @@ const AccountSettings = ({ user, accessToken, onNameUpdate }: AccountSettingsPro
                     style={{ background: '#22c55e', borderColor: '#22c55e' }} 
                     loading={isPasswordLoading}
                 >
-                    Cập nhật mật khẩu
+                    {t('updatePasswordBtn')}
                 </Button>
             </Form>
         </Card>

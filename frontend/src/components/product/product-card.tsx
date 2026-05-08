@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import QuickViewModal from './quick-view-modal';
 
 const { Title, Text } = Typography;
@@ -16,6 +17,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const t = useTranslations('ProductCard');
   const router = useRouter();
   const { data: session } = useSession();
   const { items, addItem, removeItem } = useWishlistStore();
@@ -41,16 +43,16 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleCartClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!session?.accessToken) {
-      message.warning('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+      message.warning(t('loginToCart'));
       return;
     }
 
     setIsCartLoading(true);
     try {
       await addToCart(product, 1, session.accessToken);
-      message.success(`Đã thêm ${product.name} vào giỏ hàng!`);
+      message.success(t('addedToCart', { productName: product.name }));
     } catch (error) {
-      message.error('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+      message.error(t('errorCart'));
     } finally {
       setIsCartLoading(false);
     }
@@ -59,7 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleWishlistClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!session?.accessToken) {
-      message.warning('Vui lòng đăng nhập để thêm vào yêu thích!');
+      message.warning(t('loginToWishlist'));
       return;
     }
 
@@ -67,13 +69,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       setIsWishlistLoading(true);
       if (isLiked) {
         await removeItem(product._id, session.accessToken);
-        message.success('Đã gỡ khỏi danh sách yêu thích!');
+        message.success(t('removedFromWishlist'));
       } else {
         await addItem(product, session.accessToken);
-        message.success('Đã thêm vào danh sách yêu thích!');
+        message.success(t('addedToWishlist'));
       }
     } catch (error) {
-      message.error('Có lỗi xảy ra, vui lòng thử lại!');
+      message.error(t('errorWishlist'));
     } finally {
       setIsWishlistLoading(false);
     }
@@ -113,7 +115,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               gap: 8,
               transition: 'all 0.3s ease'
             }}>
-              <Tooltip title={isLiked ? "Gỡ khỏi yêu thích" : "Thêm vào yêu thích"} placement="left">
+              <Tooltip title={isLiked ? t('removeFromWishlistTooltip') : t('addToWishlistTooltip')} placement="left">
                 <Button
                   type="text"
                   shape="circle"
@@ -127,7 +129,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 />
               </Tooltip>
 
-              <Tooltip title="Xem nhanh" placement="left">
+              <Tooltip title={t('quickViewTooltip')} placement="left">
                 <Button
                   type="text"
                   shape="circle"

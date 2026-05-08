@@ -3,6 +3,7 @@ import { AutoComplete, Input, Flex, Typography, Image } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useState, useCallback, useRef } from 'react';
 import { fetchProductsPagination } from '@/utils/auth.api';
+import { useTranslations } from 'next-intl';
 
 const { Text } = Typography;
 
@@ -16,6 +17,7 @@ function debounce(func: Function, wait: number) {
 }
 
 export default function SearchAutocomplete() {
+    const t = useTranslations('Common');
     const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
     const router = useRouter();
     const searchRef = useRef<any>(null);
@@ -86,7 +88,7 @@ export default function SearchAutocomplete() {
                 size="large"
             >
                 <Input
-                    placeholder="Tìm kiếm sản phẩm..."
+                    placeholder={t('searchPlaceholder')}
                     prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
                     style={{ borderRadius: '8px' }}
                 />

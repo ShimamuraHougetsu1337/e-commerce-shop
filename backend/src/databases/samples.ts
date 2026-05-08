@@ -512,7 +512,7 @@ export const SAMPLE_PRODUCTS = [
         category_slug: 'groceries',
         images: [
             'https://bizweb.dktcdn.net/thumb/1024x1024/100/438/624/products/banhdanisa908gnew.jpg?v=1670669077190',
-            'https://thumbor.asia-southeast1.aeon-vn-prod.e.spresso.com/unsafe/fit-in/512x400/filters%3Aquality%28100%29%3Amax_bytes%2850000%29%3Afill%28white%29/https%3A//catalog-assets-asia-southeast1.aeon-vn-prod.e.spresso.com/c3RvcmFnZS5nb29nbGVhcGlzLmNvbQ%3D%3D/YWVvbnZpZXRuYW0tc3ByZXNzby1wdWJsaWM%3D/Rk9PRCAyMDI2/SkFO/RklYIDUtMQ%3D%3D/MDEzOTgwNTI%3D.jpg'
+            'https://banhtrungthu.org/wp-content/uploads/2023/11/banh-quy-bo-danisa-hop-thiec-908g-2.jpg'
         ],
         averageRating: 4.8,
         totalReviews: 720,

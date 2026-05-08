@@ -26,6 +26,7 @@ import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -34,6 +35,7 @@ interface CategoryTableProps {
 }
 
 export default function CategoryTable({ initialData }: CategoryTableProps) {
+    const t = useTranslations('AdminCategories');
     const { data: session } = useSession();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
@@ -68,7 +70,7 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
                 });
             }
         } catch (error) {
-            message.error('Không thể tải danh sách danh mục');
+            message.error(t('fetchError'));
         } finally {
             setLoading(false);
         }
@@ -105,13 +107,13 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
         try {
             const res = await deleteCategory(id, session.accessToken);
             if (res.data) {
-                message.success('Xóa danh mục thành công');
+                message.success(t('deleteSuccess'));
                 loadData(pagination.current, pagination.pageSize, searchText);
             } else {
-                message.error(res.message || 'Lỗi khi xóa danh mục');
+                message.error(res.message || t('deleteError'));
             }
         } catch (error) {
-            message.error('Lỗi kết nối server');
+            message.error(t('serverError'));
         } finally {
             setLoading(false);
         }
@@ -131,11 +133,11 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
             }
 
             if (res.data) {
-                message.success(`${editingCategory ? 'Cập nhật' : 'Thêm'} danh mục thành công`);
+                message.success(editingCategory ? t('updateSuccess') : t('addSuccess'));
                 setIsModalOpen(false);
                 loadData(pagination.current, pagination.pageSize, searchText);
             } else {
-                message.error(res.message || 'Có lỗi xảy ra');
+                message.error(res.message || t('errorOccurred'));
             }
         } catch (error) {
             console.error('Validation failed:', error);
@@ -146,32 +148,32 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
 
     const columns: ColumnsType<CategoryTableRow> = [
         {
-            title: 'Tên danh mục',
+            title: t('categoryName'),
             dataIndex: 'name',
             key: 'name',
             align: "center",
             render: (name) => <Text strong style={{ color: '#1f2937' }}>{name}</Text>,
         },
         {
-            title: 'Slug',
+            title: t('slug'),
             dataIndex: 'slug',
             align: "center",
             key: 'slug',
             render: (slug) => <Tag bordered={false} color="default" style={{ borderRadius: 4 }}>{slug}</Tag>,
         },
         {
-            title: 'Trạng thái',
+            title: t('status'),
             dataIndex: 'isActive',
             key: 'isActive',
             align: "center",
             render: (isActive) => (
                 <Tag color={isActive ? 'success' : 'error'} bordered={false} style={{ borderRadius: 4 }}>
-                    {isActive ? 'Hoạt động' : 'Ẩn'}
+                    {isActive ? t('active') : t('hidden')}
                 </Tag>
             ),
         },
         {
-            title: 'Ngày tạo',
+            title: t('createdAt'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             align: "center",
@@ -179,29 +181,29 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
             sorter: true,
         },
         {
-            title: 'Hành động',
+            title: t('action'),
             key: 'action',
             fixed: 'right',
             align: 'center',
             width: 140,
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Xem chi tiết">
+                    <Tooltip title={t('viewDetail')}>
                         <Button type="text" shape="circle" icon={<EyeOutlined />} />
                     </Tooltip>
-                    <Tooltip title="Chỉnh sửa">
+                    <Tooltip title={t('edit')}>
                         <Button type="text" shape="circle" icon={<EditOutlined style={{ color: '#1677ff' }} />} onClick={() => showModal(record)} />
                     </Tooltip>
                     <Popconfirm
-                        title="Xóa danh mục"
-                        description="Bạn có chắc chắn muốn xóa danh mục này không?"
+                        title={t('deleteTitle')}
+                        description={t('deleteConfirm')}
                         onConfirm={() => handleDelete(record._id)}
-                        okText="Xóa"
-                        cancelText="Hủy"
+                        okText={t('delete')}
+                        cancelText={t('cancel')}
                         okButtonProps={{ danger: true, loading }}
                         placement="topRight"
                     >
-                        <Tooltip title="Xóa">
+                        <Tooltip title={t('delete')}>
                             <Button type="text" shape="circle" icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} />
                         </Tooltip>
                     </Popconfirm>
@@ -213,15 +215,15 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
     return (
         <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2>Quản lý danh mục</h2>
+                <h2>{t('manageCategories')}</h2>
                 <Space>
                     <Input.Search
-                        placeholder="Tìm kiếm danh mục..."
+                        placeholder={t('searchPlaceholder')}
                         onSearch={handleSearch}
                         allowClear
                     />
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-                        Thêm mới
+                        {t('addNew')}
                     </Button>
                 </Space>
             </div>
@@ -236,7 +238,7 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
                 scroll={{ x: 800 }}
             />
             <Modal
-                title={editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
+                title={editingCategory ? t('editCategory') : t('addCategory')}
                 open={isModalOpen}
                 onOk={handleModalOk}
                 onCancel={() => setIsModalOpen(false)}
@@ -248,17 +250,17 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
                     initialValues={{ isActive: true }}
                     style={{ marginTop: 20 }}
                 >
-                    <Form.Item label="Tên danh mục" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}>
-                        <Input placeholder="Ví dụ: Điện thoại" />
+                    <Form.Item label={t('categoryName')} name="name" rules={[{ required: true, message: t('categoryNameRequired') }]}>
+                        <Input placeholder={t('categoryNamePlaceholder')} />
                     </Form.Item>
-                    <Form.Item label="Slug (URL)" name="slug" rules={[{ required: true, message: 'Vui lòng nhập slug' }]}>
-                        <Input placeholder="dien-thoai" />
+                    <Form.Item label={t('slug')} name="slug" rules={[{ required: true, message: t('slugRequired') }]}>
+                        <Input placeholder={t('slugPlaceholder')} />
                     </Form.Item>
-                    <Form.Item label="Mô tả" name="description">
-                        <Input.TextArea rows={3} placeholder="Mô tả về danh mục..." />
+                    <Form.Item label={t('description')} name="description">
+                        <Input.TextArea rows={3} placeholder={t('descriptionPlaceholder')} />
                     </Form.Item>
-                    <Form.Item label="Trạng thái" name="isActive" valuePropName="checked">
-                        <Select options={[{ label: 'Hoạt động', value: true }, { label: 'Ẩn', value: false }]} />
+                    <Form.Item label={t('status')} name="isActive" valuePropName="checked">
+                        <Select options={[{ label: t('active'), value: true }, { label: t('hidden'), value: false }]} />
                     </Form.Item>
                 </Form>
             </Modal>

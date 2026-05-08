@@ -17,11 +17,14 @@ import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import { signOut, useSession } from 'next-auth/react';
 import SearchAutocomplete from './search.autocomplete';
+import LanguageSwitcher from './language-switcher';
+import { useTranslations } from 'next-intl';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
 
 export default function AppHeader() {
+  const t = useTranslations('AppHeader');
   const router = useRouter();
   const pathName = usePathname();
   const { items: wishlistItems, hasFetched: wishlistFetched, fetchWishlist } = useWishlistStore();
@@ -51,7 +54,7 @@ export default function AppHeader() {
       {
         key: 'admin',
         icon: <DashboardOutlined />,
-        label: 'Quản lý hệ thống',
+        label: t('admin'),
       },
       {
         type: 'divider' as const,
@@ -60,7 +63,7 @@ export default function AppHeader() {
     {
       key: 'profile',
       icon: <UserOutlined />,
-      label: 'Tài khoản của tôi',
+      label: t('profile'),
     },
     // {
     //   key: 'settings',
@@ -73,7 +76,7 @@ export default function AppHeader() {
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: 'Đăng xuất',
+      label: t('logout'),
       danger: true,
     },
   ];
@@ -129,10 +132,11 @@ export default function AppHeader() {
         </div>
 
         <Flex align="center" gap="middle" style={{ flexShrink: 0 }}>
+          <LanguageSwitcher />
           {status === 'authenticated' ? (
             <>
               <Badge count={wishlistItems?.length} showZero size="small">
-                <Tooltip title="Danh sách yêu thích">
+                <Tooltip title={t('wishlist')}>
                   <Link href={'/wishlist'}>
                     <Button type="text" icon={<HeartOutlined style={{ fontSize: 20 }} />} />
                   </Link>
@@ -140,7 +144,7 @@ export default function AppHeader() {
               </Badge>
 
               <Badge count={cartItems?.length} showZero size="small">
-                <Tooltip title="Giỏ hàng">
+                <Tooltip title={t('cart')}>
                   <Link href={'/cart'}>
                     <Button type="text" icon={<ShoppingOutlined style={{ fontSize: 20 }} />} />
                   </Link>
@@ -165,7 +169,7 @@ export default function AppHeader() {
             </>
           ) : (
             <Link href={`/login?callbackUrl=${pathName}`}>
-              <Button type="primary">Đăng nhập</Button>
+              <Button type="primary">{t('login')}</Button>
             </Link>
           )}
         </Flex>

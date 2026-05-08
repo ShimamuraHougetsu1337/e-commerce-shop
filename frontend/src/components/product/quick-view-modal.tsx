@@ -1,6 +1,7 @@
 'use client';
 
-import { Modal, Row, Col, Image } from 'antd';
+import { Modal, Row, Col } from 'antd';
+import Image from 'next/image';
 import ProductInfo from './product-info';
 import ProductActions from './product-actions';
 
@@ -37,20 +38,20 @@ export default function QuickViewModal({ product, open, onCancel }: QuickViewMod
                         justifyContent: 'center',
                         minHeight: '400px'
                     }}>
-                        <Image
-                            alt={product.name}
-                            src={product.images && product.images.length > 0 
-                                ? (product.images[0].startsWith('http') 
-                                    ? product.images[0] 
-                                    : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`) 
-                                : "/no-image.png"}
-                            style={{ 
-                                width: '100%', 
-                                maxHeight: '450px', 
-                                objectFit: 'contain' 
-                            }}
-                            preview={false}
-                        />
+                        <div style={{ position: 'relative', width: '100%', height: 450 }}>
+                            <Image
+                                alt={product.name}
+                                src={product.images && product.images.length > 0 
+                                    ? (product.images[0].startsWith('http') 
+                                        ? product.images[0] 
+                                        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`) 
+                                    : "/no-image.png"}
+                                fill
+                                style={{ 
+                                    objectFit: 'contain' 
+                                }}
+                            />
+                        </div>
                     </div>
                 </Col>
                 <Col xs={24} md={12}>

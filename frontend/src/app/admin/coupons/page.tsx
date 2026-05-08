@@ -6,8 +6,10 @@ import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Popconfir
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function CouponsAdminPage() {
+    const t = useTranslations('AdminCoupons');
     const { data: session } = useSession();
     const [data, setData] = useState<ICoupon[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ export default function CouponsAdminPage() {
                 setPagination({ current: res.data.meta.current, pageSize: res.data.meta.pageSize, total: res.data.meta.total });
             }
         } catch (error) {
-            message.error("Lỗi khi tải danh sách mã giảm giá");
+            message.error(t('fetchError'));
         } finally {
             setLoading(false);
         }
@@ -50,10 +52,10 @@ export default function CouponsAdminPage() {
     const handleDelete = async (id: string) => {
         try {
             await deleteCoupon(id, session?.accessToken as string);
-            message.success('Xóa thành công');
+            message.success(t('deleteSuccess'));
             loadData(pagination.current, pagination.pageSize, searchText);
         } catch (error) {
-            message.error('Có lỗi xảy ra');
+            message.error(t('errorOccurred'));
         }
     };
 
@@ -84,49 +86,49 @@ export default function CouponsAdminPage() {
                     message.error(Array.isArray(res.message) ? res.message[0] : res.message);
                     return;
                 }
-                message.success('Cập nhật thành công');
+                message.success(t('updateSuccess'));
             } else {
                 const res = await createCoupon(formattedValues, session?.accessToken as string);
                 if (res && res.statusCode !== 200 && res.statusCode !== 201) {
                     message.error(Array.isArray(res.message) ? res.message[0] : res.message);
                     return;
                 }
-                message.success('Thêm mới thành công');
+                message.success(t('addSuccess'));
             }
             setIsModalVisible(false);
             loadData(pagination.current, pagination.pageSize, searchText);
         } catch (error: any) {
-            message.error('Có lỗi xảy ra: ' + (error.message || ''));
+            message.error(t('errorOccurred') + ': ' + (error.message || ''));
         }
     };
 
     const columns = [
-        { title: 'Mã', dataIndex: 'code', key: 'code', render: (text: string) => <strong>{text}</strong> },
-        { title: 'Loại', dataIndex: 'discountType', key: 'discountType' },
-        { title: 'Giá trị', dataIndex: 'discountValue', key: 'discountValue' },
-        { title: 'Đơn tối thiểu', dataIndex: 'minOrderValue', key: 'minOrderValue' },
-        { title: 'Đã dùng / Tối đa', key: 'usage', render: (_: any, record: ICoupon) => `${record.usedCount} / ${record.maxUsage}` },
-        { title: 'Ngày hết hạn', dataIndex: 'expiryDate', key: 'expiryDate', render: (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm') },
+        { title: t('code'), dataIndex: 'code', key: 'code', render: (text: string) => <strong>{text}</strong> },
+        { title: t('type'), dataIndex: 'discountType', key: 'discountType' },
+        { title: t('value'), dataIndex: 'discountValue', key: 'discountValue' },
+        { title: t('minOrder'), dataIndex: 'minOrderValue', key: 'minOrderValue' },
+        { title: t('usage'), key: 'usage', render: (_: any, record: ICoupon) => `${record.usedCount} / ${record.maxUsage}` },
+        { title: t('expiryDate'), dataIndex: 'expiryDate', key: 'expiryDate', render: (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm') },
         { 
-            title: 'Trạng thái', 
+            title: t('status'), 
             key: 'status', 
             render: (_: any, record: ICoupon) => {
                 const isExpired = dayjs(record.expiryDate).isBefore(dayjs());
                 const isOutOfUsage = record.usedCount >= record.maxUsage;
                 
-                if (!record.isActive) return <Tag color="error">Đã khóa</Tag>;
-                if (isExpired) return <Tag color="warning">Hết hạn</Tag>;
-                if (isOutOfUsage) return <Tag color="orange">Hết lượt</Tag>;
-                return <Tag color="success">Hoạt động</Tag>;
+                if (!record.isActive) return <Tag color="error">{t('locked')}</Tag>;
+                if (isExpired) return <Tag color="warning">{t('expired')}</Tag>;
+                if (isOutOfUsage) return <Tag color="orange">{t('outOfUsage')}</Tag>;
+                return <Tag color="success">{t('active')}</Tag>;
             } 
         },
         {
-            title: 'Hành động',
+            title: t('action'),
             key: 'action',
             render: (_: any, record: ICoupon) => (
                 <Space size="middle">
                     <Button type="text" icon={<EditOutlined />} onClick={() => showModal(record)} />
-                    <Popconfirm title="Bạn có chắc muốn xóa?" onConfirm={() => handleDelete(record._id)}>
+                    <Popconfirm title={t('deleteConfirm')} onConfirm={() => handleDelete(record._id)}>
                         <Button type="text" danger icon={<DeleteOutlined />} />
                     </Popconfirm>
                 </Space>
@@ -137,10 +139,10 @@ export default function CouponsAdminPage() {
     return (
         <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2>Quản lý Mã giảm giá</h2>
+                <h2>{t('manageCoupons')}</h2>
                 <Space>
-                    <Input.Search placeholder="Tìm theo mã..." onSearch={handleSearch} allowClear />
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Thêm mới</Button>
+                    <Input.Search placeholder={t('searchPlaceholder')} onSearch={handleSearch} allowClear />
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>{t('addNew')}</Button>
                 </Space>
             </div>
 
@@ -154,24 +156,24 @@ export default function CouponsAdminPage() {
             />
 
             <Modal 
-                title={editingCoupon ? "Sửa Mã giảm giá" : "Thêm Mã giảm giá"} 
+                title={editingCoupon ? t('editCoupon') : t('addCoupon')} 
                 open={isModalVisible} 
                 onOk={handleModalOk} 
                 onCancel={() => setIsModalVisible(false)}
             >
                 <Form form={form} layout="vertical">
-                    <Form.Item name="code" label="Mã giảm giá" rules={[{ required: true, message: 'Vui lòng nhập mã' }]}>
+                    <Form.Item name="code" label={t('couponCode')} rules={[{ required: true, message: t('codeRequired') }]}>
                         <Input style={{ textTransform: 'uppercase' }} />
                     </Form.Item>
-                    <Form.Item name="discountType" label="Loại giảm giá" rules={[{ required: true, message: 'Vui lòng chọn loại' }]}>
-                        <Select options={[{ label: 'Phần trăm (%)', value: 'PERCENTAGE' }, { label: 'Số tiền cố định', value: 'FIXED' }]} />
+                    <Form.Item name="discountType" label={t('discountType')} rules={[{ required: true, message: t('typeRequired') }]}>
+                        <Select options={[{ label: t('percentage'), value: 'PERCENTAGE' }, { label: t('fixed'), value: 'FIXED' }]} />
                     </Form.Item>
                     <Form.Item
                         noStyle
                         shouldUpdate={(prevValues, currentValues) => prevValues.discountType !== currentValues.discountType}
                     >
                         {({ getFieldValue }) => (
-                            <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true, message: 'Vui lòng nhập giá trị' }]}>
+                            <Form.Item name="discountValue" label={t('discountValue')} rules={[{ required: true, message: t('valueRequired') }]}>
                                 <InputNumber 
                                     min={0} 
                                     max={getFieldValue('discountType') === 'PERCENTAGE' ? 100 : undefined} 
@@ -180,18 +182,18 @@ export default function CouponsAdminPage() {
                             </Form.Item>
                         )}
                     </Form.Item>
-                    <Form.Item name="minOrderValue" label="Đơn hàng tối thiểu" rules={[{ required: true, message: 'Vui lòng nhập giá trị tối thiểu' }]}>
+                    <Form.Item name="minOrderValue" label={t('minOrderValue')} rules={[{ required: true, message: t('minOrderRequired') }]}>
                         <InputNumber min={0} style={{ width: '100%' }} />
                     </Form.Item>
-                    <Form.Item name="maxUsage" label="Số lượt sử dụng tối đa" rules={[{ required: true, message: 'Vui lòng nhập số lượt tối đa' }]}>
+                    <Form.Item name="maxUsage" label={t('maxUsage')} rules={[{ required: true, message: t('maxUsageRequired') }]}>
                         <InputNumber min={1} style={{ width: '100%' }} />
                     </Form.Item>
-                    <Form.Item name="expiryDate" label="Ngày hết hạn" rules={[{ required: true, message: 'Vui lòng chọn ngày hết hạn' }]}>
+                    <Form.Item name="expiryDate" label={t('expiryDateLabel')} rules={[{ required: true, message: t('expiryDateRequired') }]}>
                         <DatePicker showTime style={{ width: '100%' }} />
                     </Form.Item>
                     {editingCoupon && (
-                        <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
-                            <Switch checkedChildren="Hoạt động" unCheckedChildren="Khóa" />
+                        <Form.Item name="isActive" label={t('status')} valuePropName="checked">
+                            <Switch checkedChildren={t('active')} unCheckedChildren={t('lock')} />
                         </Form.Item>
                     )}
                 </Form>

@@ -2,43 +2,45 @@
 
 import { RightOutlined } from '@ant-design/icons';
 import { Badge, Button, Card, Table, Tag, Typography } from 'antd';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
 const Orders = () => {
+    const t = useTranslations('Orders');
     const columns = [
         {
-            title: 'Mã đơn',
+            title: t('orderId'),
             dataIndex: 'id',
             key: 'id',
             render: (text: string) => <Text strong style={{ color: '#3b82f6' }}>#{text}</Text>,
         },
         {
-            title: 'Ngày đặt',
+            title: t('orderDate'),
             dataIndex: 'date',
             key: 'date',
         },
         {
-            title: 'Trạng thái',
+            title: t('status'),
             dataIndex: 'status',
             key: 'status',
             render: (status: string) => {
                 let statusConfig: any = { color: 'processing', text: status };
-                if (status === 'Hoàn thành') statusConfig = { color: 'success', text: 'Hoàn thành' };
-                if (status === 'Đã hủy') statusConfig = { color: 'error', text: 'Đã hủy' };
-                if (status === 'Đang giao') statusConfig = { color: 'warning', text: 'Đang giao' };
+                if (status === 'Hoàn thành' || status === t('completed')) statusConfig = { color: 'success', text: t('completed') };
+                if (status === 'Đã hủy' || status === t('cancelled')) statusConfig = { color: 'error', text: t('cancelled') };
+                if (status === 'Đang giao' || status === t('delivering')) statusConfig = { color: 'warning', text: t('delivering') };
                 
                 return <Badge status={statusConfig.color} text={statusConfig.text} />;
             },
         },
         {
-            title: 'Tổng tiền',
+            title: t('totalAmount'),
             dataIndex: 'total',
             key: 'total',
             render: (total: number) => <Text strong>{total.toLocaleString('vi-VN')} đ</Text>,
         },
         {
-            title: 'Thanh toán',
+            title: t('payment'),
             dataIndex: 'payment',
             key: 'payment',
             render: (method: string) => <Tag bordered={false}>{method}</Tag>
@@ -59,8 +61,8 @@ const Orders = () => {
     return (
         <Card bordered={false} className="profile-card">
             <div style={{ marginBottom: 24 }}>
-                <Title level={4} style={{ margin: 0 }}>Lịch sử đơn hàng</Title>
-                <Text type="secondary">Xem và theo dõi các đơn hàng bạn đã đặt</Text>
+                <Title level={4} style={{ margin: 0 }}>{t('orderHistory')}</Title>
+                <Text type="secondary">{t('orderHistoryDesc')}</Text>
             </div>
             <Table 
                 columns={columns} 

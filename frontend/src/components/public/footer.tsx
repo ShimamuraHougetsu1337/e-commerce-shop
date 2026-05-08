@@ -1,11 +1,14 @@
 'use client';
 
 import { Layout, Typography } from 'antd';
+import { useTranslations } from 'next-intl';
 
 const { Footer: AntFooter } = Layout;
 const { Text } = Typography;
 
 export default function AppFooter() {
+  const t = useTranslations('AppFooter');
+  
   return (
     <AntFooter style={{
       backgroundColor: '#fff',
@@ -18,7 +21,7 @@ export default function AppFooter() {
         letterSpacing: '1px',
         fontSize: '14px'
       }}>
-        Được thực hiện bằng cả trái tim ❤️ bởi Shimamura Hougetsu
+        {t('madeWithLove')}
       </Text>
     </AntFooter>
   );

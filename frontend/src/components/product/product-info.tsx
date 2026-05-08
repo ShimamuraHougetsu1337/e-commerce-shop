@@ -1,4 +1,5 @@
 import { Divider, Flex, Rate, Typography } from 'antd';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -20,6 +21,7 @@ export default function ProductInfo({
     description,
     stock_quantity,
 }: ProductInfoProps) {
+    const t = useTranslations('ProductInfo');
     return (
         <>
             <Title className="pdp-product-title" style={{ margin: 0, fontWeight: 600 }}>
@@ -33,7 +35,7 @@ export default function ProductInfo({
                     allowHalf
                     style={{ fontSize: '14px', color: '#fadb14' }}
                 />
-                <Text type="secondary">({reviewsCount} Reviews)</Text>
+                <Text type="secondary">({reviewsCount} {t('reviews')})</Text>
             </Flex>
 
             <div style={{ marginBottom: '16px' }}>
@@ -49,8 +51,8 @@ export default function ProductInfo({
                     }}
                 >
                     {stock_quantity > 0 
-                        ? `Còn lại: ${stock_quantity} sản phẩm` 
-                        : 'Hết hàng'}
+                        ? t('remaining', { count: stock_quantity }) 
+                        : t('outOfStock')}
                 </Text>
             </div>
 

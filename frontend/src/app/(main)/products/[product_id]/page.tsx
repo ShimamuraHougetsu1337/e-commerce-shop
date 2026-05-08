@@ -2,10 +2,12 @@ import { sendRequest } from '@/utils/api';
 import { Button, Result } from 'antd';
 import Link from 'next/link';
 import ProductContentWrapper from './product-content-wapper';
+import { getTranslations } from 'next-intl/server';
 
 
 
 export default async function ProductDetailPage({ params }: { params: { product_id: string } }) {
+    const t = await getTranslations('ProductDetailPage');
     const { product_id } = params;
 
     const res = await sendRequest<IBackendRes<IProduct>>({
@@ -27,12 +29,12 @@ export default async function ProductDetailPage({ params }: { params: { product_
             }}>
                 <Result
                     status="404"
-                    title="Không tìm thấy sản phẩm"
-                    subTitle="Xin lỗi, sản phẩm bạn đang tìm kiếm không tồn tại, đã bị xóa hoặc ngừng kinh doanh."
+                    title={t('productNotFound')}
+                    subTitle={t('productNotFoundDesc')}
                     extra={
                         <Link href="/">
                             <Button type="primary" size="large">
-                                Quay lại trang chủ
+                                {t('backToHome')}
                             </Button>
                         </Link>
                     }

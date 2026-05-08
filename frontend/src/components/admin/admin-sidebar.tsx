@@ -4,26 +4,30 @@ import {
   DashboardOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
+  StarOutlined,
   TagsOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 const { Sider } = Layout;
 
 export default function AdminSidebar({ collapsed }: { collapsed: boolean }) {
+    const t = useTranslations('AdminDashboard');
     const pathname = usePathname();
     const router = useRouter();
 
     const menuItems = [
-        { key: '/admin', icon: <DashboardOutlined />, label: 'Dashboard' },
-        { key: '/admin/orders', icon: <ShoppingCartOutlined />, label: 'Orders' },
-        { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Products' },
-        { key: '/admin/categories', icon: <TagsOutlined />, label: 'Categories' },
-        { key: '/admin/customers', icon: <UserOutlined />, label: 'Customers' },
-        { key: '/admin/coupons', icon: <TagsOutlined />, label: 'Coupons' },
+        { key: '/admin', icon: <DashboardOutlined />, label: t('dashboard') },
+        { key: '/admin/orders', icon: <ShoppingCartOutlined />, label: t('ordersMenu') },
+        { key: '/admin/products', icon: <ShoppingOutlined />, label: t('productsMenu') },
+        { key: '/admin/categories', icon: <TagsOutlined />, label: t('categoriesMenu') },
+        { key: '/admin/customers', icon: <UserOutlined />, label: t('customersMenu') },
+        { key: '/admin/coupons', icon: <TagsOutlined />, label: t('couponsMenu') },
+        { key: '/admin/reviews', icon: <StarOutlined />, label: t('reviewsMenu') },
     ];
 
     return (

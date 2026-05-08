@@ -6,14 +6,17 @@ import { createOrderApi } from '@/utils/user.api';
 import { ArrowLeftOutlined, CreditCardOutlined, DeleteOutlined, GiftOutlined, HomeOutlined, ShoppingCartOutlined, TagOutlined } from '@ant-design/icons';
 import { App, Breadcrumb, Button, Card, Col, Divider, Empty, Flex, Input, InputNumber, Layout, List, Modal, Result, Row, Space, Spin, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
 export default function CartPage() {
+    const t = useTranslations('CartPage');
     const { items, removeItem, updateQuantity, getTotalPrice, clearCart, fetchCart, isLoading, error, hasFetched } = useCartStore();
     const { message, modal } = App.useApp();
     const router = useRouter();
@@ -48,13 +51,13 @@ export default function CartPage() {
     const handleRemove = async (id: string, name: string) => {
         if (!session?.accessToken) return;
         await removeItem(id, session.accessToken);
-        message.info(`Đã xóa ${name} khỏi giỏ hàng`);
+        message.info(t('removedFromCart', { productName: name }));
         if (appliedCoupon) setAppliedCoupon(null);
     };
 
     const handleApplyCoupon = async () => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để áp dụng mã giảm giá!');
+            message.warning(t('loginRequiredCoupon'));
             router.push('/auth/login');
             return;
         }
@@ -64,12 +67,12 @@ export default function CartPage() {
             const res = await applyCouponApi(couponCode, getTotalPrice(), session.accessToken);
             if (res && res.data) {
                 setAppliedCoupon(res.data);
-                message.success('Áp dụng mã giảm giá thành công!');
+                message.success(t('couponSuccess'));
             } else {
-                message.error(res?.message || 'Mã giảm giá không hợp lệ');
+                message.error(res?.message || t('couponInvalid'));
             }
         } catch (error: any) {
-            message.error(error.message || 'Mã giảm giá không hợp lệ');
+            message.error(error.message || t('couponInvalid'));
         } finally {
             setApplyingCoupon(false);
         }
@@ -77,25 +80,25 @@ export default function CartPage() {
 
     const handleCheckout = async () => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để thanh toán!');
+            message.warning(t('loginRequiredCheckout'));
             router.push('/login');
             return;
         }
 
         if (items.length === 0) {
-            message.warning('Giỏ hàng của bạn đang trống!');
+            message.warning(t('emptyCartWarning'));
             return;
         }
 
         if (!shippingAddress.trim()) {
-            message.warning('Vui lòng nhập địa chỉ giao hàng!');
+            message.warning(t('addressRequired'));
             return;
         }
 
         // Kiểm tra tồn kho trước khi thanh toán
         const outOfStockItems = items.filter(item => item.quantity > item.stock_quantity);
         if (outOfStockItems.length > 0) {
-            message.error(`Sản phẩm "${outOfStockItems[0].name}" hiện không đủ hàng tồn kho!`);
+            message.error(t('outOfStockError', { productName: outOfStockItems[0].name }));
             return;
         }
 
@@ -120,7 +123,7 @@ export default function CartPage() {
             const res = await createOrderApi(orderPayload, session.accessToken);
 
             if (!res || res.statusCode !== 201) {
-                message.error('Tạo đơn hàng thất bại. Vui lòng thử lại!');
+                message.error(t('orderFailed'));
                 return;
             }
 
@@ -129,15 +132,15 @@ export default function CartPage() {
             
             // Hiển thị Modal thông báo thành công
             modal.success({
-                title: 'Thanh toán thành công!',
+                title: t('checkoutSuccessTitle'),
                 content: (
                     <div>
-                        <p>Đơn hàng của bạn đã được tiếp nhận và đang được xử lý.</p>
-                        <p>Mã đơn hàng: <b>{res.data?._id || 'N/A'}</b></p>
+                        <p>{t('checkoutSuccessDesc')}</p>
+                        <p>{t('orderId')}: <b>{res.data?._id || 'N/A'}</b></p>
                     </div>
                 ),
-                okText: 'Xem đơn hàng',
-                cancelText: 'Tiếp tục mua sắm',
+                okText: t('viewOrder'),
+                cancelText: t('continueShopping'),
                 okCancel: true,
                 centered: true,
                 onOk: () => {
@@ -150,7 +153,7 @@ export default function CartPage() {
 
         } catch (err) {
             console.error('Checkout error:', err);
-            message.error('Lỗi hệ thống, vui lòng thử lại sau.');
+            message.error(t('systemError'));
         }
     };
 
@@ -167,11 +170,11 @@ export default function CartPage() {
             <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
                 <Result
                     status="403"
-                    title="Bạn chưa đăng nhập"
-                    subTitle="Vui lòng đăng nhập để xem và quản lý giỏ hàng của bạn."
+                    title={t('unauthenticatedTitle')}
+                    subTitle={t('unauthenticatedDesc')}
                     extra={
                         <Button type="primary" onClick={() => router.push('/auth/login')}>
-                            Đăng nhập ngay
+                            {t('loginNow')}
                         </Button>
                     }
                 />
@@ -182,7 +185,7 @@ export default function CartPage() {
     if (isLoading || (status === 'authenticated' && !fetchInitiated.current)) {
         return (
             <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
-                <Spin size="large" tip="Đang tải giỏ hàng..." />
+                <Spin size="large" tip={t('loading')} />
             </Flex>
         );
     }
@@ -192,11 +195,11 @@ export default function CartPage() {
             <Flex align="center" justify="center" style={{ flex: 1, minHeight: '60vh' }}>
                 <Result
                     status="error"
-                    title="Không thể tải giỏ hàng"
+                    title={t('loadError')}
                     subTitle={error}
                     extra={
                         <Button type="primary" onClick={() => session?.accessToken && fetchCart(session.accessToken)}>
-                            Thử lại
+                            {t('retry')}
                         </Button>
                     }
                 />
@@ -209,11 +212,11 @@ export default function CartPage() {
             <Flex vertical align="center" justify="center" style={{ flex: 1, minHeight: '60vh', padding: '24px' }}>
                 <Result
                     status="success"
-                    title="Thanh toán thành công!"
-                    subTitle="Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đang được xử lý."
+                    title={t('checkoutSuccessTitle')}
+                    subTitle={t('checkoutSuccessDesc')}
                     extra={[
                         <Link href="/" key="home">
-                            <Button type="primary" size="large">Tiếp tục mua sắm</Button>
+                            <Button type="primary" size="large">{t('continueShopping')}</Button>
                         </Link>
                     ]}
                 />
@@ -225,7 +228,7 @@ export default function CartPage() {
         return (
             <Flex vertical align="center" justify="center" style={{ flex: 1, minHeight: '60vh', padding: '24px' }}>
                 <Empty
-                    description={<Text type="secondary" style={{ fontSize: 16 }}>Giỏ hàng của bạn đang trống</Text>}
+                    description={<Text type="secondary" style={{ fontSize: 16 }}>{t('emptyCart')}</Text>}
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
                 <Link href={'/'}>
@@ -235,7 +238,7 @@ export default function CartPage() {
                         icon={<ArrowLeftOutlined />}
                         style={{ marginTop: 16 }}
                     >
-                        Tiếp tục mua sắm
+                        {t('continueShopping')}
                     </Button>
                 </Link>
             </Flex>
@@ -260,13 +263,13 @@ export default function CartPage() {
                             ),
                         },
                         {
-                            title: "Giỏ hàng",
+                            title: t('title'),
                         },
                     ]}
                 />
 
                 <Title level={2} style={{ marginBottom: 24, marginTop: 12 }}>
-                    <ShoppingCartOutlined /> Giỏ hàng của bạn ({items.length})
+                    <ShoppingCartOutlined /> {t('yourCart')} ({items.length})
                 </Title>
 
                 <Row gutter={[32, 24]}>
@@ -277,10 +280,11 @@ export default function CartPage() {
                                     <Row style={{ padding: '20px' }} align="middle">
                                         <Col xs={6} sm={4}>
                                             <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: 8, overflow: 'hidden', border: '1px solid #f0f0f0' }}>
-                                                <img
+                                                <Image
                                                     src={item.images?.[0] ?? '/placeholder.png'}
                                                     alt={item.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
                                                 />
                                             </div>
                                         </Col>
@@ -288,7 +292,7 @@ export default function CartPage() {
                                             <Link href={`/products/${item._id}`}>
                                                 <Text strong style={{ fontSize: 16, display: 'block' }}>{item.name}</Text>
                                             </Link>
-                                            <Text type="secondary" style={{ fontSize: 13 }}>Còn lại: {item.stock_quantity}</Text>
+                                            <Text type="secondary" style={{ fontSize: 13 }}>{t('remaining')}: {item.stock_quantity}</Text>
                                         </Col>
                                         <Col xs={12} sm={5} style={{ textAlign: 'center', marginTop: '12px' }}>
                                             <InputNumber
@@ -320,28 +324,28 @@ export default function CartPage() {
 
                     <Col xs={24} lg={8}>
                         <Card
-                            title={<Title level={4} style={{ margin: 0 }}>Tổng cộng</Title>}
+                            title={<Title level={4} style={{ margin: 0 }}>{t('summary')}</Title>}
                             style={{ borderRadius: 12, position: 'sticky', top: 100 }}
                         >
                             <Flex justify="space-between" style={{ marginBottom: 12 }}>
-                                <Text type="secondary">Tạm tính:</Text>
+                                <Text type="secondary">{t('subtotal')}:</Text>
                                 <Text>{getTotalPrice().toLocaleString('vi-VN')} đ</Text>
                             </Flex>
                             <Flex justify="space-between" style={{ marginBottom: 12 }}>
-                                <Text type="secondary">Phí vận chuyển:</Text>
-                                <Text>Miễn phí</Text>
+                                <Text type="secondary">{t('shippingFee')}:</Text>
+                                <Text>{t('free')}</Text>
                             </Flex>
 
                             <div style={{ marginBottom: 16 }}>
                                 <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
-                                    <Text strong>Mã giảm giá</Text>
+                                    <Text strong>{t('discountCode')}</Text>
                                     <Button type="link" icon={<GiftOutlined />} onClick={() => setIsCouponsModalVisible(true)} style={{ padding: 0 }}>
-                                        Xem mã khả dụng
+                                        {t('viewAvailableCodes')}
                                     </Button>
                                 </Flex>
                                 <Space.Compact style={{ width: '100%' }}>
                                     <Input 
-                                        placeholder="Nhập mã giảm giá" 
+                                        placeholder={t('enterDiscountCode')}
                                         prefix={<TagOutlined />} 
                                         value={couponCode}
                                         onChange={(e) => setCouponCode(e.target.value)}
@@ -350,11 +354,11 @@ export default function CartPage() {
                                     />
                                     {appliedCoupon ? (
                                         <Button danger onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}>
-                                            Hủy
+                                            {t('cancel')}
                                         </Button>
                                     ) : (
                                         <Button type="primary" onClick={handleApplyCoupon} loading={applyingCoupon}>
-                                            Áp dụng
+                                            {t('apply')}
                                         </Button>
                                     )}
                                 </Space.Compact>
@@ -362,15 +366,15 @@ export default function CartPage() {
 
                             {appliedCoupon && (
                                 <Flex justify="space-between" style={{ marginBottom: 12 }}>
-                                    <Text type="success">Mã giảm giá ({appliedCoupon.coupon.code}):</Text>
+                                    <Text type="success">{t('discountCode')} ({appliedCoupon.coupon.code}):</Text>
                                     <Text type="success">-{appliedCoupon.discountAmount.toLocaleString('vi-VN')} đ</Text>
                                 </Flex>
                             )}
 
                             <div style={{ marginBottom: 24 }}>
-                                <Text strong style={{ display: 'block', marginBottom: 8 }}>Địa chỉ giao hàng</Text>
+                                <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('shippingAddress')}</Text>
                                 <Input.TextArea
-                                    placeholder="Nhập địa chỉ nhận hàng của bạn"
+                                    placeholder={t('enterShippingAddress')}
                                     value={shippingAddress}
                                     onChange={(e) => setShippingAddress(e.target.value)}
                                     rows={3}
@@ -380,7 +384,7 @@ export default function CartPage() {
 
                             <Divider />
                             <Flex justify="space-between" style={{ marginBottom: 24 }}>
-                                <Text strong style={{ fontSize: 18 }}>Thành tiền:</Text>
+                                <Text strong style={{ fontSize: 18 }}>{t('totalAmount')}:</Text>
                                 <Text strong style={{ fontSize: 20, color: '#f5222d' }}>
                                     {(appliedCoupon ? appliedCoupon.finalTotal : getTotalPrice()).toLocaleString('vi-VN')} đ
                                 </Text>
@@ -394,7 +398,7 @@ export default function CartPage() {
                                 onClick={handleCheckout}
                                 loading={isLoading}
                             >
-                                Thanh toán ngay
+                                {t('checkoutNow')}
                             </Button>
                         </Card>
                     </Col>
@@ -402,14 +406,14 @@ export default function CartPage() {
             </div>
 
             <Modal
-                title={<span><GiftOutlined /> Mã giảm giá dành cho bạn</span>}
+                title={<span><GiftOutlined /> {t('discountForYou')}</span>}
                 open={isCouponsModalVisible}
                 onCancel={() => setIsCouponsModalVisible(false)}
                 footer={null}
                 bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
             >
                 {activeCoupons.length === 0 ? (
-                    <Empty description="Hiện tại không có mã giảm giá nào" />
+                    <Empty description={t('noDiscountCodes')} />
                 ) : (
                     <List
                         dataSource={activeCoupons}
@@ -422,7 +426,7 @@ export default function CartPage() {
                                     actions={[
                                         isUsed ? (
                                             <Button key="used" size="small" disabled style={{ color: '#ff4d4f', background: '#fff1f0', border: '1px solid #ffa39e' }}>
-                                                Đã sử dụng
+                                                {t('used')}
                                             </Button>
                                         ) : (
                                             <Button 
@@ -435,7 +439,7 @@ export default function CartPage() {
                                                     setIsCouponsModalVisible(false);
                                                 }}
                                             >
-                                                Dùng ngay
+                                                {t('useNow')}
                                             </Button>
                                         )
                                     ]}
@@ -450,10 +454,10 @@ export default function CartPage() {
                                         description={
                                             <div>
                                                 <div style={{ color: '#f5222d', fontWeight: 500, marginBottom: 4 }}>
-                                                    Giảm {coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `${coupon.discountValue.toLocaleString('vi-VN')}đ`}
+                                                    {t('discount')} {coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `${coupon.discountValue.toLocaleString('vi-VN')}đ`}
                                                 </div>
                                                 <div style={{ fontSize: 12 }}>
-                                                    Đơn tối thiểu: {coupon.minOrderValue.toLocaleString('vi-VN')}đ
+                                                    {t('minOrder')}: {coupon.minOrderValue.toLocaleString('vi-VN')}đ
                                                 </div>
                                             </div>
                                         }

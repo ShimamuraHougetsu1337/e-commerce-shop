@@ -28,6 +28,7 @@ import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -36,6 +37,7 @@ interface OrderTableProps {
 }
 
 export default function OrderTable({ initialData }: OrderTableProps) {
+    const t = useTranslations('AdminOrders');
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
     const [dataSource, setDataSource] = useState(initialData.data?.result || []);
@@ -72,7 +74,7 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                 });
             }
         } catch (error) {
-            message.error('Không thể tải danh sách đơn hàng');
+            message.error(t('fetchError'));
         } finally {
             setLoading(false);
         }
@@ -98,14 +100,14 @@ export default function OrderTable({ initialData }: OrderTableProps) {
         try {
             const res = await updateOrderStatus(editingOrder._id, newStatus, session.accessToken);
             if (res.data) {
-                message.success('Cập nhật trạng thái đơn hàng thành công');
+                message.success(t('updateSuccess'));
                 setIsEditOpen(false);
                 loadData(pagination.current, pagination.pageSize, searchText);
             } else {
-                message.error(res.message || 'Lỗi khi cập nhật trạng thái');
+                message.error(res.message || t('updateError'));
             }
         } catch (error) {
-            message.error('Lỗi kết nối server');
+            message.error(t('serverError'));
         } finally {
             setLoading(false);
         }
@@ -125,13 +127,13 @@ export default function OrderTable({ initialData }: OrderTableProps) {
     const getStatusTag = (status: string) => {
         switch (status) {
             case 'Pending':
-                return <Tag icon={<ClockCircleOutlined />} color="default" style={{ padding: '2px 10px', borderRadius: '4px' }}>Chờ xử lý</Tag>;
+                return <Tag icon={<ClockCircleOutlined />} color="default" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusPending')}</Tag>;
             case 'Processing':
-                return <Tag icon={<SyncOutlined spin />} color="processing" style={{ padding: '2px 10px', borderRadius: '4px' }}>Đang xử lý</Tag>;
+                return <Tag icon={<SyncOutlined spin />} color="processing" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusProcessing')}</Tag>;
             case 'Completed':
-                return <Tag icon={<CheckCircleOutlined />} color="success" style={{ padding: '2px 10px', borderRadius: '4px' }}>Hoàn thành</Tag>;
+                return <Tag icon={<CheckCircleOutlined />} color="success" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusCompleted')}</Tag>;
             case 'Cancelled':
-                return <Tag icon={<CloseCircleOutlined />} color="error" style={{ padding: '2px 10px', borderRadius: '4px' }}>Đã hủy</Tag>;
+                return <Tag icon={<CloseCircleOutlined />} color="error" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusCancelled')}</Tag>;
             default:
                 return <Tag style={{ padding: '2px 10px', borderRadius: '4px' }}>{status}</Tag>;
         }
@@ -139,7 +141,7 @@ export default function OrderTable({ initialData }: OrderTableProps) {
 
     const columns: ColumnsType<OrderTableRow> = [
         {
-            title: 'Mã đơn hàng',
+            title: t('orderId'),
             dataIndex: '_id',
             key: 'id',
             align: 'center',
@@ -158,18 +160,18 @@ export default function OrderTable({ initialData }: OrderTableProps) {
             }
         },
         {
-            title: 'Khách hàng',
+            title: t('customer'),
             key: 'customer',
             align: "center",
             render: (_, record) => (
                 <Space direction="vertical" size={0}>
-                    <Text strong>{record.userId?.name || 'Guest'}</Text>
+                    <Text strong>{record.userId?.name || t('guest')}</Text>
                     <Text type="secondary" style={{ fontSize: 12 }}>{record?.userId?.email || 'N/A'}</Text>
                 </Space>
             ),
         },
         {
-            title: 'Tổng tiền',
+            title: t('totalAmount'),
             dataIndex: 'totalAmount',
             key: 'totalAmount',
             align: 'center',
@@ -177,31 +179,31 @@ export default function OrderTable({ initialData }: OrderTableProps) {
             sorter: true,
         },
         {
-            title: 'Trạng thái',
+            title: t('status'),
             dataIndex: 'status',
             key: 'status',
             align: 'center',
             render: (status) => getStatusTag(status),
         },
         {
-            title: 'Ngày đặt',
+            title: t('orderDate'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             align: 'center',
             render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm'),
         },
         {
-            title: 'Hành động',
+            title: t('action'),
             key: 'action',
             fixed: 'right',
             align: 'center',
             width: 120,
             render: (_, record) => (
                 <Space size="middle">
-                    <Tooltip title="Xem chi tiết">
+                    <Tooltip title={t('viewDetail')}>
                         <Button type="text" icon={<EyeOutlined />} onClick={() => showDetail(record)} />
                     </Tooltip>
-                    <Tooltip title="Chỉnh sửa trạng thái">
+                    <Tooltip title={t('editStatus')}>
                         <Button type="text" icon={<EditOutlined style={{ color: '#1677ff' }} />} onClick={() => showEditStatus(record)} />
                     </Tooltip>
                 </Space>
@@ -212,10 +214,10 @@ export default function OrderTable({ initialData }: OrderTableProps) {
     return (
         <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2>Quản lý đơn hàng</h2>
+                <h2>{t('manageOrders')}</h2>
                 <Space>
                     <Input.Search
-                        placeholder="Tìm kiếm đơn hàng..."
+                        placeholder={t('searchPlaceholder')}
                         onSearch={handleSearch}
                         allowClear
                     />
@@ -233,31 +235,31 @@ export default function OrderTable({ initialData }: OrderTableProps) {
             />
 
             <Modal
-                title={`Chi tiết đơn hàng #${selectedOrder?._id || ''}`}
+                title={`${t('orderDetailTitle')}${selectedOrder?._id || ''}`}
                 open={isDetailOpen}
                 onCancel={() => setIsDetailOpen(false)}
                 footer={[
-                    <Button key="close" onClick={() => setIsDetailOpen(false)}>Đóng</Button>,
-                    <Button key="print" type="primary" icon={<PrinterOutlined />}>In đơn hàng</Button>
+                    <Button key="close" onClick={() => setIsDetailOpen(false)}>{t('close')}</Button>,
+                    <Button key="print" type="primary" icon={<PrinterOutlined />}>{t('printOrder')}</Button>
                 ]}
                 width={800}
             >
                 {selectedOrder && (
                     <div style={{ marginTop: 20 }}>
-                        <Descriptions title="Thông tin khách hàng" bordered column={2}>
-                            <Descriptions.Item label="Tên khách hàng">{selectedOrder.userId?.name}</Descriptions.Item>
-                            <Descriptions.Item label="Email" span={2}>{selectedOrder.userId?.email}</Descriptions.Item>
-                            <Descriptions.Item label="Địa chỉ giao hàng" span={2}>{selectedOrder.shippingAddress}</Descriptions.Item>
-                            <Descriptions.Item label="Phương thức thanh toán">{selectedOrder.paymentMethod}</Descriptions.Item>
-                            <Descriptions.Item label="Trạng thái">{getStatusTag(selectedOrder.status)}</Descriptions.Item>
+                        <Descriptions title={t('customerInfo')} bordered column={2}>
+                            <Descriptions.Item label={t('customerName')}>{selectedOrder.userId?.name}</Descriptions.Item>
+                            <Descriptions.Item label={t('email')} span={2}>{selectedOrder.userId?.email}</Descriptions.Item>
+                            <Descriptions.Item label={t('shippingAddress')} span={2}>{selectedOrder.shippingAddress}</Descriptions.Item>
+                            <Descriptions.Item label={t('paymentMethod')}>{selectedOrder.paymentMethod}</Descriptions.Item>
+                            <Descriptions.Item label={t('status')}>{getStatusTag(selectedOrder.status)}</Descriptions.Item>
                             {(selectedOrder as any).couponCode && (
-                                <Descriptions.Item label="Mã giảm giá">
+                                <Descriptions.Item label={t('couponCode')}>
                                     <Space direction="vertical" size={0}>
                                         <Tag color="gold" style={{ margin: 0 }}>{(selectedOrder as any).couponCode.toUpperCase()}</Tag>
                                         {(selectedOrder as any).discountType && (
                                             <Text type="secondary" style={{ fontSize: 12 }}>
-                                                Giảm {(selectedOrder as any).discountType === 'PERCENTAGE' ? `${(selectedOrder as any).discountValue}%` : `${(selectedOrder as any).discountValue?.toLocaleString('vi-VN')} đ`} 
-                                                <br/>(Đơn tối thiểu: {(selectedOrder as any).minOrderValue?.toLocaleString('vi-VN')} đ)
+                                                {t('discount')} {(selectedOrder as any).discountType === 'PERCENTAGE' ? `${(selectedOrder as any).discountValue}%` : `${(selectedOrder as any).discountValue?.toLocaleString('vi-VN')} đ`} 
+                                                <br/>({t('minOrder')} {(selectedOrder as any).minOrderValue?.toLocaleString('vi-VN')} đ)
                                             </Text>
                                         )}
                                     </Space>
@@ -265,56 +267,56 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                             )}
                         </Descriptions>
 
-                        <Divider orientation="left">Danh sách sản phẩm</Divider>
+                        <Divider orientation="left">{t('productList')}</Divider>
                         <Table
                             dataSource={selectedOrder.items}
                             pagination={false}
                             rowKey={(record) => record.product}
                             columns={[
-                                { title: 'Sản phẩm', dataIndex: 'productName', key: 'name' },
-                                { title: 'Số lượng', dataIndex: 'quantity', key: 'quantity' },
+                                { title: t('product'), dataIndex: 'productName', key: 'name' },
+                                { title: t('quantity'), dataIndex: 'quantity', key: 'quantity' },
                                 {
-                                    title: 'Đơn giá',
+                                    title: t('unitPrice'),
                                     dataIndex: 'price',
                                     key: 'price',
                                     render: (p) => `${p?.toLocaleString('vi-VN')} đ`
                                 },
                                 {
-                                    title: 'Thành tiền',
+                                    title: t('subtotal'),
                                     key: 'total',
                                     render: (_, record) => `${(record.price * record.quantity).toLocaleString('vi-VN')} đ`
                                 },
                             ]}
                         />
                         <div style={{ textAlign: 'right', marginTop: 16 }}>
-                            <Title level={4}>Tổng cộng: <Text type="danger">{selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text></Title>
+                            <Title level={4}>{t('total')} <Text type="danger">{selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text></Title>
                         </div>
                     </div>
                 )}
             </Modal>
 
             <Modal
-                title="Cập nhật trạng thái đơn hàng"
+                title={t('updateOrderStatus')}
                 open={isEditOpen}
                 onOk={handleUpdateStatus}
                 onCancel={() => setIsEditOpen(false)}
                 confirmLoading={loading}
-                okText="Cập nhật"
-                cancelText="Hủy"
+                okText={t('update')}
+                cancelText={t('cancel')}
             >
                 <div style={{ marginTop: 20 }}>
                     <Text type="secondary" style={{ marginBottom: 10, display: 'block' }}>
-                        Đang chỉnh sửa đơn hàng: <Text strong>#{editingOrder?._id?.slice(-8).toUpperCase()}</Text>
+                        {t('editingOrder')} <Text strong>#{editingOrder?._id?.slice(-8).toUpperCase()}</Text>
                     </Text>
                     <Select
                         value={newStatus}
                         onChange={(val) => setNewStatus(val)}
                         style={{ width: '100%' }}
                         options={[
-                            { value: 'Pending', label: 'Chờ xử lý' },
-                            { value: 'Processing', label: 'Đang xử lý' },
-                            { value: 'Completed', label: 'Hoàn thành' },
-                            { value: 'Cancelled', label: 'Đã hủy' },
+                            { value: 'Pending', label: t('statusPending') },
+                            { value: 'Processing', label: t('statusProcessing') },
+                            { value: 'Completed', label: t('statusCompleted') },
+                            { value: 'Cancelled', label: t('statusCancelled') },
                         ]}
                     />
                 </div>

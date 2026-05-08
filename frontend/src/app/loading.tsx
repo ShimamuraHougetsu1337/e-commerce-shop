@@ -1,7 +1,9 @@
 'use client';
 import { Spin } from 'antd';
+import { useTranslations } from 'next-intl';
 
 export default function Loading() {
+    const t = useTranslations('Common');
     return (
         <div
             style={{
@@ -16,7 +18,7 @@ export default function Loading() {
         >
             <Spin size="large" />
             <div style={{ marginTop: '16px', color: '#8c8c8c', fontWeight: 500 }}>
-                Đang tải dữ liệu...
+                {t('loadingData')}
             </div>
         </div>
     );

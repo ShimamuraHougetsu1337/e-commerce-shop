@@ -5,14 +5,17 @@ import { useWishlistStore } from '@/store/useWishlistStore';
 import { ArrowLeftOutlined, DeleteOutlined, HomeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { App, Breadcrumb, Button, Card, Col, Empty, Flex, Layout, Result, Row, Space, Spin, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
 export default function WishlistPage() {
+    const t = useTranslations('WishlistPage');
     const { items, isLoading, error, fetchWishlist, removeItem } = useWishlistStore();
     const { addItem: addToCart } = useCartStore();
     const { message } = App.useApp();
@@ -29,18 +32,18 @@ export default function WishlistPage() {
 
     const handleAddToCart = async (product: IProduct) => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để thực hiện!');
+            message.warning(t('loginRequired'));
             return;
         }
 
         try {
             await addToCart(product, 1, session.accessToken);
             message.success({
-                content: `Đã thêm ${product.name} vào giỏ hàng!`,
+                content: t('addedToCart', { productName: product.name }),
                 duration: 3
             });
         } catch (error: any) {
-            message.error(error.message || 'Không thể thêm vào giỏ hàng');
+            message.error(error.message || t('addToCartError'));
         }
     };
 
@@ -49,7 +52,7 @@ export default function WishlistPage() {
         await removeItem(productId, session.accessToken);
         message.info({
             duration: 3,
-            content: `Đã xóa ${productName} khỏi danh sách yêu thích.`,
+            content: t('removedFromWishlist', { productName }),
         });
     };
 
@@ -68,8 +71,8 @@ export default function WishlistPage() {
             <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
                 <Result
                     status="403"
-                    title="Bạn chưa đăng nhập"
-                    subTitle="Vui lòng đăng nhập để xem và quản lý danh sách yêu thích của bạn."
+                    title={t('unauthenticatedTitle')}
+                    subTitle={t('unauthenticatedDesc')}
                 />
             </Flex>
         );
@@ -79,7 +82,7 @@ export default function WishlistPage() {
     if (isLoading || (status === 'authenticated' && !fetchInitiated.current)) {
         return (
             <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
-                <Spin size="large" tip="Đang tải danh sách yêu thích..." />
+                <Spin size="large" tip={t('loading')} />
             </Flex>
         );
     }
@@ -90,11 +93,11 @@ export default function WishlistPage() {
             <Flex align="center" justify="center" style={{ minHeight: '60vh' }}>
                 <Result
                     status="error"
-                    title="Không thể tải danh sách yêu thích"
+                    title={t('loadError')}
                     subTitle={error}
                     extra={
                         <Button type="primary" onClick={() => session?.accessToken && fetchWishlist(session.accessToken)}>
-                            Thử lại
+                            {t('retry')}
                         </Button>
                     }
                 />
@@ -107,7 +110,7 @@ export default function WishlistPage() {
         return (
             <Flex vertical align="center" justify="center" style={{ minHeight: '60vh', padding: '24px' }}>
                 <Empty
-                    description={<Text type="secondary" style={{ fontSize: 16 }}>Danh sách yêu thích của bạn đang trống</Text>}
+                    description={<Text type="secondary" style={{ fontSize: 16 }}>{t('emptyWishlist')}</Text>}
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
                 <Link href={'/'}>
@@ -117,7 +120,7 @@ export default function WishlistPage() {
                         icon={<ArrowLeftOutlined />}
                         style={{ marginTop: 16 }}
                     >
-                        Tiếp tục mua sắm
+                        {t('continueShopping')}
                     </Button>
                 </Link>
             </Flex>
@@ -148,7 +151,7 @@ export default function WishlistPage() {
                     ]}
                 />
 
-                <Title level={2} style={{ marginBottom: 24, marginTop: 12 }}>Danh sách yêu thích ({items.length})</Title>
+                <Title level={2} style={{ marginBottom: 24, marginTop: 12 }}>{t('title')} ({items.length})</Title>
 
                 <Row gutter={[24, 24]}>
                     {items.map((product) => (
@@ -157,10 +160,11 @@ export default function WishlistPage() {
                                 hoverable
                                 cover={
                                     <div style={{ position: 'relative', width: '100%', height: '250px', overflow: 'hidden' }}>
-                                            <img
+                                            <Image
                                                 src={product.images?.[0] ?? '/placeholder.png'}
                                                 alt={product.name}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: product.stock_quantity <= 0 ? 0.5 : 1 }}
+                                                fill
+                                                style={{ objectFit: 'cover', opacity: product.stock_quantity <= 0 ? 0.5 : 1 }}
                                             />
                                             {product.stock_quantity <= 0 && (
                                                 <div style={{
@@ -176,7 +180,7 @@ export default function WishlistPage() {
                                                     color: 'white',
                                                     fontWeight: 'bold'
                                                 }}>
-                                                    HẾT HÀNG
+                                                    {t('outOfStock')}
                                                 </div>
                                             )}
                                         </div>
@@ -194,7 +198,7 @@ export default function WishlistPage() {
                                         disabled={product.stock_quantity <= 0}
                                         style={{ color: product.stock_quantity > 0 ? '#1890ff' : '#d9d9d9' }}
                                     >
-                                        Thêm giỏ hàng
+                                        {t('addToCart')}
                                     </Button>,
                                     <Button
                                         key="delete"
@@ -206,7 +210,7 @@ export default function WishlistPage() {
                                             handleRemove(product._id, product.name);
                                         }}
                                     >
-                                        Xóa
+                                        {t('remove')}
                                     </Button>
                                 ]}
                             >

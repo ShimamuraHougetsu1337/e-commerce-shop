@@ -164,3 +164,11 @@ export const updateReviewApi = (
         headers: { Authorization: `Bearer ${accessToken}` },
     });
 };
+
+export const deleteReviewApi = (id: string, accessToken: string) => {
+    return sendRequest<IBackendRes<any>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/reviews/${id}`,
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+    });
+};

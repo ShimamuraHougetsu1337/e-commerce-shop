@@ -325,3 +325,68 @@ export async function deleteCoupon(id: string, accessToken: string): Promise<IBa
     return response.json();
 }
 
+// === ADMIN REVIEWS API ===
+
+export async function fetchReviewsList({
+    current = 1,
+    pageSize = 10,
+    query = "",
+    accessToken
+}: {
+    current?: number;
+    pageSize?: number;
+    query?: string;
+    accessToken?: string;
+}): Promise<IBackendRes<any>> {
+    const params = new URLSearchParams({
+        current: current.toString(),
+        pageSize: pageSize.toString(),
+    });
+    if (query) params.append("query", query);
+
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/reviews/admin/all?${params.toString()}`;
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        next: { tags: ['reviews-list'], revalidate: 60 }
+    });
+    return response.json();
+}
+
+export async function adminReplyReview(id: string, reply: string, accessToken: string): Promise<IBackendRes<any>> {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/reviews/admin/${id}/reply`;
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ reply })
+    });
+    return response.json();
+}
+
+export async function adminToggleHidden(id: string, accessToken: string): Promise<IBackendRes<any>> {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/reviews/admin/${id}/toggle-hidden`;
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+    return response.json();
+}
+
+export async function adminDeleteReview(id: string, accessToken: string): Promise<IBackendRes<any>> {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/reviews/admin/${id}`;
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+    return response.json();
+}

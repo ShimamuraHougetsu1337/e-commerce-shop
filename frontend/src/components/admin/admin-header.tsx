@@ -9,6 +9,8 @@ import {
 import { Avatar, Button, Dropdown, Layout, Space, Typography } from 'antd';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/public/language-switcher';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -17,11 +19,12 @@ export default function AdminHeader({ collapsed, setCollapsed }: {
     collapsed: boolean;
     setCollapsed: (v: boolean) => void
 }) {
+    const t = useTranslations('AdminHeader');
     const { data: session } = useSession();
 
     const userMenuItems = [
-        { key: 'profile', icon: <UserOutlined />, label: <Link href="/profile">Thông tin cá nhân</Link> },
-        { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: () => signOut() },
+        { key: 'profile', icon: <UserOutlined />, label: <Link href="/profile">{t('profile')}</Link> },
+        { key: 'logout', icon: <LogoutOutlined />, label: t('logout'), danger: true, onClick: () => signOut() },
     ];
 
     return (
@@ -46,13 +49,14 @@ export default function AdminHeader({ collapsed, setCollapsed }: {
                 />
             </Space>
 
-            <Space size="large">
+            <Space size="large" align="center">
+                <LanguageSwitcher />
                 <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                     <Space style={{ cursor: 'pointer' }}>
                         <Avatar style={{ backgroundColor: '#1677ff' }} icon={<UserOutlined />} />
                         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                            <Text strong style={{ fontSize: 13 }}>{session?.user?.name || 'Admin'}</Text>
-                            <Text type="secondary" style={{ fontSize: 11 }}>{session?.user?.role || 'Quản trị viên'}</Text>
+                            <Text strong style={{ fontSize: 13 }}>{session?.user?.name || t('admin')}</Text>
+                            <Text type="secondary" style={{ fontSize: 11 }}>{session?.user?.role || t('adminRole')}</Text>
                         </div>
                     </Space>
                 </Dropdown>

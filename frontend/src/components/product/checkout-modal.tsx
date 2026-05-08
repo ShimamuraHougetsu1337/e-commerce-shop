@@ -2,10 +2,12 @@
 
 import { createOrderApi } from '@/utils/user.api';
 import { CreditCardOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { App, Button, Divider, Flex, Image, Input, Modal, Typography } from 'antd';
+import { App, Button, Divider, Flex, Input, Modal, Typography } from 'antd';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
@@ -17,6 +19,7 @@ interface CheckoutModalProps {
 }
 
 export default function CheckoutModal({ product, quantity, open, onCancel }: CheckoutModalProps) {
+    const t = useTranslations('CheckoutModal');
     const { message, modal } = App.useApp();
     const { data: session } = useSession();
     const router = useRouter();
@@ -29,12 +32,12 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
 
     const handleConfirmOrder = async () => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để thanh toán!');
+            message.warning(t('loginRequired'));
             return;
         }
 
         if (!shippingAddress.trim()) {
-            message.warning('Vui lòng nhập địa chỉ giao hàng!');
+            message.warning(t('addressRequired'));
             return;
         }
 
@@ -58,15 +61,15 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
 
             if (res && res.statusCode === 201) {
                 modal.success({
-                    title: 'Đặt hàng thành công!',
+                    title: t('orderSuccessTitle'),
                     content: (
                         <div>
-                            <p>Đơn hàng của bạn đã được tiếp nhận.</p>
-                            <p>Mã đơn hàng: <b>{res.data?._id || 'N/A'}</b></p>
+                            <p>{t('orderSuccessDesc')}</p>
+                            <p>{t('orderId')}: <b>{res.data?._id || 'N/A'}</b></p>
                         </div>
                     ),
-                    okText: 'Xem đơn hàng',
-                    cancelText: 'Tiếp tục mua sắm',
+                    okText: t('viewOrder'),
+                    cancelText: t('continueShopping'),
                     okCancel: true,
                     centered: true,
                     onOk: () => {
@@ -78,11 +81,11 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
                     }
                 });
             } else {
-                message.error(res?.message || 'Đặt hàng thất bại. Vui lòng thử lại!');
+                message.error(res?.message || t('orderFailed'));
             }
         } catch (error) {
             console.error('Order error:', error);
-            message.error('Có lỗi xảy ra, vui lòng thử lại sau.');
+            message.error(t('systemError'));
         } finally {
             setIsSubmitting(false);
         }
@@ -90,7 +93,7 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
 
     return (
         <Modal
-            title={<Title level={4} style={{ margin: 0 }}><ShoppingCartOutlined /> Xác nhận mua hàng</Title>}
+            title={<Title level={4} style={{ margin: 0 }}><ShoppingCartOutlined /> {t('confirmOrder')}</Title>}
             open={open}
             onCancel={onCancel}
             footer={null}
@@ -99,21 +102,21 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
         >
             <div style={{ padding: '10px 0' }}>
                 <Flex gap="middle" align="center" style={{ marginBottom: 20 }}>
-                    <Image
-                        src={product.images && product.images.length > 0 
-                            ? (product.images[0].startsWith('http') 
-                                ? product.images[0] 
-                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`) 
-                            : "/no-image.png"}
-                        alt={product.name}
-                        width={80}
-                        height={80}
-                        style={{ objectFit: 'cover', borderRadius: 8 }}
-                        preview={false}
-                    />
+                    <div style={{ width: 80, height: 80, position: 'relative', flexShrink: 0 }}>
+                        <Image
+                            src={product.images && product.images.length > 0 
+                                ? (product.images[0].startsWith('http') 
+                                    ? product.images[0] 
+                                    : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`) 
+                                : "/no-image.png"}
+                            alt={product.name}
+                            fill
+                            style={{ objectFit: 'cover', borderRadius: 8 }}
+                        />
+                    </div>
                     <div style={{ flex: 1 }}>
                         <Text strong style={{ fontSize: 16, display: 'block' }}>{product.name}</Text>
-                        <Text type="secondary">Số lượng: {quantity}</Text>
+                        <Text type="secondary">{t('quantity')}: {quantity}</Text>
                         <Text strong style={{ display: 'block', color: '#f5222d' }}>
                             {product.price.toLocaleString('vi-VN')} đ
                         </Text>
@@ -123,9 +126,9 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
                 <Divider />
 
                 <div style={{ marginBottom: 20 }}>
-                    <Text strong style={{ display: 'block', marginBottom: 8 }}>Địa chỉ giao hàng</Text>
+                    <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('shippingAddress')}</Text>
                     <Input.TextArea
-                        placeholder="Nhập địa chỉ nhận hàng của bạn (Số nhà, tên đường, phường/xã...)"
+                        placeholder={t('addressPlaceholder')}
                         value={shippingAddress}
                         onChange={(e) => setShippingAddress(e.target.value)}
                         rows={3}
@@ -135,16 +138,16 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
 
                 <div style={{ backgroundColor: '#f9f9f9', padding: 16, borderRadius: 12 }}>
                     <Flex justify="space-between" style={{ marginBottom: 8 }}>
-                        <Text type="secondary">Tạm tính:</Text>
+                        <Text type="secondary">{t('subtotal')}:</Text>
                         <Text>{subtotal.toLocaleString('vi-VN')} đ</Text>
                     </Flex>
                     <Flex justify="space-between" style={{ marginBottom: 8 }}>
-                        <Text type="secondary">Phí vận chuyển:</Text>
-                        <Text type="success">Miễn phí</Text>
+                        <Text type="secondary">{t('shippingFee')}:</Text>
+                        <Text type="success">{t('free')}</Text>
                     </Flex>
                     <Divider style={{ margin: '8px 0' }} />
                     <Flex justify="space-between" align="center">
-                        <Text strong style={{ fontSize: 18 }}>Tổng cộng:</Text>
+                        <Text strong style={{ fontSize: 18 }}>{t('total')}:</Text>
                         <Text strong style={{ fontSize: 22, color: '#f5222d' }}>
                             {total.toLocaleString('vi-VN')} đ
                         </Text>
@@ -160,10 +163,10 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
                     onClick={handleConfirmOrder}
                     loading={isSubmitting}
                 >
-                    Xác nhận đặt hàng
+                    {t('confirmCheckout')}
                 </Button>
                 <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 12, fontSize: 12 }}>
-                    Bằng cách đặt hàng, bạn đồng ý với các điều khoản của chúng tôi.
+                    {t('termsAgreement')}
                 </Text>
             </div>
         </Modal>

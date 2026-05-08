@@ -15,14 +15,16 @@ import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function ProfileClient({ session }: { session: any }) {
+    const t = useTranslations('ProfileClient');
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab');
 
     const [activeKey, setActiveKey] = useState(tabParam || 'settings');
     const [isMounted, setIsMounted] = useState(false);
-    const [displayName, setDisplayName] = useState<string>(session?.user?.name || 'Thành viên');
+    const [displayName, setDisplayName] = useState<string>(session?.user?.name || t('member'));
     const { Title, Text } = Typography;
 
     useEffect(() => {
@@ -41,9 +43,9 @@ export default function ProfileClient({ session }: { session: any }) {
     }, []);
 
     const menuItems = [
-        { key: 'settings', icon: <UserOutlined />, label: 'Thông tin tài khoản' },
-        { key: 'orders', icon: <ShoppingOutlined />, label: 'Quản lý đơn hàng' },
-        { key: 'reviews', icon: <StarOutlined />, label: 'Đánh giá sản phẩm' },
+        { key: 'settings', icon: <UserOutlined />, label: t('accountInfo') },
+        { key: 'orders', icon: <ShoppingOutlined />, label: t('manageOrders') },
+        { key: 'reviews', icon: <StarOutlined />, label: t('productReviews') },
     ];
 
     const renderContent = () => {
@@ -77,8 +79,8 @@ export default function ProfileClient({ session }: { session: any }) {
                 separator="/"
                 style={{ marginBottom: 32 }}
                 items={[
-                    { title: <Link href="/"><HomeOutlined /> Trang chủ</Link> },
-                    { title: 'Hồ sơ cá nhân' }
+                    { title: <Link href="/"><HomeOutlined /> {t('home')}</Link> },
+                    { title: t('profile') }
                 ]}
             />
 
@@ -115,7 +117,7 @@ export default function ProfileClient({ session }: { session: any }) {
                             onClick={handleLogout}
                             className="logout-btn"
                         >
-                            Đăng xuất
+                            {t('logout')}
                         </Button>
                     </div>
                 </aside>

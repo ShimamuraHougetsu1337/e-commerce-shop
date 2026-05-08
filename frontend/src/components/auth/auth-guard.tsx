@@ -2,11 +2,11 @@
 
 import { Result, Spin } from "antd";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-    const pathName = usePathname()
+    const t = useTranslations('AuthGuard');
     const { data: session, status } = useSession();
     const [isMounted, setIsMounted] = useState(false);
 
@@ -27,9 +27,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <Result
                     status="403"
-                    title="Bạn chưa đăng nhập"
-                    subTitle="Vui lòng đăng nhập để có thể truy cập vào trang này."
-
+                    title={t('unauthenticatedTitle')}
+                    subTitle={t('unauthenticatedDesc')}
                 />
             </div>
         );

@@ -6,6 +6,10 @@ import { getServerSession } from 'next-auth';
 import React from 'react';
 import { authOptions } from '@/lib/auth';
 import './globals.css';
+import {NextIntlClientProvider} from 'next-intl';
+import {getLocale, getMessages} from 'next-intl/server';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'E-commerce',
@@ -14,17 +18,22 @@ export const metadata = {
 
 const RootLayout = async ({ children }: React.PropsWithChildren) => {
   const session = await getServerSession(authOptions)
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
-        <AntdRegistry>
-          <NextAuthWrapper session={session}>
-            <AntdProvider>
-              {children}
-            </AntdProvider>
-          </NextAuthWrapper>
-          <ChatWidget />
-        </AntdRegistry>
+        <NextIntlClientProvider messages={messages}>
+          <AntdRegistry>
+            <NextAuthWrapper session={session}>
+              <AntdProvider>
+                {children}
+              </AntdProvider>
+            </NextAuthWrapper>
+            <ChatWidget />
+          </AntdRegistry>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

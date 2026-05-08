@@ -22,6 +22,15 @@ export class Review {
 
     @Prop({ type: [String] })
     images: string[];
+
+    @Prop({ type: String, default: null })
+    adminReply: string;
+
+    @Prop({ type: Date, default: null })
+    adminReplyAt: Date;
+
+    @Prop({ type: Boolean, default: false })
+    isHidden: boolean;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

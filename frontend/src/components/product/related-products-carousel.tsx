@@ -3,6 +3,7 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Carousel, Flex, Space, Typography } from 'antd';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import ProductCard from './product-card';
 
 const { Title } = Typography;
@@ -12,6 +13,7 @@ interface RelatedProductsCarouselProps {
 }
 
 export default function RelatedProductsCarousel({ products }: RelatedProductsCarouselProps) {
+    const t = useTranslations('RelatedProductsCarousel');
     const carouselRef = useRef<any>(null);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeSlidesToShow, setActiveSlidesToShow] = useState(4);
@@ -41,7 +43,7 @@ export default function RelatedProductsCarousel({ products }: RelatedProductsCar
         <div>
             <Flex justify="space-between" align="center" style={{ marginBottom: '24px' }}>
                 <Title className="pdp-section-title" style={{ margin: 0 }}>
-                    Sản phẩm liên quan
+                    {t('relatedProducts')}
                 </Title>
                 <Space>
                     <Button

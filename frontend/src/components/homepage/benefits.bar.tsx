@@ -2,33 +2,36 @@
 
 import { MessageOutlined, RocketOutlined, SafetyCertificateOutlined, SyncOutlined } from '@ant-design/icons';
 import { Col, Flex, Row, Typography } from 'antd';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
 
-const benefits = [
+const getBenefits = (t: any) => [
   {
     icon: <RocketOutlined style={{ fontSize: 32, color: '#1677ff' }} />,
-    title: 'Giao hàng nhanh chóng',
-    desc: 'Miễn phí cho đơn hàng từ 2tr'
+    title: t('fastDelivery'),
+    desc: t('fastDeliveryDesc')
   },
   {
     icon: <SyncOutlined style={{ fontSize: 32, color: '#1677ff' }} />,
-    title: 'Đổi trả linh hoạt',
-    desc: 'Bảo hành chính hãng 12 tháng'
+    title: t('easyReturn'),
+    desc: t('easyReturnDesc')
   },
   {
     icon: <SafetyCertificateOutlined style={{ fontSize: 32, color: '#1677ff' }} />,
-    title: 'Thanh toán an toàn',
-    desc: 'Đa dạng phương thức bảo mật'
+    title: t('securePayment'),
+    desc: t('securePaymentDesc')
   },
   {
     icon: <MessageOutlined style={{ fontSize: 32, color: '#1677ff' }} />,
-    title: 'Hỗ trợ tận tâm',
-    desc: 'Tư vấn kỹ thuật chuyên nghiệp'
+    title: t('dedicatedSupport'),
+    desc: t('dedicatedSupportDesc')
   }
 ];
 
 export default function BenefitsBar() {
+  const t = useTranslations('BenefitsBar');
+  const benefits = getBenefits(t);
   return (
     <div style={{ backgroundColor: '#f9fbff', padding: '40px 24px', borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>

@@ -24,11 +24,13 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Content, Sider } = Layout;
 const { Text } = Typography;
 
 function ProductsContent() {
+  const t = useTranslations('ProductsPage');
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -149,7 +151,7 @@ function ProductsContent() {
     <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Flex align="center" gap="small" style={{ marginBottom: '16px' }}>
         <FilterOutlined style={{ fontSize: 16 }} />
-        <Text strong style={{ fontSize: '16px' }}>Bộ lọc</Text>
+        <Text strong style={{ fontSize: '16px' }}>{t('filter')}</Text>
       </Flex>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -159,7 +161,7 @@ function ProductsContent() {
           items={[
             {
               key: '1',
-              label: <Text strong>Danh mục</Text>,
+              label: <Text strong>{t('category')}</Text>,
               children: (
                 <Checkbox.Group
                   style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
@@ -171,7 +173,7 @@ function ProductsContent() {
             },
             {
               key: '2',
-              label: <Text strong>Khoảng giá</Text>,
+              label: <Text strong>{t('priceRange')}</Text>,
               children: (
                 <Flex align="center" gap="small">
                   <InputNumber
@@ -205,7 +207,7 @@ function ProductsContent() {
           style={{ marginTop: '24px' }}
           onClick={handleApplyFilters}
         >
-          Áp dụng bộ lọc
+          {t('applyFilter')}
         </Button>
       </div>
     </div>
@@ -223,12 +225,12 @@ function ProductsContent() {
                 <Link href="/">
                   <Space size="small">
                     <HomeOutlined />
-                    <span>Trang chủ</span>
+                    <span>{t('home')}</span>
                   </Space>
                 </Link>
               ),
             },
-            { title: 'Cửa hàng' }
+            { title: t('store') }
           ]}
         />
 
@@ -239,7 +241,7 @@ function ProductsContent() {
 
           <Drawer
             className='mobile-only-block'
-            title="Bộ lọc"
+            title={t('filter')}
             placement="left"
             onClose={() => setFilterDrawerOpen(false)}
             open={filterDrawerOpen}
@@ -267,18 +269,18 @@ function ProductsContent() {
                   icon={<FilterOutlined />}
                   onClick={() => setFilterDrawerOpen(true)}
                 >
-                  Lọc
+                  {t('filter')}
                 </Button>
-                <Text strong style={{ fontSize: 18, margin: 0 }}>Sản phẩm phổ biến</Text>
+                <Text strong style={{ fontSize: 18, margin: 0 }}>{t('popularProducts')}</Text>
               </Flex>
 
               <Space>
-                <Text type="secondary" className="desktop-only-inline">Sắp xếp theo:</Text>
+                <Text type="secondary" className="desktop-only-inline">{t('sortBy')}:</Text>
                 <Select value={sortOption} onChange={(val) => { setSortOption(val); setCurrentPage(1); updateURL({ sort: val, page: 1 }); }} style={{ width: 140 }}>
-                  <Select.Option value="popular">Phổ biến nhất</Select.Option>
-                  <Select.Option value="price_asc">Giá: Thấp đến Cao</Select.Option>
-                  <Select.Option value="price_desc">Giá: Cao đến Thấp</Select.Option>
-                  <Select.Option value="newest">Mới nhất</Select.Option>
+                  <Select.Option value="popular">{t('sortPopular')}</Select.Option>
+                  <Select.Option value="price_asc">{t('sortPriceAsc')}</Select.Option>
+                  <Select.Option value="price_desc">{t('sortPriceDesc')}</Select.Option>
+                  <Select.Option value="newest">{t('sortNewest')}</Select.Option>
                 </Select>
               </Space>
             </Flex>

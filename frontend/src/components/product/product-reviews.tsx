@@ -1,10 +1,11 @@
 'use client';
 
-import { createReviewApi, getReviewsByProductApi, updateReviewApi } from '@/utils/user.api';
-import { EditOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
-import { App, Avatar, Button, Card, Col, Empty, Flex, Form, Input, List, Rate, Row, Spin, Typography } from 'antd';
+import { createReviewApi, deleteReviewApi, getReviewsByProductApi, updateReviewApi } from '@/utils/user.api';
+import { DeleteOutlined, EditOutlined, MessageOutlined, ShopOutlined, UserOutlined } from '@ant-design/icons';
+import { App, Avatar, Button, Card, Col, Empty, Flex, Form, Input, List, Popconfirm, Rate, Row, Spin, Typography } from 'antd';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -15,6 +16,7 @@ interface ProductReviewsProps {
 }
 
 const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => {
+    const t = useTranslations('ProductReviews');
     const { data: session } = useSession();
     const { message } = App.useApp();
     const [form] = Form.useForm();
@@ -64,7 +66,7 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
 
     const onFinish = async (values: any) => {
         if (!session?.accessToken) {
-            message.warning('Vui lòng đăng nhập để thực hiện');
+            message.warning(t('loginRequired'));
             return;
         }
 
@@ -87,16 +89,34 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
             }
 
             if (res && (res.statusCode === 201 || res.statusCode === 200)) {
-                message.success(userReview ? 'Đã cập nhật đánh giá!' : 'Đã gửi đánh giá của bạn!');
+                message.success(userReview ? t('reviewUpdated') : t('reviewSubmitted'));
                 fetchReviews(1);
                 if (onReviewSuccess) onReviewSuccess();
             } else {
-                message.error(res?.message || 'Có lỗi xảy ra');
+                message.error(res?.message || t('errorOccurred'));
             }
         } catch (error) {
-            message.error('Có lỗi xảy ra khi gửi dữ liệu');
+            message.error(t('submitError'));
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const onDelete = async () => {
+        if (!session?.accessToken || !userReview) return;
+        try {
+            const res = await deleteReviewApi(userReview._id, session.accessToken);
+            if (res && (res.statusCode === 200 || res.statusCode === 201)) {
+                message.success(t('deleteSuccess'));
+                setUserReview(null);
+                form.resetFields();
+                fetchReviews(1);
+                if (onReviewSuccess) onReviewSuccess();
+            } else {
+                message.error(res?.message || t('deleteError'));
+            }
+        } catch (error) {
+            message.error(t('deleteError'));
         }
     };
 
@@ -107,7 +127,7 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                 <Col xs={24} lg={10}>
                     <div style={{ position: 'sticky', top: 100 }}>
                         <Title level={4} style={{ marginBottom: 20 }}>
-                            {userReview ? 'Cập nhật đánh giá của bạn' : 'Viết đánh giá của bạn'}
+                            {userReview ? t('updateYourReview') : t('writeYourReview')}
                         </Title>
                         <Card 
                             bordered={false} 
@@ -125,10 +145,10 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                             >
                                 <Form.Item 
                                     name="rating" 
-                                    label="Số sao đánh giá" 
+                                    label={t('starRating')} 
                                     rules={[
-                                        { required: true, message: 'Vui lòng chọn số sao' },
-                                        { type: 'number', min: 1, message: 'Vui lòng chọn ít nhất 1 sao' }
+                                        { required: true, message: t('selectStarRequired') },
+                                        { type: 'number', min: 1, message: t('minOneStar') }
                                     ]}
                                 >
                                     <Rate style={{ fontSize: 28 }} />
@@ -136,12 +156,12 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                                 
                                 <Form.Item 
                                     name="comment" 
-                                    label="Nhận xét của bạn" 
-                                    rules={[{ required: true, message: 'Vui lòng nhập nhận xét' }]}
+                                    label={t('yourComment')} 
+                                    rules={[{ required: true, message: t('commentRequired') }]}
                                 >
                                     <TextArea 
                                         rows={4} 
-                                        placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." 
+                                        placeholder={t('commentPlaceholder')} 
                                         maxLength={500}
                                         showCount
                                         style={{ borderRadius: 12 }}
@@ -164,11 +184,24 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                                         border: 'none'
                                     }}
                                 >
-                                    {userReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá ngay'}
+                                    {userReview ? t('updateReviewBtn') : t('submitReviewBtn')}
                                 </Button>
                                 {userReview && (
+                                    <Popconfirm title={t('deleteConfirm')} onConfirm={onDelete}>
+                                        <Button
+                                            danger
+                                            block
+                                            size="large"
+                                            icon={<DeleteOutlined />}
+                                            style={{ height: 48, borderRadius: 12, marginTop: 8 }}
+                                        >
+                                            {t('deleteReview')}
+                                        </Button>
+                                    </Popconfirm>
+                                )}
+                                {userReview && (
                                     <Text type="secondary" style={{ fontSize: 12, display: 'block', textAlign: 'center', marginTop: 12 }}>
-                                        Bạn đã đánh giá sản phẩm này. Bạn có thể chỉnh sửa nội dung bên trên.
+                                        {t('alreadyReviewed')}
                                     </Text>
                                 )}
                             </Form>
@@ -179,13 +212,13 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                 {/* Reviews List */}
                 <Col xs={24} lg={14}>
                     <Title level={4} style={{ marginBottom: 20 }}>
-                        Tất cả đánh giá ({meta.total})
+                        {t('allReviews')} ({meta.total})
                     </Title>
                     
                     {loading && reviews.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '40px 0' }}><Spin /></div>
                     ) : reviews.length === 0 ? (
-                        <Empty description="Chưa có đánh giá nào cho sản phẩm này" />
+                        <Empty description={t('noReviewsYet')} />
                     ) : (
                         <List
                             itemLayout="horizontal"
@@ -217,7 +250,7 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                                                 <Flex justify="space-between" align="center">
                                                     <Space>
                                                         <Text strong style={{ fontSize: 15 }}>{item.userId?.name}</Text>
-                                                        {isOwnReview && <Tag color="blue">Đánh giá của bạn</Tag>}
+                                                        {isOwnReview && <Tag color="blue">{t('yourReviewTag')}</Tag>}
                                                     </Space>
                                                     <Text type="secondary" style={{ fontSize: 12 }}>
                                                         {new Date(item.createdAt).toLocaleDateString('vi-VN')}
@@ -230,6 +263,15 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                                                     <Paragraph style={{ marginTop: 12, color: '#4b5563', lineHeight: 1.6, fontSize: 14 }}>
                                                         {item.comment}
                                                     </Paragraph>
+                                                    {item.adminReply && (
+                                                        <div style={{ marginTop: 8, padding: '8px 12px', background: '#f0f9ff', borderRadius: 8, borderLeft: '3px solid #1677ff' }}>
+                                                            <Space size={4} style={{ marginBottom: 4 }}>
+                                                                <ShopOutlined style={{ color: '#1677ff', fontSize: 12 }} />
+                                                                <Text strong style={{ fontSize: 12, color: '#1677ff' }}>{t('shopReply')}</Text>
+                                                            </Space>
+                                                            <Paragraph style={{ margin: 0, fontSize: 13, color: '#374151' }}>{item.adminReply}</Paragraph>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             }
                                         />

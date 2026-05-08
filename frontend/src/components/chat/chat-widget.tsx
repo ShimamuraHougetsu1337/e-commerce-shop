@@ -10,6 +10,7 @@ import {
 import { Avatar, Button, Card, Flex, Input, Spin, Typography } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useTranslations } from 'next-intl';
 
 const { Text } = Typography;
 
@@ -21,9 +22,10 @@ interface Message {
 }
 
 export default function ChatWidget() {
+  const t = useTranslations('ChatWidget');
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'assistant', content: 'Xin chào! Mình là trợ lý AI. Bạn muốn tìm mua sản phẩm gì hôm nay?' }
+    { id: '1', role: 'assistant', content: t('greeting') }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -124,21 +126,21 @@ export default function ChatWidget() {
     } catch (error: any) {
       console.error("Chat error details:", error);
 
-      let errorMessage = 'Hệ thống có lỗi, vui lòng thử lại sau.';
-      let errorTitle = 'Lỗi hệ thống';
+      let errorMessage = t('systemErrorMsg');
+      let errorTitle = t('systemErrorTitle');
 
       if (error.message?.includes('AI_QUOTA_EXCEEDED') || error.message?.includes('429') || error.message?.includes('quota')) {
-        errorTitle = 'Lỗi hệ thống';
+        errorTitle = t('systemErrorTitle');
       }
       else if (error.name === 'AbortError' || error.message?.includes('timeout') || error.message?.includes('AI_TIMEOUT')) {
-        errorTitle = 'Phản hồi chậm';
+        errorTitle = t('slowResponseTitle');
       }
 
       setMessages(prev => {
         const filtered = prev.filter(m => m.id !== botMsgId);
 
         const finalContent = (errorMessage === 'AI_QUOTA_EXCEEDED' || !errorMessage)
-          ? 'Hệ thống có lỗi, vui lòng thử lại sau.'
+          ? t('systemErrorMsg')
           : errorMessage;
 
         return [...filtered, {
@@ -164,7 +166,7 @@ export default function ChatWidget() {
             <Flex align="center" gap={8}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#52c41a', boxShadow: '0 0 8px #52c41a' }} />
               <RobotOutlined style={{ color: '#1677ff', fontSize: 20 }} />
-              <Text strong>Trợ lý bán hàng</Text>
+              <Text strong>{t('salesAssistant')}</Text>
             </Flex>
           }
           extra={<Button type="text" icon={<CloseOutlined />} onClick={() => setIsOpen(false)} />}
@@ -191,7 +193,7 @@ export default function ChatWidget() {
                         {msg.content === '' && isLoading && !msg.isError ? (
                           <Flex align="center" gap={8}>
                             <Spin size="small" />
-                            <Text type="secondary" style={{ fontSize: 13 }}>Đang suy nghĩ...</Text>
+                            <Text type="secondary" style={{ fontSize: 13 }}>{t('thinking')}</Text>
                           </Flex>
                         ) : (
                           <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} style={{ margin: 0 }} /> }}>
@@ -213,7 +215,7 @@ export default function ChatWidget() {
               {isWaitingTooLong && (
                 <div style={{ textAlign: 'center' }}>
                   <Text type="secondary" italic style={{ fontSize: 12 }}>
-                    Hệ thống đang xử lý dữ liệu, bạn đợi một chút nhé...
+                    {t('processingData')}
                   </Text>
                 </div>
               )}
@@ -224,7 +226,7 @@ export default function ChatWidget() {
           <div style={{ padding: 16, borderTop: '1px solid #f0f0f0', background: '#fff' }}>
             <Flex gap={10}>
               <Input
-                placeholder="Hỏi về sản phẩm, giá cả..."
+                placeholder={t('chatPlaceholder')}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onPressEnter={() => handleSendMessage()}
