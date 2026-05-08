@@ -32,17 +32,21 @@ export const sendRequest = async <T>(props: IRequest) => {
         url = `${url}?${queryString.stringify(queryParams)}`;
     }
 
-    return fetch(url, options).then(res => {
+    return fetch(url, options).then(async (res) => {
+        const text = await res.text();
+        const json = text ? JSON.parse(text) : {};
+        
         if (res.ok) {
-            return res.json() as T;
+            return {
+                statusCode: res.status,
+                ...json
+            } as T;
         } else {
-            return res.json().then(function (json) {
-                return {
-                    statusCode: res.status,
-                    message: json?.message ?? "",
-                    error: json?.error ?? ""
-                } as T;
-            });
+            return {
+                statusCode: res.status,
+                message: json?.message ?? "",
+                error: json?.error ?? ""
+            } as T;
         }
     });
 };

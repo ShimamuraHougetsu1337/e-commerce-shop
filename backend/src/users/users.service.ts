@@ -110,6 +110,10 @@ export class UsersService {
     return this.userModel.findOne({ email }).populate('wishlist');
   }
 
+  findOneByRefreshToken(refreshToken: string) {
+    return this.userModel.findOne({ refreshToken }).populate('wishlist');
+  }
+
   async addToWishlist(userId: string, productId: string) {
     const product = await this.productModel.findById(productId);
     if (!product) {
@@ -163,6 +167,10 @@ export class UsersService {
     }
 
     return await this.userModel.updateOne({ _id: userId }, { ...updateData });
+  }
+
+  async updateUserToken(refreshToken: string, _id: string) {
+    return await this.userModel.updateOne({ _id }, { refreshToken });
   }
 
 }

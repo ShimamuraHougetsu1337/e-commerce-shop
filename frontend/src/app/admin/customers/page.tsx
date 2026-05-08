@@ -1,4 +1,4 @@
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import CustomerTable from '@/components/admin/customers/customer-table';
 import { fetchCustomersList } from '@/utils/admin.api';
 import { getServerSession } from 'next-auth';

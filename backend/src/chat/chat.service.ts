@@ -21,17 +21,18 @@ export class ChatService {
     try {
       // 1. RETRIEVAL (Truy xuất sản phẩm dựa trên Text Search)
       const searchText = userMessage?.trim();
+
       const products = await this.productModel
         .find({
-          $text: {
-            $search: searchText,
-            $language: 'none'
+          name: {
+            $regex: searchText,
+            $options: 'i'
           },
           isActive: true,
           isDeleted: false
         })
         .select('name price short_description averageRating totalReviews stock_quantity')
-        .sort({ score: { $meta: 'textScore' } })
+        .sort({ averageRating: -1 })
         .limit(5)
         .lean()
         .exec();

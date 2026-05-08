@@ -1,4 +1,4 @@
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import CategoryTable from '@/components/admin/categories/category-table';
 import { fetchCategoriesList } from '@/utils/admin.api';
 import { getServerSession } from 'next-auth';

@@ -1,6 +1,6 @@
 
 
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import OrderTable from '@/components/admin/orders/order-table';
 import { fetchOrdersList } from '@/utils/admin.api';
 import { getServerSession } from 'next-auth';

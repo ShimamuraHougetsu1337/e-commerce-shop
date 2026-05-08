@@ -4,7 +4,7 @@ import NextAuthWrapper from '@/providers/next.auth.wrapper';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { getServerSession } from 'next-auth';
 import React from 'react';
-import { authOptions } from './api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import './globals.css';
 
 export const metadata = {

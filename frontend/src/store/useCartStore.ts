@@ -10,17 +10,21 @@ export interface CartItem {
     stock_quantity: number;
 }
 
-const mapCartItems = (data: any[]): CartItem[] => {
-    return data
-        .filter((item: any) => item.product)
-        .map((item: any) => ({
-            _id: item.product._id,
-            name: item.product.name,
-            price: item.product.price,
-            images: item.product.images || [],
-            quantity: item.quantity,
-            stock_quantity: item.product.stock_quantity,
-        }));
+const mapCartItems = (data: any): CartItem[] => {
+    const items = Array.isArray(data) ? data : (data?.items || []);
+    return items
+        .filter((item: any) => item.product || item._id)
+        .map((item: any) => {
+            const product = item.product || item;
+            return {
+                _id: product._id,
+                name: product.name,
+                price: product.price,
+                images: product.images || [],
+                quantity: item.quantity || 1,
+                stock_quantity: product.stock_quantity || 0,
+            };
+        });
 };
 
 interface CartStore {
@@ -46,7 +50,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const res = await getCartApi(accessToken);
-            if (res?.data && Array.isArray(res.data)) {
+            if (res?.data) {
                 set({ items: mapCartItems(res.data), isLoading: false, hasFetched: true });
             } else {
                 set({ items: [], isLoading: false, hasFetched: true });
@@ -58,22 +62,32 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
     addItem: async (product, quantity, accessToken) => {
         const res = await addToCartApi(product._id, quantity, accessToken);
-        if (res?.data && Array.isArray(res.data)) {
+        if (res?.data) {
             set({ items: mapCartItems(res.data) });
+        } else if (res?.statusCode === 200 || res?.statusCode === 201) {
+            // Fallback if data is not returned but status is success
+            const cartRes = await getCartApi(accessToken);
+            if (cartRes?.data) set({ items: mapCartItems(cartRes.data) });
         }
     },
 
     removeItem: async (productId, accessToken) => {
         const res = await removeFromCartApi(productId, accessToken);
-        if (res?.data && Array.isArray(res.data)) {
+        if (res?.data) {
             set({ items: mapCartItems(res.data) });
+        } else if (res?.statusCode === 200 || res?.statusCode === 201) {
+            const cartRes = await getCartApi(accessToken);
+            if (cartRes?.data) set({ items: mapCartItems(cartRes.data) });
         }
     },
 
     updateQuantity: async (productId, quantity, accessToken) => {
         const res = await updateQuantityApi(productId, quantity, accessToken);
-        if (res?.data && Array.isArray(res.data)) {
+        if (res?.data) {
             set({ items: mapCartItems(res.data) });
+        } else if (res?.statusCode === 200 || res?.statusCode === 201) {
+            const cartRes = await getCartApi(accessToken);
+            if (cartRes?.data) set({ items: mapCartItems(cartRes.data) });
         }
     },
 

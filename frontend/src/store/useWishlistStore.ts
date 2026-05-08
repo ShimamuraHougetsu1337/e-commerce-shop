@@ -23,7 +23,8 @@ export const useWishlistStore = create<WishlistStore>((set) => ({
         try {
             const res = await getWishlist(accessToken);
             if (res?.data) {
-                set({ items: res.data, isLoading: false, hasFetched: true });
+                const items = Array.isArray(res.data) ? res.data : (res.data as any).result || [];
+                set({ items, isLoading: false, hasFetched: true });
             } else {
                 set({ items: [], isLoading: false, hasFetched: true, error: res?.message ?? 'Không thể tải danh sách yêu thích' });
             }

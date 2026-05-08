@@ -40,4 +40,11 @@ export class AuthController {
   socialLogin(@Body() body: SocialLoginInput) {
     return this.authService.handleSocialLogin(body);
   }
+
+  @Public()
+  @ResponseMessage("Refresh token successfully")
+  @Post("refresh")
+  handleRefreshToken(@Body("refreshToken") refreshToken: string) {
+    return this.authService.processRefreshToken(refreshToken);
+  }
 }

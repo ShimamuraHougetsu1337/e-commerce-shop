@@ -2,10 +2,10 @@
 
 import { createCoupon, deleteCoupon, fetchCouponsList, updateCoupon } from '@/utils/admin.api';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Switch, Table } from 'antd';
+import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Switch, Table, Tag } from 'antd';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function CouponsAdminPage() {
     const { data: session } = useSession();
@@ -18,7 +18,7 @@ export default function CouponsAdminPage() {
     const [editingCoupon, setEditingCoupon] = useState<ICoupon | null>(null);
     const [form] = Form.useForm();
 
-    const loadData = async (current = 1, pageSize = 10, query = '') => {
+    const loadData = useCallback(async (current = 1, pageSize = 10, query = '') => {
         if (!session?.accessToken) return;
         setLoading(true);
         try {
@@ -32,11 +32,11 @@ export default function CouponsAdminPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [session?.accessToken]);
 
     useEffect(() => {
         loadData();
-    }, [session?.accessToken]);
+    }, [loadData]);
 
     const handleSearch = (value: string) => {
         setSearchText(value);
@@ -107,7 +107,19 @@ export default function CouponsAdminPage() {
         { title: 'Đơn tối thiểu', dataIndex: 'minOrderValue', key: 'minOrderValue' },
         { title: 'Đã dùng / Tối đa', key: 'usage', render: (_: any, record: ICoupon) => `${record.usedCount} / ${record.maxUsage}` },
         { title: 'Ngày hết hạn', dataIndex: 'expiryDate', key: 'expiryDate', render: (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm') },
-        { title: 'Trạng thái', dataIndex: 'isActive', key: 'isActive', render: (isActive: boolean) => isActive ? <span style={{ color: 'green' }}>Hoạt động</span> : <span style={{ color: 'red' }}>Đã khóa</span> },
+        { 
+            title: 'Trạng thái', 
+            key: 'status', 
+            render: (_: any, record: ICoupon) => {
+                const isExpired = dayjs(record.expiryDate).isBefore(dayjs());
+                const isOutOfUsage = record.usedCount >= record.maxUsage;
+                
+                if (!record.isActive) return <Tag color="error">Đã khóa</Tag>;
+                if (isExpired) return <Tag color="warning">Hết hạn</Tag>;
+                if (isOutOfUsage) return <Tag color="orange">Hết lượt</Tag>;
+                return <Tag color="success">Hoạt động</Tag>;
+            } 
+        },
         {
             title: 'Hành động',
             key: 'action',

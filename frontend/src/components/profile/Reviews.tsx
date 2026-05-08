@@ -108,7 +108,7 @@ const Reviews = () => {
                                             fontStyle: 'italic'
                                         }}
                                     >
-                                        "{item.comment}"
+                                        &quot;{item.comment}&quot;
                                     </Paragraph>
 
                                     {item.images && item.images.length > 0 && (

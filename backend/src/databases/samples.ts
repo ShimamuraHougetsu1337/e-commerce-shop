@@ -188,7 +188,7 @@ export const SAMPLE_PRODUCTS = [
         stock_quantity: 40,
         category_slug: 'home-living',
         images: [
-            'https://thegioidodung.vn/wp-content/uploads/2024/08/bo-noi1.jpg',
+            'https://bizweb.dktcdn.net/100/427/122/products/bo-noi-inox-lien-khoi-kazler-kalpen-1.jpg?v=1775464553063',
             'https://sanhangre.net/image/cache/catalog/2023-san-pham/kalpen-lermat-l2/bo-noi-inox-304-cao-cap-5-day-kalpen-lermat-l2-shr-1000x1000.jpg'
         ],
         averageRating: 4.7,

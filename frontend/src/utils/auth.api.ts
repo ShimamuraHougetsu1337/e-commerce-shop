@@ -12,6 +12,14 @@ export const login = (email: string, password: string) => {
     })
 }
 
+export const refreshTokenApi = (refreshToken: string) => {
+    return sendRequest<IBackendRes<LoginResponse>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/refresh`,
+        method: "POST",
+        body: { refreshToken }
+    })
+}
+
 export const register = (name: string, email: string, password: string) => {
     return sendRequest<IBackendRes<any>>({
         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`,
