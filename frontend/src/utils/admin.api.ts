@@ -203,12 +203,14 @@ export async function fetchOrdersList({
     pageSize = 10,
     query = "",
     sort = "",
+    userId = "",
     accessToken
 }: {
     current?: number;
     pageSize?: number;
     query?: string;
     sort?: string;
+    userId?: string;
     accessToken?: string;
 }): Promise<IBackendRes<any>> {
     const params = new URLSearchParams({
@@ -217,6 +219,7 @@ export async function fetchOrdersList({
         sort: sort || "-createdAt"
     });
     if (query) params.append("query", query);
+    if (userId) params.append("userId", userId);
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders?${params.toString()}`;
     const response = await fetch(url, {
@@ -230,7 +233,7 @@ export async function fetchOrdersList({
     return response.json();
 }
 
-export async function updateOrderStatus(id: string, status: string, accessToken: string): Promise<IBackendRes<any>> {
+export async function updateOrderStatus(id: string, status: string, accessToken: string, note?: string): Promise<IBackendRes<any>> {
     const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders/${id}`;
     const response = await fetch(url, {
         method: 'PATCH',
@@ -238,7 +241,7 @@ export async function updateOrderStatus(id: string, status: string, accessToken:
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status, note })
     });
     return response.json();
 }

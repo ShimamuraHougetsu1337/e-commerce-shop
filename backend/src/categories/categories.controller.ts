@@ -32,10 +32,10 @@ export class CategoriesController {
     return this.categoriesService.findOne(id);
   }
 
-  @Patch()
+  @Patch(':id')
   @ResponseMessage("Update a category")
-  update(@Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(updateCategoryDto);
+  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+    return this.categoriesService.update(id, updateCategoryDto);
   }
 
   @Delete(':id')

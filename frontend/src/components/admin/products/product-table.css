@@ -1,0 +1,36 @@
+.product-table-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.product-table-card :global(.ant-table-thead > tr > th) {
+    background-color: #fafafa;
+    font-weight: 600;
+}
+
+.product-name-text {
+    color: #1f2937;
+}
+
+.product-slug-text {
+    font-size: 12px;
+}
+
+.product-thumbnail-cell {
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.price-text {
+    color: #1677ff;
+}
+
+.stock-text-warning {
+    color: #ff4d4f;
+}
+
+.add-product-btn {
+    border-radius: 8px;
+    height: 40px;
+}

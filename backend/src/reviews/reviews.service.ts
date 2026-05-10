@@ -68,11 +68,8 @@ export class ReviewsService {
             throw new BadRequestException('Không tìm thấy đánh giá hoặc bạn không có quyền sửa');
         }
 
-        const updatedReview = await this.reviewModel.findByIdAndUpdate(
-            id,
-            { ...updateReviewDto },
-            { new: true }
-        );
+        review.set(updateReviewDto);
+        const updatedReview = await review.save();
 
         // Sync product stats
         await this.updateProductStats(review.productId.toString());

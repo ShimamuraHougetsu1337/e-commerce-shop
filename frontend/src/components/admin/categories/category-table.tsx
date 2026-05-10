@@ -25,8 +25,9 @@ import {
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import useSWR from 'swr';
 
 const { Title, Text } = Typography;
 
@@ -40,54 +41,52 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<CategoryTableRow | null>(null);
-    const [dataSource, setDataSource] = useState(initialData.data?.result || []);
+    const [viewingCategory, setViewingCategory] = useState<CategoryTableRow | null>(null);
     const [searchText, setSearchText] = useState('');
     const [sort, setSort] = useState<string>('-createdAt');
 
     const [pagination, setPagination] = useState({
         current: initialData.data?.meta?.current || 1,
         pageSize: initialData.data?.meta?.pageSize || 10,
-        total: initialData.data?.meta?.total || 0,
     });
 
-    const loadData = useCallback(async (current: number, pageSize: number, query: string, sortStr?: string) => {
-        setLoading(true);
-        try {
-            const res = await fetchCategoriesList({
-                current,
-                pageSize,
-                query,
-                sort: sortStr || sort,
-                accessToken: session?.accessToken
-            });
-            if (res.data) {
-                setDataSource(res.data.result);
-                setPagination({
-                    current: res.data.meta.current,
-                    pageSize: res.data.meta.pageSize,
-                    total: res.data.meta.total,
-                });
-            }
-        } catch (error) {
-            message.error(t('fetchError'));
-        } finally {
-            setLoading(false);
+    const { data: categoriesRes, mutate, isLoading: swrLoading } = useSWR(
+        session?.accessToken ? ['categories', pagination.current, pagination.pageSize, searchText, sort] : null,
+        () => fetchCategoriesList({
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            query: searchText,
+            sort: sort,
+            accessToken: session?.accessToken
+        }),
+        {
+            fallbackData: initialData,
+            keepPreviousData: true,
         }
-    }, [session?.accessToken, sort]);
+    );
+
+    const dataSource = categoriesRes?.data?.result || [];
+    const total = categoriesRes?.data?.meta?.total || 0;
 
     const handleTableChange = (pagination: TablePaginationConfig, filters: any, sorter: any) => {
-        let sortStr = "";
-        if (sorter.order) {
-            sortStr = sorter.order === 'ascend' ? sorter.field : `-${sorter.field}`;
+        if (pagination.current && pagination.pageSize) {
+            setPagination({
+                current: pagination.current,
+                pageSize: pagination.pageSize
+            });
         }
-        setSort(sortStr);
-        loadData(pagination.current || 1, pagination.pageSize || 10, searchText, sortStr);
+        if (sorter.order) {
+            setSort(sorter.order === 'ascend' ? sorter.field : `-${sorter.field}`);
+        } else {
+            setSort('-createdAt');
+        }
     };
 
     const handleSearch = (value: string) => {
         setSearchText(value);
-        loadData(1, pagination.pageSize, value);
+        setPagination({ ...pagination, current: 1 });
     };
 
     const showModal = (category?: CategoryTableRow) => {
@@ -108,7 +107,7 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
             const res = await deleteCategory(id, session.accessToken);
             if (res.data) {
                 message.success(t('deleteSuccess'));
-                loadData(pagination.current, pagination.pageSize, searchText);
+                mutate();
             } else {
                 message.error(res.message || t('deleteError'));
             }
@@ -117,6 +116,11 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleViewDetail = (category: CategoryTableRow) => {
+        setViewingCategory(category);
+        setIsDetailOpen(true);
     };
 
     const handleModalOk = async () => {
@@ -135,7 +139,7 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
             if (res.data) {
                 message.success(editingCategory ? t('updateSuccess') : t('addSuccess'));
                 setIsModalOpen(false);
-                loadData(pagination.current, pagination.pageSize, searchText);
+                mutate();
             } else {
                 message.error(res.message || t('errorOccurred'));
             }
@@ -189,7 +193,7 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
             render: (_, record) => (
                 <Space size="small">
                     <Tooltip title={t('viewDetail')}>
-                        <Button type="text" shape="circle" icon={<EyeOutlined />} />
+                        <Button type="text" shape="circle" icon={<EyeOutlined />} onClick={() => handleViewDetail(record)} />
                     </Tooltip>
                     <Tooltip title={t('edit')}>
                         <Button type="text" shape="circle" icon={<EditOutlined style={{ color: '#1677ff' }} />} onClick={() => showModal(record)} />
@@ -232,8 +236,13 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
                 columns={columns}
                 dataSource={dataSource}
                 rowKey="_id"
-                loading={loading}
-                pagination={pagination}
+                loading={loading || swrLoading}
+                pagination={{
+                    ...pagination,
+                    total,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Tổng ${total} danh mục`
+                }}
                 onChange={handleTableChange}
                 scroll={{ x: 800 }}
             />
@@ -263,6 +272,44 @@ export default function CategoryTable({ initialData }: CategoryTableProps) {
                         <Select options={[{ label: t('active'), value: true }, { label: t('hidden'), value: false }]} />
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            <Modal
+                title={t('viewDetail')}
+                open={isDetailOpen}
+                onCancel={() => setIsDetailOpen(false)}
+                footer={[<Button key="close" onClick={() => setIsDetailOpen(false)}>{t('close')}</Button>]}
+            >
+                {viewingCategory && (
+                    <div style={{ marginTop: 20 }}>
+                        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                            <div>
+                                <Text type="secondary">{t('categoryName')}:</Text>
+                                <div style={{ fontSize: 16, fontWeight: 600 }}>{viewingCategory.name}</div>
+                            </div>
+                            <div>
+                                <Text type="secondary">{t('slug')}:</Text>
+                                <div><Tag color="blue">{viewingCategory.slug}</Tag></div>
+                            </div>
+                            <div>
+                                <Text type="secondary">{t('description')}:</Text>
+                                <div>{viewingCategory.description || <i>{t('noDescription') || 'No description'}</i>}</div>
+                            </div>
+                            <div>
+                                <Text type="secondary">{t('status')}:</Text>
+                                <div>
+                                    <Tag color={viewingCategory.isActive ? 'success' : 'error'}>
+                                        {viewingCategory.isActive ? t('active') : t('hidden')}
+                                    </Tag>
+                                </div>
+                            </div>
+                            <div>
+                                <Text type="secondary">{t('createdAt')}:</Text>
+                                <div>{dayjs(viewingCategory.createdAt).format('DD/MM/YYYY HH:mm:ss')}</div>
+                            </div>
+                        </Space>
+                    </div>
+                )}
             </Modal>
         </div>
     );

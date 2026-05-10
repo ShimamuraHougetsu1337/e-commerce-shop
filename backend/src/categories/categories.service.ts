@@ -63,28 +63,24 @@ export class CategoriesService {
     return category;
   }
 
-  async update(updateCategoryDto: UpdateCategoryDto & { id: string }) {
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     if (updateCategoryDto.slug) {
       const existing = await this.categoryModel.findOne({
         slug: updateCategoryDto.slug,
-        _id: { $ne: updateCategoryDto.id }
+        _id: { $ne: id }
       });
       if (existing) {
         throw new BadRequestException('Đường dẫn (Slug) này đã tồn tại!');
       }
     }
 
-    const updatedCategory = await this.categoryModel.findByIdAndUpdate(
-      updateCategoryDto.id,
-      updateCategoryDto,
-      { new: true }
-    );
-
-    if (!updatedCategory) {
-      throw new NotFoundException(`Không thể cập nhật. Không tìm thấy ID: ${updateCategoryDto.id}`);
+    const category = await this.categoryModel.findById(id);
+    if (!category) {
+      throw new NotFoundException(`Không thể cập nhật. Không tìm thấy ID: ${id}`);
     }
 
-    return updatedCategory;
+    category.set(updateCategoryDto);
+    return await category.save();
   }
 
   async remove(id: string) {

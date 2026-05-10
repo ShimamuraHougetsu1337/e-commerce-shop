@@ -6,7 +6,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 export type ReviewDocument = HydratedDocument<Review>;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, optimisticConcurrency: true })
 export class Review {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     userId: mongoose.Schema.Types.ObjectId;

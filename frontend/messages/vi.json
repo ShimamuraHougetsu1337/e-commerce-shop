@@ -29,7 +29,8 @@
     "logout": "Đăng xuất",
     "wishlist": "Danh sách yêu thích",
     "cart": "Giỏ hàng",
-    "login": "Đăng nhập"
+    "login": "Đăng nhập",
+    "luckyWheel": "Vòng quay may mắn"
   },
   "AuthGuard": {
     "unauthenticatedTitle": "Bạn chưa đăng nhập",
@@ -317,9 +318,14 @@
   },
   "OrderHistory": {
     "statusPending": "Chờ xác nhận",
-    "statusProcessing": "Đang xử lý",
+    "statusAwaitingConfirmation": "Chờ xác nhận",
+    "statusConfirmed": "Đã xác nhận",
+    "statusPreparing": "Đang chuẩn bị hàng",
+    "statusShipping": "Đang giao hàng",
+    "statusDelivered": "Đã giao hàng",
     "statusCompleted": "Hoàn thành",
     "statusCancelled": "Đã hủy",
+    "statusReturned": "Đã trả hàng",
     "reviewSuccess": "Cảm ơn bạn đã đánh giá sản phẩm!",
     "reviewError": "Có lỗi xảy ra khi gửi đánh giá",
     "reviewConflict": "Bạn đã đánh giá sản phẩm này rồi hoặc có lỗi xảy ra",
@@ -408,6 +414,7 @@
     "chatPlaceholder": "Hỏi về sản phẩm, giá cả..."
   },
   "AdminProducts": {
+    "title": "Quản lý sản phẩm",
     "fetchError": "Không thể tải danh sách sản phẩm",
     "deleteSuccess": "Xóa sản phẩm thành công",
     "deleteError": "Lỗi khi xóa sản phẩm",
@@ -427,10 +434,10 @@
     "stopSelling": "Ngừng bán",
     "createdAt": "Ngày tạo",
     "action": "Hành động",
-    "viewDetail": "Xem chi tiết",
+    "viewDetails": "Xem chi tiết",
     "edit": "Chỉnh sửa",
     "deleteTitle": "Xóa sản phẩm",
-    "deleteConfirm": "Bạn có chắc chắn muốn xóa sản phẩm này không?",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa sản phẩm này không?",
     "delete": "Xóa",
     "cancel": "Hủy",
     "manageProducts": "Quản lý sản phẩm",
@@ -453,9 +460,20 @@
     "orImageLink": "Hoặc nhập Link ảnh",
     "shortDescription": "Mô tả ngắn",
     "shortDescriptionPlaceholder": "Mô tả tóm tắt về sản phẩm...",
-    "productDetail": "Chi tiết sản phẩm",
+    "productDetails": "Chi tiết sản phẩm",
     "lastUpdate": "Cập nhật cuối",
-    "noDescription": "Không có mô tả"
+    "noDescription": "Không có mô tả",
+    "total": "Tổng cộng",
+    "items": "sản phẩm",
+    "name": "Tên sản phẩm",
+    "nameRequired": "Vui lòng nhập tên sản phẩm",
+    "priceRequired": "Vui lòng nhập giá sản phẩm",
+    "stockRequired": "Vui lòng nhập số lượng tồn kho",
+    "thumbnailRequired": "Vui lòng upload ảnh sản phẩm",
+    "selectCategory": "Chọn danh mục sản phẩm",
+    "thumbnail": "Ảnh đại diện",
+    "remove": "Gỡ bỏ",
+    "upload": "Tải lên"
   },
   "AdminCategories": {
     "fetchError": "Không thể tải danh sách danh mục",
@@ -488,7 +506,8 @@
     "slugRequired": "Vui lòng nhập slug",
     "slugPlaceholder": "dien-thoai",
     "description": "Mô tả",
-    "descriptionPlaceholder": "Mô tả về danh mục..."
+    "descriptionPlaceholder": "Mô tả về danh mục...",
+    "close": "Đóng"
   },
   "AdminCustomers": {
     "fetchError": "Không thể tải danh sách khách hàng",
@@ -522,10 +541,15 @@
     "updateSuccess": "Cập nhật trạng thái đơn hàng thành công",
     "updateError": "Lỗi khi cập nhật trạng thái",
     "serverError": "Lỗi kết nối server",
-    "statusPending": "Chờ xử lý",
-    "statusProcessing": "Đang xử lý",
+    "statusPending": "Chờ xác nhận",
+    "statusAwaitingConfirmation": "Chờ xác nhận",
+    "statusConfirmed": "Đã xác nhận",
+    "statusPreparing": "Đang chuẩn bị hàng",
+    "statusShipping": "Đang giao hàng",
+    "statusDelivered": "Đã giao hàng",
     "statusCompleted": "Hoàn thành",
     "statusCancelled": "Đã hủy",
+    "statusReturned": "Đã trả hàng",
     "orderId": "Mã đơn hàng",
     "customer": "Khách hàng",
     "guest": "Khách vãng lai",
@@ -557,7 +581,15 @@
     "updateOrderStatus": "Cập nhật trạng thái đơn hàng",
     "update": "Cập nhật",
     "cancel": "Hủy",
-    "editingOrder": "Đang chỉnh sửa đơn hàng: "
+    "editingOrder": "Đang chỉnh sửa đơn hàng: ",
+    "updateNote": "Ghi chú cập nhật",
+    "notePlaceholder": "Nhập lý do thay đổi trạng thái hoặc ghi chú vận chuyển...",
+    "orderTimeline": "Dòng thời gian đơn hàng",
+    "timelineStatus": "Trạng thái",
+    "timelineTime": "Thời gian",
+    "timelineActionBy": "Người thực hiện",
+    "timelineNote": "Ghi chú",
+    "system": "Hệ thống"
   },
   "AdminCoupons": {
     "fetchError": "Lỗi khi tải danh sách mã giảm giá",
@@ -630,5 +662,28 @@
     "guest": "Ẩn danh",
     "shopReply": "Shop đã phản hồi",
     "replyTitle": "Phản hồi đánh giá"
+  },
+  "Gamification": {
+    "title": "Vòng quay may mắn",
+    "description": "Quay thưởng mỗi ngày để nhận các mã giảm giá hấp dẫn!",
+    "spinNow": "Quay ngay",
+    "alreadySpun": "Bạn đã quay hôm nay rồi. Hẹn gặp lại vào ngày mai!",
+    "winTitle": "Chúc mừng!",
+    "winDesc": "Bạn đã trúng {reward}",
+    "couponCode": "Mã giảm giá của bạn: {code}",
+    "history": "Lịch sử quay thưởng",
+    "noHistory": "Bạn chưa có lượt quay nào",
+    "rewardNone": "Chúc bạn may mắn lần sau",
+    "rules": "Thể lệ chương trình",
+    "rule1": "Mỗi người dùng chỉ được quay 1 lần mỗi ngày.",
+    "rule2": "Mã giảm giá có giá trị sử dụng trong vòng 3 ngày.",
+    "rule3": "Áp dụng cho đơn hàng từ 100.000đ.",
+    "copyCode": "Sao chép mã",
+    "copied": "Đã sao chép!",
+    "spinError": "Có lỗi xảy ra, vui lòng thử lại sau",
+    "tryAgain": "Hụt rồi",
+    "goodLuck": "Chúc may mắn",
+    "spinning": "Đang quay...",
+    "loadDataError": "Lỗi khi tải dữ liệu"
   }
 }

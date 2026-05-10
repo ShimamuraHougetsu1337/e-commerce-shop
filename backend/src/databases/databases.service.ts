@@ -33,7 +33,7 @@ export class DatabasesService implements OnModuleInit {
                     name: 'Admin',
                     email: 'admin@gmail.com',
                     password: hashedPassword,
-                    role: 'ADMIN',
+                    role: 'SUPER_ADMIN',
                 });
                 this.logger.log('✅ Đã tạo tài khoản Admin (admin@gmail.com / 123456)');
             } else {

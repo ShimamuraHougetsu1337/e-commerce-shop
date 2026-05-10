@@ -4,6 +4,8 @@ import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common
 import { CreateOrderDto } from './dto/order.dto';
 import { OrdersService } from './orders.service';
 
+import { OrderStatus } from './schemas/order.schema';
+
 @Controller('orders')
 export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
@@ -46,8 +48,10 @@ export class OrdersController {
     @ResponseMessage('Cập nhật trạng thái đơn hàng thành công')
     updateStatus(
         @Param('id') id: string,
-        @Body('status') status: string
+        @Body('status') status: OrderStatus,
+        @Body('note') note: string,
+        @User() user: IUser
     ) {
-        return this.ordersService.updateStatus(id, status);
+        return this.ordersService.updateOrderStatus(id, status, user, note);
     }
 }

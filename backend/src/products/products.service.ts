@@ -85,17 +85,13 @@ export class ProductsService {
       updateData.category = updateProductDto.category_id;
     }
 
-    const updatedProduct = await this.productModel.findByIdAndUpdate(
-      updateProductDto.id,
-      updateData,
-      { new: true }
-    );
-
-    if (!updatedProduct) {
+    const product = await this.productModel.findById(updateProductDto.id);
+    if (!product) {
       throw new NotFoundException(`Không thể cập nhật. Không tìm thấy ID: ${updateProductDto.id}`);
     }
 
-    return updatedProduct;
+    product.set(updateData);
+    return await product.save();
   }
 
   async remove(id: string) {

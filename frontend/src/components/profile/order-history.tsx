@@ -8,7 +8,11 @@ import {
   CreditCardOutlined,
   EnvironmentOutlined,
   MessageOutlined,
-  ReloadOutlined, ShoppingOutlined,
+  ReloadOutlined, 
+  RocketOutlined,
+  RollbackOutlined,
+  SafetyCertificateOutlined,
+  ShoppingOutlined,
   StarOutlined,
   SyncOutlined
 } from '@ant-design/icons';
@@ -49,7 +53,7 @@ interface Order {
     _id: string;
     items: OrderItem[];
     totalAmount: number;
-    status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled';
+    status: string;
     paymentMethod: string;
     shippingAddress: string;
     couponCode?: string;
@@ -72,11 +76,16 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
     const [submittingReview, setSubmittingReview] = useState(false);
     const [form] = Form.useForm();
 
-    const STATUS_CONFIG: Record<Order['status'], { color: string; label: string; icon: React.ReactNode; bg: string }> = {
+    const STATUS_CONFIG: Record<string, { color: string; label: string; icon: React.ReactNode; bg: string }> = {
         Pending: { color: '#d97706', label: t('statusPending'), icon: <ClockCircleOutlined />, bg: '#fffbeb' },
-        Processing: { color: '#2563eb', label: t('statusProcessing'), icon: <SyncOutlined spin />, bg: '#eff6ff' },
+        'Awaiting Confirmation': { color: '#d97706', label: t('statusAwaitingConfirmation'), icon: <ClockCircleOutlined />, bg: '#fffbeb' },
+        Confirmed: { color: '#0891b2', label: t('statusConfirmed'), icon: <SafetyCertificateOutlined />, bg: '#ecfeff' },
+        Preparing: { color: '#2563eb', label: t('statusPreparing'), icon: <SyncOutlined spin />, bg: '#eff6ff' },
+        Shipping: { color: '#ea580c', label: t('statusShipping'), icon: <RocketOutlined />, bg: '#fff7ed' },
+        Delivered: { color: '#0284c7', label: t('statusDelivered'), icon: <CheckCircleOutlined />, bg: '#f0f9ff' },
         Completed: { color: '#16a34a', label: t('statusCompleted'), icon: <CheckCircleOutlined />, bg: '#f0fdf4' },
         Cancelled: { color: '#dc2626', label: t('statusCancelled'), icon: <CloseCircleOutlined />, bg: '#fef2f2' },
+        Returned: { color: '#c026d3', label: t('statusReturned'), icon: <RollbackOutlined />, bg: '#fdf4ff' },
     };
 
     const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.Pending;

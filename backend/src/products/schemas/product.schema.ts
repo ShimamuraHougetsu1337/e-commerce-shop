@@ -4,7 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 export type ProductDocument = HydratedDocument<Product>;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, optimisticConcurrency: true })
 export class Product {
 
     @Prop({ required: true, type: String })

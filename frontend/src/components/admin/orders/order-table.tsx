@@ -7,7 +7,12 @@ import {
   CloseCircleOutlined,
   EditOutlined,
   EyeOutlined,
+  HistoryOutlined,
+  HomeOutlined,
   PrinterOutlined,
+  RocketOutlined,
+  RollbackOutlined,
+  SafetyCertificateOutlined,
   SyncOutlined
 } from '@ant-design/icons';
 import {
@@ -27,8 +32,9 @@ import {
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import useSWR from 'swr';
 
 const { Title, Text } = Typography;
 
@@ -40,69 +46,67 @@ export default function OrderTable({ initialData }: OrderTableProps) {
     const t = useTranslations('AdminOrders');
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
-    const [dataSource, setDataSource] = useState(initialData.data?.result || []);
     const [selectedOrder, setSelectedOrder] = useState<OrderTableRow | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingOrder, setEditingOrder] = useState<OrderTableRow | null>(null);
     const [newStatus, setNewStatus] = useState<string>('');
+    const [updateNote, setUpdateNote] = useState<string>('');
     const [searchText, setSearchText] = useState('');
     const [sort, setSort] = useState<string>('-createdAt');
 
     const [pagination, setPagination] = useState({
         current: initialData.data?.meta?.current || 1,
         pageSize: initialData.data?.meta?.pageSize || 10,
-        total: initialData.data?.meta?.total || 0,
     });
 
-    const loadData = useCallback(async (current: number, pageSize: number, query: string, sortStr?: string) => {
-        setLoading(true);
-        try {
-            const res = await fetchOrdersList({
-                current,
-                pageSize,
-                query,
-                sort: sortStr || sort,
-                accessToken: session?.accessToken
-            });
-            if (res.data) {
-                setDataSource(res.data.result);
-                setPagination({
-                    current: res.data.meta.current,
-                    pageSize: res.data.meta.pageSize,
-                    total: res.data.meta.total,
-                });
-            }
-        } catch (error) {
-            message.error(t('fetchError'));
-        } finally {
-            setLoading(false);
+    const { data: ordersRes, mutate, isLoading: swrLoading } = useSWR(
+        session?.accessToken ? ['orders', pagination.current, pagination.pageSize, searchText, sort] : null,
+        () => fetchOrdersList({
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            query: searchText,
+            sort: sort,
+            accessToken: session?.accessToken
+        }),
+        {
+            fallbackData: initialData,
+            keepPreviousData: true,
         }
-    }, [session?.accessToken, sort]);
+    );
+
+    const dataSource = ordersRes?.data?.result || [];
+    const total = ordersRes?.data?.meta?.total || 0;
 
     const handleTableChange = (pagination: TablePaginationConfig, filters: any, sorter: any) => {
-        let sortStr = "";
-        if (sorter.order) {
-            sortStr = sorter.order === 'ascend' ? sorter.field : `-${sorter.field}`;
+        if (pagination.current && pagination.pageSize) {
+            setPagination({
+                current: pagination.current,
+                pageSize: pagination.pageSize
+            });
         }
-        setSort(sortStr);
-        loadData(pagination.current || 1, pagination.pageSize || 10, searchText, sortStr);
+        if (sorter.order) {
+            setSort(sorter.order === 'ascend' ? sorter.field : `-${sorter.field}`);
+        } else {
+            setSort('-createdAt');
+        }
     };
 
     const handleSearch = (value: string) => {
         setSearchText(value);
-        loadData(1, pagination.pageSize, value);
+        setPagination({ ...pagination, current: 1 });
     };
 
     const handleUpdateStatus = async () => {
         if (!session?.accessToken || !editingOrder) return;
         setLoading(true);
         try {
-            const res = await updateOrderStatus(editingOrder._id, newStatus, session.accessToken);
+            const res = await updateOrderStatus(editingOrder._id, newStatus, session.accessToken, updateNote);
             if (res.data) {
                 message.success(t('updateSuccess'));
                 setIsEditOpen(false);
-                loadData(pagination.current, pagination.pageSize, searchText);
+                setUpdateNote(''); // Reset note
+                mutate();
             } else {
                 message.error(res.message || t('updateError'));
             }
@@ -125,17 +129,27 @@ export default function OrderTable({ initialData }: OrderTableProps) {
     };
 
     const getStatusTag = (status: string) => {
+        const tagStyle = { padding: '2px 10px', borderRadius: '4px' };
         switch (status) {
             case 'Pending':
-                return <Tag icon={<ClockCircleOutlined />} color="default" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusPending')}</Tag>;
-            case 'Processing':
-                return <Tag icon={<SyncOutlined spin />} color="processing" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusProcessing')}</Tag>;
+            case 'Awaiting Confirmation':
+                return <Tag icon={<ClockCircleOutlined />} color="default" style={tagStyle}>{t('statusPending')}</Tag>;
+            case 'Confirmed':
+                return <Tag icon={<SafetyCertificateOutlined />} color="cyan" style={tagStyle}>{t('statusConfirmed')}</Tag>;
+            case 'Preparing':
+                return <Tag icon={<SyncOutlined spin />} color="processing" style={tagStyle}>{t('statusPreparing')}</Tag>;
+            case 'Shipping':
+                return <Tag icon={<RocketOutlined />} color="warning" style={tagStyle}>{t('statusShipping')}</Tag>;
+            case 'Delivered':
+                return <Tag icon={<HomeOutlined />} color="blue" style={tagStyle}>{t('statusDelivered')}</Tag>;
             case 'Completed':
-                return <Tag icon={<CheckCircleOutlined />} color="success" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusCompleted')}</Tag>;
+                return <Tag icon={<CheckCircleOutlined />} color="success" style={tagStyle}>{t('statusCompleted')}</Tag>;
             case 'Cancelled':
-                return <Tag icon={<CloseCircleOutlined />} color="error" style={{ padding: '2px 10px', borderRadius: '4px' }}>{t('statusCancelled')}</Tag>;
+                return <Tag icon={<CloseCircleOutlined />} color="error" style={tagStyle}>{t('statusCancelled')}</Tag>;
+            case 'Returned':
+                return <Tag icon={<RollbackOutlined />} color="magenta" style={tagStyle}>{t('statusReturned')}</Tag>;
             default:
-                return <Tag style={{ padding: '2px 10px', borderRadius: '4px' }}>{status}</Tag>;
+                return <Tag style={tagStyle}>{status}</Tag>;
         }
     };
 
@@ -228,8 +242,13 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                 columns={columns}
                 dataSource={dataSource}
                 rowKey="_id"
-                loading={loading}
-                pagination={pagination}
+                loading={loading || swrLoading}
+                pagination={{
+                    ...pagination,
+                    total,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Tổng ${total} đơn hàng`
+                }}
                 onChange={handleTableChange}
                 scroll={{ x: 1000 }}
             />
@@ -291,6 +310,43 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                         <div style={{ textAlign: 'right', marginTop: 16 }}>
                             <Title level={4}>{t('total')} <Text type="danger">{selectedOrder.totalAmount?.toLocaleString('vi-VN')} đ</Text></Title>
                         </div>
+
+                        {selectedOrder.timeline && selectedOrder.timeline.length > 0 && (
+                            <>
+                                <Divider orientation="left"><HistoryOutlined /> {t('orderTimeline')}</Divider>
+                                <Table
+                                    dataSource={selectedOrder.timeline}
+                                    pagination={false}
+                                    size="small"
+                                    rowKey={(record) => record.timestamp + record.status}
+                                    columns={[
+                                        { 
+                                            title: t('timelineTime'), 
+                                            dataIndex: 'timestamp', 
+                                            key: 'time',
+                                            render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm')
+                                        },
+                                        { 
+                                            title: t('timelineStatus'), 
+                                            dataIndex: 'status', 
+                                            key: 'status',
+                                            render: (status) => getStatusTag(status)
+                                        },
+                                        { 
+                                            title: t('timelineActionBy'), 
+                                            dataIndex: ['actionBy', 'name'], 
+                                            key: 'by',
+                                            render: (name) => name || t('system')
+                                        },
+                                        { 
+                                            title: t('timelineNote'), 
+                                            dataIndex: 'note', 
+                                            key: 'note' 
+                                        },
+                                    ]}
+                                />
+                            </>
+                        )}
                     </div>
                 )}
             </Modal>
@@ -311,13 +367,26 @@ export default function OrderTable({ initialData }: OrderTableProps) {
                     <Select
                         value={newStatus}
                         onChange={(val) => setNewStatus(val)}
-                        style={{ width: '100%' }}
+                        style={{ width: '100%', marginBottom: 16 }}
                         options={[
-                            { value: 'Pending', label: t('statusPending') },
-                            { value: 'Processing', label: t('statusProcessing') },
+                            { value: 'Awaiting Confirmation', label: t('statusAwaitingConfirmation') },
+                            { value: 'Confirmed', label: t('statusConfirmed') },
+                            { value: 'Preparing', label: t('statusPreparing') },
+                            { value: 'Shipping', label: t('statusShipping') },
+                            { value: 'Delivered', label: t('statusDelivered') },
                             { value: 'Completed', label: t('statusCompleted') },
                             { value: 'Cancelled', label: t('statusCancelled') },
+                            { value: 'Returned', label: t('statusReturned') },
                         ]}
+                    />
+                    <Text type="secondary" style={{ marginBottom: 5, display: 'block' }}>
+                        {t('updateNote')}
+                    </Text>
+                    <Input.TextArea
+                        rows={3}
+                        value={updateNote}
+                        onChange={(e) => setUpdateNote(e.target.value)}
+                        placeholder={t('notePlaceholder')}
                     />
                 </div>
             </Modal>

@@ -29,7 +29,8 @@
     "logout": "Logout",
     "wishlist": "Wishlist",
     "cart": "Cart",
-    "login": "Login"
+    "login": "Login",
+    "luckyWheel": "Lucky Wheel"
   },
   "AuthGuard": {
     "unauthenticatedTitle": "You are not logged in",
@@ -317,9 +318,14 @@
   },
   "OrderHistory": {
     "statusPending": "Pending",
-    "statusProcessing": "Processing",
+    "statusAwaitingConfirmation": "Awaiting Confirmation",
+    "statusConfirmed": "Confirmed",
+    "statusPreparing": "Preparing",
+    "statusShipping": "Shipping",
+    "statusDelivered": "Delivered",
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
+    "statusReturned": "Returned",
     "reviewSuccess": "Thank you for reviewing the product!",
     "reviewError": "An error occurred while submitting the review",
     "reviewConflict": "You have already reviewed this product or an error occurred",
@@ -408,6 +414,7 @@
     "chatPlaceholder": "Ask about products, prices..."
   },
   "AdminProducts": {
+    "title": "Manage Products",
     "fetchError": "Cannot load product list",
     "deleteSuccess": "Product deleted successfully",
     "deleteError": "Error deleting product",
@@ -427,10 +434,10 @@
     "stopSelling": "Stop Selling",
     "createdAt": "Created At",
     "action": "Action",
-    "viewDetail": "View Details",
+    "viewDetails": "View Details",
     "edit": "Edit",
     "deleteTitle": "Delete Product",
-    "deleteConfirm": "Are you sure you want to delete this product?",
+    "confirmDelete": "Are you sure you want to delete this product?",
     "delete": "Delete",
     "cancel": "Cancel",
     "manageProducts": "Manage Products",
@@ -453,9 +460,20 @@
     "orImageLink": "Or enter Image Link",
     "shortDescription": "Short Description",
     "shortDescriptionPlaceholder": "Brief description of the product...",
-    "productDetail": "Product Detail",
+    "productDetails": "Product Detail",
     "lastUpdate": "Last Update",
-    "noDescription": "No description"
+    "noDescription": "No description",
+    "total": "Total",
+    "items": "items",
+    "name": "Product Name",
+    "nameRequired": "Please enter product name",
+    "priceRequired": "Please enter product price",
+    "stockRequired": "Please enter stock quantity",
+    "thumbnailRequired": "Please upload product image",
+    "selectCategory": "Select product category",
+    "thumbnail": "Thumbnail",
+    "remove": "Remove",
+    "upload": "Upload"
   },
   "AdminCategories": {
     "fetchError": "Cannot load category list",
@@ -488,7 +506,8 @@
     "slugRequired": "Please enter slug",
     "slugPlaceholder": "smartphones",
     "description": "Description",
-    "descriptionPlaceholder": "Description of the category..."
+    "descriptionPlaceholder": "Description of the category...",
+    "close": "Close"
   },
   "AdminCustomers": {
     "fetchError": "Cannot load customer list",
@@ -522,10 +541,15 @@
     "updateSuccess": "Order status updated successfully",
     "updateError": "Error updating status",
     "serverError": "Server connection error",
-    "statusPending": "Pending",
-    "statusProcessing": "Processing",
+    "statusPending": "Awaiting Confirmation",
+    "statusAwaitingConfirmation": "Awaiting Confirmation",
+    "statusConfirmed": "Confirmed",
+    "statusPreparing": "Preparing Items",
+    "statusShipping": "Shipping",
+    "statusDelivered": "Delivered",
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
+    "statusReturned": "Returned",
     "orderId": "Order ID",
     "customer": "Customer",
     "guest": "Guest",
@@ -557,7 +581,15 @@
     "updateOrderStatus": "Update Order Status",
     "update": "Update",
     "cancel": "Cancel",
-    "editingOrder": "Editing order: "
+    "editingOrder": "Editing order: ",
+    "updateNote": "Update Note",
+    "notePlaceholder": "Enter reason for status change or shipping notes...",
+    "orderTimeline": "Order Timeline",
+    "timelineStatus": "Status",
+    "timelineTime": "Time",
+    "timelineActionBy": "Action By",
+    "timelineNote": "Note",
+    "system": "System"
   },
   "AdminCoupons": {
     "fetchError": "Error loading coupons list",
@@ -630,5 +662,28 @@
     "guest": "Anonymous",
     "shopReply": "Shop replied",
     "replyTitle": "Reply to Review"
+  },
+  "Gamification": {
+    "title": "Lucky Wheel",
+    "description": "Spin daily to win exciting discount vouchers!",
+    "spinNow": "Spin Now",
+    "alreadySpun": "You have already spun today. See you tomorrow!",
+    "winTitle": "Congratulations!",
+    "winDesc": "You won {reward}",
+    "couponCode": "Your coupon code: {code}",
+    "history": "Spin History",
+    "noHistory": "No spin history found",
+    "rewardNone": "Better luck next time",
+    "rules": "Rules",
+    "rule1": "Each user can spin once per day.",
+    "rule2": "Coupons are valid for 3 days.",
+    "rule3": "Applies to orders over 100,000 VND.",
+    "copyCode": "Copy code",
+    "copied": "Copied!",
+    "spinError": "An error occurred, please try again later",
+    "tryAgain": "Try Again",
+    "goodLuck": "Good Luck",
+    "spinning": "Spinning...",
+    "loadDataError": "Error loading data"
   }
 }

@@ -27,8 +27,8 @@ export class CouponsController {
   @Public()
   @Get('active')
   @ResponseMessage('Lấy danh sách mã giảm giá khả dụng thành công')
-  findActive() {
-    return this.couponsService.findActive();
+  findActive(@Query('userId') userId?: string) {
+    return this.couponsService.findActive(userId);
   }
 
   @Post('apply')

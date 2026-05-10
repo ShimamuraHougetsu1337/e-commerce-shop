@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 export type CouponDocument = HydratedDocument<Coupon>;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, optimisticConcurrency: true })
 export class Coupon {
   @Prop({ required: true, unique: true, uppercase: true })
   code: string;
@@ -25,6 +25,9 @@ export class Coupon {
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] })
   usedBy: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })
+  assignedTo?: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true })
   expiryDate: Date;

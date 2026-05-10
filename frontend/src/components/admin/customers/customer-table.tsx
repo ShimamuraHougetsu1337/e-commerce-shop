@@ -1,25 +1,25 @@
 'use client'
 
 import { CustomerListResponse, CustomerTableRow } from '@/types/admin';
-import { deleteUser, fetchCustomersList } from '@/utils/admin.api';
+import { deleteUser, fetchCustomersList, fetchOrdersList } from '@/utils/admin.api';
 import {
-  DeleteOutlined,
-  EyeOutlined,
-  PlusOutlined,
-  UserOutlined
+    DeleteOutlined,
+    EyeOutlined,
+    PlusOutlined,
+    UserOutlined
 } from '@ant-design/icons';
 import {
-  Avatar,
-  Button,
-  Input,
-  message,
-  Modal,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-  Tooltip,
-  Typography
+    Avatar,
+    Button,
+    Input,
+    message,
+    Modal,
+    Popconfirm,
+    Space,
+    Table,
+    Tag,
+    Tooltip,
+    Typography
 } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -40,6 +40,8 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
     const [dataSource, setDataSource] = useState(initialData.data?.result || []);
     const [selectedCustomer, setSelectedCustomer] = useState<CustomerTableRow | null>(null);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [historyData, setHistoryData] = useState<any[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [sort, setSort] = useState<string>('-createdAt');
 
@@ -106,9 +108,29 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
         }
     };
 
+    const loadHistory = async (userId: string) => {
+        if (!session?.accessToken) return;
+        setHistoryLoading(true);
+        try {
+            const res = await fetchOrdersList({
+                userId,
+                pageSize: 100,
+                accessToken: session.accessToken
+            });
+            if (res.data) {
+                setHistoryData(res.data.result);
+            }
+        } catch (error) {
+            message.error(t('fetchError'));
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
     const showHistory = (customer: CustomerTableRow) => {
         setSelectedCustomer(customer);
         setIsHistoryOpen(true);
+        loadHistory(customer._id);
     };
 
     const columns: ColumnsType<CustomerTableRow> = [
@@ -219,18 +241,42 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
                 width={700}
             >
                 <Table
-                    dataSource={[
-                        { id: 'ORD001', date: '2024-04-25', amount: 1200000, status: 'Completed' },
-                        { id: 'ORD005', date: '2024-03-12', amount: 450000, status: 'Completed' },
-                    ]}
-                    pagination={false}
-                    rowKey="id"
+                    dataSource={historyData}
+                    loading={historyLoading}
+                    pagination={{ pageSize: 5 }}
+                    rowKey="_id"
                     size="middle"
                     columns={[
-                        { title: t('orderId'), dataIndex: 'id', key: 'id' },
-                        { title: t('orderDate'), dataIndex: 'date', key: 'date', render: (date) => <Text type="secondary">{dayjs(date).format('DD/MM/YYYY')}</Text> },
-                        { title: t('totalAmount'), dataIndex: 'amount', key: 'amount', render: (val) => <Text strong>{val.toLocaleString()} đ</Text> },
-                        { title: t('orderStatus'), dataIndex: 'status', key: 'status', render: (s) => <Tag color="success" bordered={false} style={{ borderRadius: 4 }}>{s}</Tag> },
+                        {
+                            title: t('orderId'),
+                            dataIndex: '_id',
+                            key: 'id',
+                            render: (id: string) => <Text strong style={{ fontFamily: 'monospace' }}>...{id.slice(-8).toUpperCase()}</Text>
+                        },
+                        {
+                            title: t('orderDate'),
+                            dataIndex: 'createdAt',
+                            key: 'date',
+                            render: (date) => <Text type="secondary">{dayjs(date).format('DD/MM/YYYY HH:mm')}</Text>
+                        },
+                        {
+                            title: t('totalAmount'),
+                            dataIndex: 'totalAmount',
+                            key: 'amount',
+                            render: (val) => <Text strong type="danger">{val?.toLocaleString('vi-VN')} đ</Text>
+                        },
+                        {
+                            title: t('orderStatus'),
+                            dataIndex: 'status',
+                            key: 'status',
+                            render: (s) => {
+                                let color = 'default';
+                                if (s === 'Completed' || s === 'Delivered') color = 'success';
+                                if (s === 'Cancelled' || s === 'Returned') color = 'error';
+                                if (s === 'Shipping' || s === 'Confirmed' || s === 'Preparing') color = 'processing';
+                                return <Tag color={color} bordered={false} style={{ borderRadius: 4 }}>{s}</Tag>
+                            }
+                        },
                     ]}
                 />
             </Modal>

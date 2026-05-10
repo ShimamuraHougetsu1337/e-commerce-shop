@@ -17,6 +17,7 @@ import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
+import { GamificationModule } from './gamification/gamification.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { UsersModule } from './users/users.module';
     FilesModule,
     CouponsModule,
     MailModule,
+    GamificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

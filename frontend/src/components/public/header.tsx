@@ -5,6 +5,7 @@ import {
   HeartOutlined,
   LogoutOutlined,
   ShoppingOutlined,
+  TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
@@ -135,6 +136,12 @@ export default function AppHeader() {
           <LanguageSwitcher />
           {status === 'authenticated' ? (
             <>
+              <Tooltip title={t('luckyWheel') || 'Vòng quay may mắn'}>
+                <Link href={'/lucky-wheel'}>
+                  <Button type="text" icon={<TrophyOutlined style={{ fontSize: 20, color: '#faad14' }} />} />
+                </Link>
+              </Tooltip>
+
               <Badge count={wishlistItems?.length} showZero size="small">
                 <Tooltip title={t('wishlist')}>
                   <Link href={'/wishlist'}>

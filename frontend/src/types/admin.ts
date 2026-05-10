@@ -65,6 +65,16 @@ export interface CategoryListResponse {
     result: CategoryTableRow[];
 }
 
+export interface OrderTimeline {
+    status: string;
+    note: string;
+    timestamp: string;
+    actionBy: {
+        _id: string;
+        name: string;
+    };
+}
+
 export interface OrderTableRow {
     _id: string;
     userId: {
@@ -79,6 +89,11 @@ export interface OrderTableRow {
     createdAt: string;
     updatedAt: string;
     items: any[];
+    timeline: OrderTimeline[];
+    couponCode?: string;
+    discountValue?: number;
+    discountType?: string;
+    minOrderValue?: number;
 }
 
 export interface OrderListResponse {

@@ -82,9 +82,13 @@ export const applyCouponApi = (code: string, orderValue: number, accessToken: st
     });
 }
 
-export const getActiveCouponsApi = () => {
+export const getActiveCouponsApi = (userId?: string) => {
+    let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons/active`;
+    if (userId) {
+        url += `?userId=${userId}`;
+    }
     return sendRequest<IBackendRes<ICoupon[]>>({
-        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coupons/active`,
+        url,
         method: "GET"
     });
 }

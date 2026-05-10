@@ -8,9 +8,29 @@ export type OrderDocument = HydratedDocument<Order>;
 
 export enum OrderStatus {
     PENDING = 'Pending',
-    PROCESSING = 'Processing',
+    AWAITING_CONFIRMATION = 'Awaiting Confirmation',
+    CONFIRMED = 'Confirmed',
+    PREPARING = 'Preparing',
+    SHIPPING = 'Shipping',
+    DELIVERED = 'Delivered',
     COMPLETED = 'Completed',
     CANCELLED = 'Cancelled',
+    RETURNED = 'Returned'
+}
+
+@Schema({ _id: false })
+class OrderTimeline {
+    @Prop({ type: String, enum: OrderStatus, required: true })
+    status: OrderStatus;
+
+    @Prop({ type: String })
+    note: string;
+
+    @Prop({ type: Date, default: Date.now })
+    timestamp: Date;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+    actionBy: mongoose.Schema.Types.ObjectId;
 }
 
 @Schema({ _id: false })
@@ -28,7 +48,7 @@ class OrderItem {
     price: number;
 }
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, optimisticConcurrency: true })
 export class Order {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     userId: mongoose.Schema.Types.ObjectId;
@@ -59,6 +79,9 @@ export class Order {
 
     @Prop({ type: Number })
     minOrderValue?: number;
+
+    @Prop({ type: [OrderTimeline], default: [] })
+    timeline: OrderTimeline[];
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

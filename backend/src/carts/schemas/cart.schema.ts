@@ -15,7 +15,7 @@ class CartItem {
     quantity: number;
 }
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, optimisticConcurrency: true })
 export class Cart {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true, unique: true })
     user: mongoose.Schema.Types.ObjectId;
