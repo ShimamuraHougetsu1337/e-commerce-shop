@@ -31,6 +31,9 @@ export class Product {
     @Prop({ type: [String] })
     images: string[];
 
+    @Prop({ type: [Number], index: false }) // Lưu mảng số đại diện cho Vector
+    image_vector: number[];
+
     @Prop({ type: Number, default: 0 })
     averageRating: number;
 

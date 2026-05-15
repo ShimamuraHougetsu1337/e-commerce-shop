@@ -11,8 +11,15 @@ export class ProductsController {
 
   @Post()
   @ResponseMessage("Create a product")
-  create(@Body() createProductDto: CreateProductDto) {
+  async create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
+  }
+
+  @Post('sync-vectors')
+  @Public()
+  @ResponseMessage("Sync vectors for all products")
+  syncVectors() {
+    return this.productsService.syncVectors();
   }
 
   @Get()

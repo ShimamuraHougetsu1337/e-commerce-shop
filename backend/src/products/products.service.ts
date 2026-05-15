@@ -37,7 +37,14 @@ export class ProductsService {
       category: createProductDto.category_id
     };
 
-    return await this.productModel.create(productData);
+    const res = await this.productModel.create(productData);
+
+    // Tự động tạo Vector sau khi tạo sản phẩm thành công (chạy ngầm)
+    if (res.images && res.images.length > 0) {
+      this.generateVectorForProduct(res._id.toString(), res.images[0]);
+    }
+
+    return res;
   }
 
   async findAll(current: number, pageSize: number, qs: string) {
@@ -107,7 +114,41 @@ export class ProductsService {
     }
 
     product.set(updateData);
-    return await product.save();
+    const res = await product.save();
+
+    // Nếu cập nhật có thay đổi ảnh, cập nhật lại Vector
+    if (updateProductDto.images && updateProductDto.images.length > 0) {
+      this.generateVectorForProduct(updateProductDto.id, updateProductDto.images[0]);
+    }
+
+    return res;
+  }
+
+  // Hàm helper chạy ngầm để không làm chậm request của user
+  private async generateVectorForProduct(productId: string, imageUrl: string) {
+    try {
+      let imageBuffer: Buffer;
+      if (imageUrl.startsWith('http')) {
+        const response = await fetch(imageUrl);
+        imageBuffer = Buffer.from(await response.arrayBuffer());
+      } else {
+        const path = require('path');
+        const fs = require('fs');
+        const filePath = path.join(process.cwd(), 'public', 'images', 'product', imageUrl);
+        if (fs.existsSync(filePath)) {
+          imageBuffer = fs.readFileSync(filePath);
+        } else {
+          return;
+        }
+      }
+
+      const mockFile = { buffer: imageBuffer, mimetype: 'image/jpeg' } as Express.Multer.File;
+      const vector = await this.imageToVector(mockFile);
+      await this.productModel.updateOne({ _id: productId }, { image_vector: vector });
+      console.log(`Auto-generated vector for product: ${productId}`);
+    } catch (err) {
+      console.error(`Error auto-generating vector for ${productId}:`, err);
+    }
   }
 
   async remove(id: string) {
@@ -123,37 +164,143 @@ export class ProductsService {
 
   async searchByImage(file: Express.Multer.File) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      // 1. Tạo Vector từ ảnh vừa upload
+      const queryVector = await this.imageToVector(file);
 
-      const imagePart = {
-        inlineData: {
-          data: file.buffer.toString('base64'),
-          mimeType: file.mimetype,
+      // 2. Thực hiện Vector Search trong MongoDB Atlas
+      // Lưu ý: Cần tạo Vector Index trên Atlas với tên "vector_index" trước
+      const products = await this.productModel.aggregate([
+        {
+          "$vectorSearch": {
+            "index": "vector_index", 
+            "path": "image_vector",
+            "queryVector": queryVector,
+            "numCandidates": 100,
+            "limit": 10
+          }
+        } as any,
+        {
+          "$match": { "isActive": true }
         },
+        {
+          "$project": {
+            "name": 1, "price": 1, "images": 1, "slug": 1,
+            "score": { "$meta": "vectorSearchScore" }
+          }
+        }
+      ]);
+
+      return {
+        keyword: "Tìm kiếm bằng thị giác",
+        result: products
       };
+    } catch (error) {
+      console.error("Vector search error:", error);
+      // Fallback về tìm kiếm text nếu Vector Search chưa được cấu hình Index trên Atlas
+      return this.searchByImageLegacy(file);
+    }
+  }
 
+  // Hàm phụ trợ để chuyển ảnh thành Vector (Sử dụng Embedding qua Text Description)
+  private async imageToVector(file: Express.Multer.File): Promise<number[]> {
+    const visionModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+    const embeddingModel = this.genAI.getGenerativeModel({ model: 'models/embedding-001' }); // Thêm tiền tố models/
+
+    const imagePart = {
+      inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype },
+    };
+
+    // Bước 1: Trích xuất đặc điểm thị giác cực kỳ chi tiết
+    const prompt = "Hãy mô tả cực kỳ chi tiết các đặc điểm thị giác của sản phẩm này: loại sản phẩm, hình dáng, màu sắc chủ đạo, chất liệu, hoa văn. Trả về dưới dạng một đoạn văn ngắn.";
+    const visionResult = await visionModel.generateContent([prompt, imagePart]);
+    const visualDescription = visionResult.response.text();
+
+    // Bước 2: Chuyển đoạn mô tả đó thành Vector
+    const embeddingResult = await embeddingModel.embedContent(visualDescription);
+    return embeddingResult.embedding.values;
+  }
+
+  // API đồng bộ Vector cho toàn bộ sản phẩm cũ
+  async syncVectors() {
+    const products = await this.productModel.find({ 
+      images: { $exists: true, $not: { $size: 0 } },
+      isActive: true 
+    });
+
+    let count = 0;
+    for (const product of products) {
+      let retryCount = 0;
+      let success = false;
+
+      while (!success && retryCount < 3) {
+        console.log(`---> Đang xử lý sản phẩm: ${product.name} (Lần thử: ${retryCount + 1})...`);
+        try {
+          // Giả sử lấy ảnh đầu tiên để tạo Vector
+          const imageUrl = product.images[0];
+          let imageBuffer: Buffer;
+
+          if (imageUrl.startsWith('http')) {
+            const response = await fetch(imageUrl);
+            imageBuffer = Buffer.from(await response.arrayBuffer());
+          } else {
+            const path = require('path');
+            const fs = require('fs');
+            const filePath = path.join(process.cwd(), 'public', 'images', 'product', imageUrl);
+            if (fs.existsSync(filePath)) {
+              imageBuffer = fs.readFileSync(filePath);
+            } else {
+              success = true; // Bỏ qua nếu không thấy file
+              continue;
+            }
+          }
+
+          const mockFile = { buffer: imageBuffer, mimetype: 'image/jpeg' } as Express.Multer.File;
+          const vector = await this.imageToVector(mockFile);
+          await this.productModel.updateOne(
+            { _id: product._id },
+            { image_vector: vector }
+          );
+          count++;
+          console.log(`✅ Thành công: ${product.name} (${count}/${products.length})`);
+          success = true;
+
+          // Nghỉ 5 giây để tránh dính Rate Limit tiếp theo
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } catch (err: any) {
+          if (err.status === 429) {
+            console.warn(`⚠️ Bị giới hạn tốc độ. Đang đợi 20 giây để thử lại...`);
+            await new Promise(resolve => setTimeout(resolve, 20000)); // Đợi 20s theo yêu cầu của Google
+            retryCount++;
+          } else {
+            console.error(`❌ Lỗi sản phẩm ${product.name}:`, err.message);
+            success = true; // Bỏ qua lỗi khác để chạy tiếp
+          }
+        }
+      }
+    }
+
+    return { message: `Đã đồng bộ thành công ${count} sản phẩm.` };
+  }
+
+  // Giữ lại hàm cũ để fallback nếu chưa tạo Index
+  async searchByImageLegacy(file: Express.Multer.File) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      const imagePart = {
+        inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype },
+      };
       const prompt = "Đây là sản phẩm gì? Hãy trả về tên sản phẩm ngắn gọn nhất có thể (dưới 5 từ) để tôi dùng tìm kiếm trong database.";
-
       const result = await model.generateContent([prompt, imagePart]);
-      const response = await result.response;
-      const text = response.text().trim();
+      const text = (await result.response).text().trim();
 
-      // Thực hiện tìm kiếm thông minh bằng $text search
       const products = await this.productModel
-        .find({
-          $text: { $search: text },
-          isActive: true
-        })
+        .find({ $text: { $search: text }, isActive: true })
         .limit(10)
         .populate('category')
         .exec();
 
-      return {
-        keyword: text,
-        result: products
-      };
+      return { keyword: text, result: products };
     } catch (error) {
-      console.error("Image search error:", error);
       throw new InternalServerErrorException("Lỗi xử lý tìm kiếm bằng hình ảnh");
     }
   }
