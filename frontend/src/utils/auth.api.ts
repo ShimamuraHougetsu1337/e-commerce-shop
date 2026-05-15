@@ -51,7 +51,7 @@ export const fetchProductsPagination = ({ current, pageSize, sort, category, min
     let paramsObj: any = { current, pageSize };
     if (sort) paramsObj.sort = sort;
     if (category) paramsObj.category = category;
-    if (name) paramsObj.name = `/${name}/i`; // Case-insensitive search using aqp
+    if (name) paramsObj.name = name; // Gửi text thuần để backend dùng $text search
 
     let qs = new URLSearchParams(paramsObj).toString();
 

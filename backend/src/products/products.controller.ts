@@ -1,5 +1,6 @@
 import { Public, ResponseMessage } from '@/decorator/customize';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
@@ -42,5 +43,13 @@ export class ProductsController {
   @ResponseMessage("Delete a product")
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
+  }
+
+  @Post('search-by-image')
+  @Public()
+  @UseInterceptors(FileInterceptor('image'))
+  @ResponseMessage("Search products by image")
+  searchByImage(@UploadedFile() file: Express.Multer.File) {
+    return this.productsService.searchByImage(file);
   }
 }

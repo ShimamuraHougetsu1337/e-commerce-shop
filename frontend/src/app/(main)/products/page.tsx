@@ -41,6 +41,7 @@ function ProductsContent() {
   const initialMinPrice = searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice') as string, 10) : null;
   const initialMaxPrice = searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice') as string, 10) : null;
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
+  const searchQuery = searchParams.get('query') || '';
 
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [sortOption, setSortOption] = useState(initialSort);
@@ -119,6 +120,7 @@ function ProductsContent() {
           category: categoryIds.length > 0 ? categoryIds.join(',') : undefined,
           minPrice: appliedPriceRange.min ?? undefined,
           maxPrice: appliedPriceRange.max ?? undefined,
+          name: searchQuery || undefined,
         });
 
         if (response && response.data) {
@@ -271,7 +273,12 @@ function ProductsContent() {
                 >
                   {t('filter')}
                 </Button>
-                <Text strong style={{ fontSize: 18, margin: 0 }}>{t('popularProducts')}</Text>
+                <Flex vertical>
+                  <Text strong style={{ fontSize: 18, margin: 0 }}>
+                    {searchQuery ? `Kết quả tìm kiếm cho: "${searchQuery}"` : t('popularProducts')}
+                  </Text>
+                  {searchQuery && <Text type="secondary" style={{ fontSize: 12 }}>Tìm thấy {totalProducts} sản phẩm</Text>}
+                </Flex>
               </Flex>
 
               <Space>

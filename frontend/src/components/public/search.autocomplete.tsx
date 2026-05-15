@@ -1,5 +1,5 @@
-import { SearchOutlined } from '@ant-design/icons';
-import { AutoComplete, Input, Flex, Typography, Image } from 'antd';
+import { CameraOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons';
+import { AutoComplete, Input, Flex, Typography, Image, App, Tooltip } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useState, useCallback, useRef } from 'react';
 import { fetchProductsPagination } from '@/utils/auth.api';
@@ -19,8 +19,11 @@ function debounce(func: Function, wait: number) {
 export default function SearchAutocomplete() {
     const t = useTranslations('Common');
     const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
-    const searchRef = useRef<any>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const { message } = App.useApp();
 
     const handleSearch = useCallback(
         debounce(async (value: string) => {
@@ -77,6 +80,40 @@ export default function SearchAutocomplete() {
         router.push(`/products/${option.key}`);
     };
 
+    const handleImageSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Reset file input value to allow selecting same file again
+        e.target.value = '';
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/search-by-image`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (data && data.data && data.data.keyword) {
+                message.success(`Đã nhận diện: ${data.data.keyword}`);
+                // Điều hướng sang trang danh sách sản phẩm với từ khóa AI tìm được
+                router.push(`/products?query=${encodeURIComponent(data.data.keyword)}`);
+            } else {
+                message.error("Không thể nhận diện hình ảnh này. Vui lòng thử lại!");
+            }
+        } catch (error) {
+            console.error("Image search error:", error);
+            message.error("Có lỗi xảy ra khi tìm kiếm bằng hình ảnh.");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     return (
         <div style={{ width: '100%', maxWidth: 400 }}>
             <AutoComplete
@@ -90,9 +127,28 @@ export default function SearchAutocomplete() {
                 <Input
                     placeholder={t('searchPlaceholder')}
                     prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+                    suffix={
+                        <Tooltip title="Tìm kiếm bằng hình ảnh">
+                            {isUploading ? (
+                                <LoadingOutlined style={{ color: '#1677ff' }} />
+                            ) : (
+                                <CameraOutlined 
+                                    style={{ color: '#bfbfbf', cursor: 'pointer', fontSize: '18px' }} 
+                                    onClick={() => fileInputRef.current?.click()}
+                                />
+                            )}
+                        </Tooltip>
+                    }
                     style={{ borderRadius: '8px' }}
                 />
             </AutoComplete>
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: 'none' }} 
+                accept="image/*"
+                onChange={handleImageSearch}
+            />
         </div>
     );
 }
