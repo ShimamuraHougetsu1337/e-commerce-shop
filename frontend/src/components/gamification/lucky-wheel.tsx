@@ -11,6 +11,7 @@ import HistoryCard from './components/history-card';
 import ResultModal from './components/result-modal';
 import RulesCard from './components/rules-card';
 import WheelSection from './components/wheel-section';
+import { useRouter } from 'next/navigation';
 
 const { Title, Paragraph } = Typography;
 
@@ -23,6 +24,7 @@ export default function LuckyWheel({ initialStatus, initialHistory }: LuckyWheel
     const t = useTranslations('Gamification');
     const { data: session } = useSession();
     const { message } = App.useApp();
+    const router = useRouter()
 
     const wheelData = useMemo(() => [
         { option: '5%', style: { backgroundColor: '#FF4D4F', textColor: '#ffffff' } },
@@ -75,6 +77,7 @@ export default function LuckyWheel({ initialStatus, initialHistory }: LuckyWheel
                 setPrizeNumber(res.data.prizeIndex);
                 setReward(res.data.reward);
                 setMustSpin(true);
+                router.refresh()
             } else {
                 message.error(res?.message || t('spinError'));
             }
@@ -117,10 +120,10 @@ export default function LuckyWheel({ initialStatus, initialHistory }: LuckyWheel
                 </Col>
             </Row>
 
-            <ResultModal 
-                visible={showResult} 
-                onClose={() => setShowResult(false)} 
-                reward={reward} 
+            <ResultModal
+                visible={showResult}
+                onClose={() => setShowResult(false)}
+                reward={reward}
             />
         </div>
     );
