@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { GatewayTimeoutException, Injectable, InternalServerErrorException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,21 +7,36 @@ import { Product, ProductDocument } from '../products/schemas/product.schema';
 
 @Injectable()
 export class ChatService {
-  private genAI: GoogleGenerativeAI;
+  private openai: OpenAI;
 
   constructor(
     @InjectModel(Product.name) private productModel: SoftDeleteModel<ProductDocument>,
     private configService: ConfigService,
   ) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    this.genAI = new GoogleGenerativeAI(apiKey || '');
+    this.openai = new OpenAI({
+      baseURL: 'http://localhost:11434/v1',
+      apiKey: 'ollama', // Ollama không yêu cầu key
+    });
   }
 
   async generateChatStream(userMessage: string) {
     try {
-      // 1. RETRIEVAL (Truy xuất sản phẩm dựa trên Text Search)
-      const searchText = userMessage?.trim();
+      // 1. KEYWORD EXTRACTION (Dùng AI lọc từ khóa để tìm kiếm chính xác hơn)
+      const keywordResponse = await this.openai.chat.completions.create({
+        model: 'qwen3:4b-instruct',
+        messages: [
+          {
+            role: 'system',
+            content: 'Bạn là chuyên gia trích xuất thực thể. Chỉ trả về duy nhất tên sản phẩm chính hoặc loại sản phẩm từ câu hỏi của người dùng. Không giải thích, không chào hỏi. Nếu không tìm thấy, trả về toàn bộ câu hỏi. Ví dụ: "Tôi muốn mua đèn LED" -> "đèn LED"'
+          },
+          { role: 'user', content: userMessage }
+        ],
+        temperature: 0,
+      });
 
+      const searchText = keywordResponse.choices[0]?.message?.content?.trim() || userMessage;
+
+      // 2. RETRIEVAL (Truy xuất sản phẩm dựa trên từ khóa đã lọc)
       const products = await this.productModel
         .find({
           name: {
@@ -69,35 +84,28 @@ Quy tắc xử lý:
    - Hãy chào lại hoặc trả lời thân thiện, sau đó khéo léo lái câu chuyện về việc "Dạ em có thể giúp anh/chị tìm sản phẩm gì ạ?". 
    - Không được đề cập đến việc "không tìm thấy sản phẩm" trong trường hợp này.`;
 
-      // 4. GENERATION (Sử dụng gemini-pro-latest cho ổn định Quota)
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-
-      // Cơ chế Timeout 10 giây cho cuộc gọi API
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new GatewayTimeoutException('AI_TIMEOUT')), 10000)
-      );
-
+      // 4. GENERATION (Sử dụng Qwen3 qua Ollama)
       try {
-        const result = await Promise.race([
-          model.generateContentStream({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: {
-              maxOutputTokens: 150,
-            }
-          }),
-          timeoutPromise
-        ]) as any;
+        const stream = await this.openai.chat.completions.create({
+          model: 'qwen3:4b-instruct',
+          messages: [
+            { role: 'system', content: prompt },
+            { role: 'user', content: userMessage }
+          ],
+          stream: true,
+        });
 
-        return result.stream;
-      } catch (error: any) {
-        // Phân loại lỗi để Frontend xử lý UI
-        if (error instanceof GatewayTimeoutException) throw error;
-
-        if (error?.status === 429 || error?.message?.includes('429')) {
-          throw new ServiceUnavailableException('AI_QUOTA_EXCEEDED');
+        // Tạo một generator để chuẩn hóa đầu ra là string
+        async function* streamGenerator() {
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            if (content) yield content;
+          }
         }
 
-        console.error('Gemini API Error:', error);
+        return streamGenerator();
+      } catch (error: any) {
+        console.error('Ollama/Qwen3 Error:', error);
         throw new InternalServerErrorException('AI_GENERIC_ERROR');
       }
     } catch (error) {

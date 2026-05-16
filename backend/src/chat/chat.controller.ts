@@ -16,8 +16,7 @@ export class ChatController {
     return new Observable((subscriber) => {
       (async () => {
         try {
-          for await (const chunk of stream) {
-            const chunkText = chunk.text();
+          for await (const chunkText of stream) {
             if (chunkText) {
               subscriber.next({ text: chunkText } as any);
             }
