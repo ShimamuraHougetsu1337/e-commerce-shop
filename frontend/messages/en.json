@@ -685,5 +685,31 @@
     "goodLuck": "Good Luck",
     "spinning": "Spinning...",
     "loadDataError": "Error loading data"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "You have no notifications",
+    "unreadCount": "{count} unread notifications",
+    "justNow": "Just now",
+    "ago": "ago",
+    "orderPendingTitle": "⏳ Order Placed Successfully",
+    "orderPendingMsg": "Your order #{id} is awaiting confirmation.",
+    "orderConfirmedTitle": "✅ Order Confirmed",
+    "orderConfirmedMsg": "Order #{id} is being packed and prepared for delivery.",
+    "orderPreparingTitle": "📦 Preparing Order",
+    "orderPreparingMsg": "The store is preparing items for order #{id}.",
+    "orderShippingTitle": "🚚 Order Dispatched",
+    "orderShippingMsg": "Order #{id} is on its way to you.",
+    "orderDeliveredTitle": "🎉 Delivered Successfully",
+    "orderDeliveredMsg": "Order #{id} has been delivered successfully.",
+    "orderCompletedTitle": "💖 Order Completed",
+    "orderCompletedMsg": "Order #{id} is complete. Let us know what you think!",
+    "orderCancelledTitle": "❌ Order Cancelled",
+    "orderCancelledMsg": "Order #{id} has been cancelled successfully.",
+    "orderReturnedTitle": "🔄 Order Returned",
+    "orderReturnedMsg": "Your return request for order #{id} has been processed.",
+    "newOrderAdminTitle": "🛍️ New Order Placed!",
+    "newOrderAdminMsg": "A customer has just placed order #{id}."
   }
 }

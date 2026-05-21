@@ -1,6 +1,9 @@
 import { Coupon, CouponDocument } from '@/coupons/schemas/coupon.schema';
 import { IUser } from '@/decorator/customize';
 import { MailService } from '@/mail/mail.service';
+import { NotificationsGateway } from '@/notifications/notifications.gateway';
+import { NotificationsService } from '@/notifications/notifications.service';
+import { NotificationType } from '@/notifications/schemas/notification.schema';
 import { Product, ProductDocument } from '@/products/schemas/product.schema';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
@@ -18,7 +21,9 @@ export class OrdersService {
         @InjectModel(Coupon.name) private couponModel: Model<CouponDocument>,
         @InjectModel(Product.name) private productModel: Model<ProductDocument>,
         @InjectConnection() private readonly connection: Connection,
-        private mailService: MailService
+        private mailService: MailService,
+        private notificationsService: NotificationsService,
+        private notificationsGateway: NotificationsGateway,
     ) { }
 
     async createOrder(user: IUser, createOrderDto: CreateOrderDto): Promise<Order> {
@@ -104,9 +109,33 @@ export class OrdersService {
             // Commit transaction
             await session.commitTransaction();
 
-            // 5. Gửi email xác nhận (không làm gián đoạn luồng chính, chạy sau khi commit)
+            // 5. Gửi email xác nhận (không làm gián đoạn luồng chính)
             const fullUser = await this.userModel.findById(user._id);
             this.mailService.sendOrderConfirmation(order, fullUser || user);
+
+            // 6. Gửi thông báo realtime cho user
+            const { type, title, message } = this.notificationsService.buildOrderNotification(
+                OrderStatus.PENDING,
+                order._id.toString(),
+            );
+            const notification = await this.notificationsService.createForUser(
+                user._id,
+                type,
+                title,
+                message,
+                order._id.toString(),
+            );
+            this.notificationsGateway.sendToUser(user._id, notification);
+
+            // 7. Thông báo cho Admin có đơn hàng mới
+            const adminNotif = await this.notificationsService.createForUser(
+                user._id,
+                NotificationType.NEW_ORDER_ADMIN,
+                '🛍️ Có đơn hàng mới!',
+                `Khách hàng vừa đặt đơn hàng #${order._id.toString().slice(-6).toUpperCase()} — ${order.totalAmount.toLocaleString('vi-VN')}đ`,
+                order._id.toString(),
+            );
+            this.notificationsGateway.sendToAdmins(adminNotif);
 
             return order;
 
@@ -239,6 +268,18 @@ export class OrdersService {
             },
             { new: true }
         ).populate('items.product', 'name images');
+
+        // Gửi thông báo realtime cho chủ đơn hàng
+        const userId = order.userId.toString();
+        const { type, title, message } = this.notificationsService.buildOrderNotification(status, id);
+        const notification = await this.notificationsService.createForUser(
+            userId,
+            type,
+            title,
+            message,
+            id,
+        );
+        this.notificationsGateway.sendToUser(userId, notification);
 
         return result;
     }

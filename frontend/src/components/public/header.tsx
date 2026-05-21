@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  CustomerServiceOutlined,
   DashboardOutlined,
   HeartOutlined,
   LogoutOutlined,
@@ -20,6 +21,7 @@ import { signOut, useSession } from 'next-auth/react';
 import SearchAutocomplete from './search.autocomplete';
 import LanguageSwitcher from './language-switcher';
 import { useTranslations } from 'next-intl';
+import NotificationBell from './notification-bell';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
@@ -142,6 +144,8 @@ export default function AppHeader() {
                 </Link>
               </Tooltip>
 
+              <NotificationBell />
+
               <Badge count={wishlistItems?.length} showZero size="small">
                 <Tooltip title={t('wishlist')}>
                   <Link href={'/wishlist'}>
@@ -149,6 +153,12 @@ export default function AppHeader() {
                   </Link>
                 </Tooltip>
               </Badge>
+
+              <Tooltip title="Hỗ trợ trực tuyến">
+                <Link href={'/support'}>
+                  <Button type="text" icon={<CustomerServiceOutlined style={{ fontSize: 20 }} />} />
+                </Link>
+              </Tooltip>
 
               <Badge count={cartItems?.length} showZero size="small">
                 <Tooltip title={t('cart')}>

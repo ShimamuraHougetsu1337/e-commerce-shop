@@ -39,7 +39,12 @@ export function useChat(t: any) {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg }),
+        body: JSON.stringify({
+          message: userMsg,
+          history: messages
+            .filter(m => !m.isError && m.content.trim() !== '')
+            .map(m => ({ role: m.role, content: m.content }))
+        }),
         signal: controller.signal
       });
 

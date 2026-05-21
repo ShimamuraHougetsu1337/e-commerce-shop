@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
 import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -10,14 +10,16 @@ import { Product, ProductDocument } from './schemas/product.schema';
 
 @Injectable()
 export class ProductsService {
-  private genAI: GoogleGenerativeAI;
+  private openai: OpenAI;
 
   constructor(
     @InjectModel(Product.name) private productModel: SoftDeleteModel<ProductDocument>,
     private configService: ConfigService,
   ) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    this.genAI = new GoogleGenerativeAI(apiKey || '');
+    this.openai = new OpenAI({
+      baseURL: 'http://localhost:11434/v1',
+      apiKey: 'ollama',
+    });
   }
 
   async create(createProductDto: CreateProductDto) {
@@ -45,11 +47,14 @@ export class ProductsService {
     delete filter.current;
     delete filter.pageSize;
 
-    // Nếu có tham số name (từ khóa search), chuyển sang sử dụng $text search để hỗ trợ tìm kiếm thông minh
+    // Tìm kiếm linh hoạt (OR logic): Chỉ cần khớp 1 trong các từ, nhưng CHỈ tìm trong TÊN
     if (filter.name) {
-      const keyword = filter.name.toString().replace(/\//g, '').replace(/i$/, ''); // Gỡ bỏ định dạng /.../i nếu có
-      delete filter.name;
-      filter.$text = { $search: keyword };
+      const keyword = filter.name.toString().replace(/\//g, '').replace(/i$/, '').trim();
+      const words = keyword.split(/\s+/).filter(w => w.length > 0);
+
+      // Tạo pattern: từ1|từ2|từ3... (Khớp ít nhất 1 từ)
+      const regexPattern = words.join('|');
+      filter.name = { $regex: regexPattern, $options: 'i' };
     }
 
     let offset = (+current - 1) * (+pageSize);
@@ -123,25 +128,49 @@ export class ProductsService {
 
   async searchByImage(file: Express.Multer.File) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      const base64Image = file.buffer.toString('base64');
 
-      const imagePart = {
-        inlineData: {
-          data: file.buffer.toString('base64'),
-          mimeType: file.mimetype,
-        },
-      };
+      // 1. Dùng model Vision để mô tả bức ảnh (Dùng tiếng Anh để Moondream nhận diện chính xác nhất)
+      const visionResponse = await this.openai.chat.completions.create({
+        model: 'moondream',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'What is the generic category of this item? Ignore all text, labels, and brand names on the packaging. Describe only its shape, color, and what kind of product it is (e.g., "cooking oil in a plastic bottle", "black jacket"). Keep it under 10 words.' },
+              { type: 'image_url', image_url: { url: `data:${file.mimetype};base64,${base64Image}` } }
+            ]
+          }
+        ]
+      });
 
-      const prompt = "Đây là sản phẩm gì? Hãy trả về tên sản phẩm ngắn gọn nhất có thể (dưới 5 từ) để tôi dùng tìm kiếm trong database.";
+      const description = visionResponse.choices[0]?.message?.content || '';
 
-      const result = await model.generateContent([prompt, imagePart]);
-      const response = await result.response;
-      const text = response.text().trim();
+      // 2. Dùng Qwen3 để dịch và trích xuất từ khóa tiếng Việt từ mô tả tiếng Anh
+      const keywordResponse = await this.openai.chat.completions.create({
+        model: 'qwen3:4b-instruct',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert E-commerce product keyword extractor. 
+Based on the English description, return ONLY the generic product name in VIETNAMESE (maximum 3 words) for database searching. 
+CRITICAL RULES:
+1. Ignore any brand names (like Neptune, Logitech, Apple).
+2. Ignore weird numbers or percentages (like 65%, 500ml) unless it's a clothing size.
+3. Example 1: "A bottle of Neptune cooking oil that withstands high temps" -> "dầu ăn"
+4. Example 2: "Black wireless gaming mouse" -> "chuột không dây"
+5. Example 3: "A red cotton t-shirt" -> "áo thun đỏ"`
+          },
+          { role: 'user', content: `Description: ${description}` }
+        ]
+      });
 
-      // Thực hiện tìm kiếm thông minh bằng $text search
+      const text = keywordResponse.choices[0]?.message?.content?.trim() || '';
+
+      // 3. Thực hiện tìm kiếm trong database (Chỉ tìm theo tên sản phẩm)
       const products = await this.productModel
         .find({
-          $text: { $search: text },
+          name: { $regex: text, $options: 'i' },
           isActive: true
         })
         .limit(10)
@@ -149,12 +178,13 @@ export class ProductsService {
         .exec();
 
       return {
+        description: description,
         keyword: text,
         result: products
       };
     } catch (error) {
-      console.error("Image search error:", error);
-      throw new InternalServerErrorException("Lỗi xử lý tìm kiếm bằng hình ảnh");
+      console.error("Local Image search error:", error);
+      throw new InternalServerErrorException("Lỗi xử lý tìm kiếm bằng hình ảnh tại local");
     }
   }
 }
