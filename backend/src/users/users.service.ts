@@ -1,6 +1,10 @@
 import { ADMIN_ROLE } from '@/databases/samples';
 import { Product, ProductDocument } from '@/products/schemas/product.schema';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
 import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
@@ -12,54 +16,59 @@ import { User, UserDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     @InjectModel(User.name) private userModel: SoftDeleteModel<UserDocument>,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
-  ) { }
+  ) {}
 
   hashPassword = (plainPassword: string) => {
     const salt = genSaltSync(10);
     const hashedPassword = hashSync(plainPassword, salt);
     return hashedPassword;
-  }
+  };
 
   validatePassword(password: string, hashedPassword: string) {
-    return compareSync(password, hashedPassword)
+    return compareSync(password, hashedPassword);
   }
 
   async create(createUserDto: CreateUserDto) {
-    let isEmailExisted = await this.userModel.exists({ email: createUserDto.email });
+    const isEmailExisted = await this.userModel.exists({
+      email: createUserDto.email,
+    });
     if (isEmailExisted) {
       throw new BadRequestException('Email already exists');
     }
-    let isUsernameExisted = await this.userModel.exists({ name: createUserDto.name });
+    const isUsernameExisted = await this.userModel.exists({
+      name: createUserDto.name,
+    });
     if (isUsernameExisted) {
       throw new BadRequestException('Username already exists');
     }
-    let hashedPassword = this.hashPassword(createUserDto.password);
+    const hashedPassword = this.hashPassword(createUserDto.password);
     const user = await this.userModel.create({
       ...createUserDto,
-      password: hashedPassword
+      password: hashedPassword,
     });
     return user;
   }
 
   async createSocialUser(email: string, name: string) {
-    let isEmailExisted = await this.userModel.exists({ email });
+    const isEmailExisted = await this.userModel.exists({ email });
     if (isEmailExisted) {
       throw new BadRequestException('Email already exists');
     }
-    
+
     // Tạo mật khẩu ngẫu nhiên cho social user
-    const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+    const randomPassword =
+      Math.random().toString(36).slice(-8) +
+      Math.random().toString(36).slice(-8);
     const hashedPassword = this.hashPassword(randomPassword);
 
     const user = await this.userModel.create({
       email,
       name,
       password: hashedPassword,
-      role: ADMIN_ROLE === 'SUPER_ADMIN' ? 'NORMAL_USER' : 'NORMAL_USER' // fallback to normal user
+      role: ADMIN_ROLE === 'SUPER_ADMIN' ? 'NORMAL_USER' : 'NORMAL_USER', // fallback to normal user
     });
     return user;
   }
@@ -68,13 +77,14 @@ export class UsersService {
     const { filter, sort, projection, population } = aqp(qs);
     delete filter.current;
     delete filter.pageSize;
-    let offset = (+current - 1) * (+pageSize);
-    let defaultLimit = +pageSize ? +pageSize : 10;
+    const offset = (+current - 1) * +pageSize;
+    const defaultLimit = +pageSize ? +pageSize : 10;
 
     const totalItems = (await this.userModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.userModel.find(filter)
+    const result = await this.userModel
+      .find(filter)
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)
@@ -86,10 +96,10 @@ export class UsersService {
         current: current,
         pageSize: pageSize,
         pages: totalPages,
-        total: totalItems
+        total: totalItems,
       },
-      result
-    }
+      result,
+    };
   }
 
   findOne(id: string) {
@@ -97,9 +107,12 @@ export class UsersService {
   }
 
   update(updateUserDto: UpdateUserDto) {
-    return this.userModel.updateOne({ _id: updateUserDto.id }, {
-      ...updateUserDto
-    });
+    return this.userModel.updateOne(
+      { _id: updateUserDto.id },
+      {
+        ...updateUserDto,
+      },
+    );
   }
 
   remove(id: string) {
@@ -119,10 +132,9 @@ export class UsersService {
     if (!product) {
       throw new NotFoundException(`Product with id '${productId}' not found`);
     }
-    await this.userModel.findByIdAndUpdate(
-      userId,
-      { $addToSet: { wishlist: productId } }
-    );
+    await this.userModel.findByIdAndUpdate(userId, {
+      $addToSet: { wishlist: productId },
+    });
     return { productId };
   }
 
@@ -131,10 +143,9 @@ export class UsersService {
     if (!product) {
       throw new NotFoundException(`Product with id '${productId}' not found`);
     }
-    await this.userModel.findByIdAndUpdate(
-      userId,
-      { $pull: { wishlist: productId } }
-    );
+    await this.userModel.findByIdAndUpdate(userId, {
+      $pull: { wishlist: productId },
+    });
     return { productId };
   }
 
@@ -147,7 +158,10 @@ export class UsersService {
     return user?.wishlist ?? [];
   }
 
-  async updateProfile(userId: string, data: { name?: string, oldPassword?: string, newPassword?: string }) {
+  async updateProfile(
+    userId: string,
+    data: { name?: string; oldPassword?: string; newPassword?: string },
+  ) {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('Người dùng không tồn tại');
@@ -159,7 +173,10 @@ export class UsersService {
     }
 
     if (data.oldPassword && data.newPassword) {
-      const isPasswordValid = this.validatePassword(data.oldPassword, user.password);
+      const isPasswordValid = this.validatePassword(
+        data.oldPassword,
+        user.password,
+      );
       if (!isPasswordValid) {
         throw new BadRequestException('Mật khẩu cũ không chính xác');
       }
@@ -172,5 +189,4 @@ export class UsersService {
   async updateUserToken(refreshToken: string, _id: string) {
     return await this.userModel.updateOne({ _id }, { refreshToken });
   }
-
 }

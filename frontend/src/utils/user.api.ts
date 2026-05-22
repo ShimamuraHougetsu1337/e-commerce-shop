@@ -114,7 +114,7 @@ export const getMyOrdersApi = (accessToken: string) => {
 };
 
 export const createOrderApi = (
-    data: { items: any[]; totalAmount: number; shippingAddress?: string; paymentMethod?: string },
+    data: { items: any[]; totalAmount: number; shippingAddress?: string; paymentMethod?: string; couponCode?: string; discountValue?: number; discountType?: string; minOrderValue?: number },
     accessToken: string
 ) => {
     return sendRequest<IBackendRes<any>>({
@@ -122,6 +122,13 @@ export const createOrderApi = (
         method: 'POST',
         body: data,
         headers: { Authorization: `Bearer ${accessToken}` },
+    });
+};
+
+export const verifyVnpayPaymentApi = (queryString: string) => {
+    return sendRequest<IBackendRes<any>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders/vnpay-verify?${queryString}`,
+        method: 'GET',
     });
 };
 

@@ -7,14 +7,14 @@ import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: Order.name, schema: OrderSchema },
-            { name: Product.name, schema: ProductSchema },
-            { name: User.name, schema: UserSchema },
-        ]),
-    ],
-    controllers: [DashboardController],
-    providers: [DashboardService],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Order.name, schema: OrderSchema },
+      { name: Product.name, schema: ProductSchema },
+      { name: User.name, schema: UserSchema },
+    ]),
+  ],
+  controllers: [DashboardController],
+  providers: [DashboardService],
 })
-export class DashboardModule { }
+export class DashboardModule {}

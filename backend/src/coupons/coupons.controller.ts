@@ -1,12 +1,26 @@
-import { Public, ResponseMessage, User, type IUser } from '@/decorator/customize';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Public,
+  ResponseMessage,
+  User,
+  type IUser,
+} from '@/decorator/customize';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CouponsService } from './coupons.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 
 @Controller('coupons')
 export class CouponsController {
-  constructor(private readonly couponsService: CouponsService) { }
+  constructor(private readonly couponsService: CouponsService) {}
 
   @Post()
   @ResponseMessage('Tạo mã giảm giá thành công')
@@ -17,8 +31,8 @@ export class CouponsController {
   @Get()
   @ResponseMessage('Lấy danh sách mã giảm giá thành công')
   findAll(
-    @Query("current") currentPage: string,
-    @Query("pageSize") limit: string,
+    @Query('current') currentPage: string,
+    @Query('pageSize') limit: string,
     @Query() qs: string,
   ) {
     return this.couponsService.findAll(+currentPage, +limit, qs);
@@ -33,8 +47,15 @@ export class CouponsController {
 
   @Post('apply')
   @ResponseMessage('Áp dụng mã giảm giá thành công')
-  applyCoupon(@Body() body: { code: string, orderValue: number }, @User() user: IUser) {
-    return this.couponsService.applyCoupon(body.code, body.orderValue, user._id);
+  applyCoupon(
+    @Body() body: { code: string; orderValue: number },
+    @User() user: IUser,
+  ) {
+    return this.couponsService.applyCoupon(
+      body.code,
+      body.orderValue,
+      user._id,
+    );
   }
 
   @Get(':id')

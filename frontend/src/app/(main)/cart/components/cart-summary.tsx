@@ -4,7 +4,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { applyCouponApi } from '@/utils/cart.api';
 import { createOrderApi } from '@/utils/user.api';
 import { CreditCardOutlined, GiftOutlined, TagOutlined } from '@ant-design/icons';
-import { App, Button, Card, Divider, Flex, Input, Space, Typography } from 'antd';
+import { App, Button, Card, Divider, Flex, Input, Space, Typography, Radio } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -29,6 +29,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
     const [applyingCoupon, setApplyingCoupon] = useState(false);
     const [isCouponsModalVisible, setIsCouponsModalVisible] = useState(false);
     const [shippingAddress, setShippingAddress] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY'>('COD');
 
     const handleApplyCoupon = async () => {
         if (!session?.accessToken) {
@@ -86,7 +87,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
                     price: item.price,
                 })),
                 totalAmount: finalTotal,
-                paymentMethod: 'COD',
+                paymentMethod: paymentMethod,
                 shippingAddress: shippingAddress.trim(),
                 couponCode: appliedCoupon ? appliedCoupon.coupon.code : undefined,
                 discountValue: appliedCoupon ? appliedCoupon.coupon.discountValue : undefined,
@@ -104,12 +105,17 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
             await clearCart(session.accessToken);
             onCheckoutSuccess();
             
+            if (paymentMethod === 'VNPAY' && res.data?.paymentUrl) {
+                window.location.href = res.data.paymentUrl;
+                return;
+            }
+            
             modal.success({
                 title: t('checkoutSuccessTitle'),
                 content: (
                     <div>
                         <p>{t('checkoutSuccessDesc')}</p>
-                        <p>{t('orderId')}: <b>{res.data?._id || 'N/A'}</b></p>
+                        <p>{t('orderId')}: <b>{res.data?.order?._id || 'N/A'}</b></p>
                     </div>
                 ),
                 okText: t('viewOrder'),
@@ -188,6 +194,16 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
                     rows={3}
                     style={{ borderRadius: 8 }}
                 />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+                <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('paymentMethod')}</Text>
+                <Radio.Group onChange={(e) => setPaymentMethod(e.target.value)} value={paymentMethod}>
+                    <Space direction="vertical">
+                        <Radio value="COD">{t('paymentCOD')}</Radio>
+                        <Radio value="VNPAY">{t('paymentVNPAY')}</Radio>
+                    </Space>
+                </Radio.Group>
             </div>
 
             <Divider />

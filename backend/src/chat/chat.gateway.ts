@@ -10,7 +10,10 @@ import {
 import { Server, Socket } from 'socket.io';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ChatMessage, ChatMessageDocument } from './schemas/chat-message.schema';
+import {
+  ChatMessage,
+  ChatMessageDocument,
+} from './schemas/chat-message.schema';
 import { ConfigService } from '@nestjs/config';
 
 @WebSocketGateway({
@@ -30,7 +33,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private adminSocketIds = new Set<string>();
 
   constructor(
-    @InjectModel(ChatMessage.name) private chatMessageModel: Model<ChatMessageDocument>,
+    @InjectModel(ChatMessage.name)
+    private chatMessageModel: Model<ChatMessageDocument>,
     private configService: ConfigService,
   ) {}
 
@@ -62,14 +66,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join_room')
-  handleJoinRoom(@MessageBody() data: { roomId: string, userId?: string, isAdmin?: boolean }, @ConnectedSocket() client: Socket) {
+  handleJoinRoom(
+    @MessageBody() data: { roomId: string; userId?: string; isAdmin?: boolean },
+    @ConnectedSocket() client: Socket,
+  ) {
     client.join(data.roomId);
-    
+
     if (data.userId) {
       this.socketToUser.set(client.id, data.userId);
       const currentCount = this.userConnections.get(data.userId) || 0;
       if (currentCount === 0) {
-        this.server.emit('user_status_change', { userId: data.userId, status: 'online' });
+        this.server.emit('user_status_change', {
+          userId: data.userId,
+          status: 'online',
+        });
       }
       this.userConnections.set(data.userId, currentCount + 1);
     }
@@ -86,12 +96,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Luôn gửi trạng thái admin hiện tại cho người vừa join
-    client.emit('admin_status_change', { status: this.adminSocketIds.size > 0 ? 'online' : 'offline' });
+    client.emit('admin_status_change', {
+      status: this.adminSocketIds.size > 0 ? 'online' : 'offline',
+    });
   }
 
   @SubscribeMessage('send_message')
   async handleMessage(
-    @MessageBody() data: { senderId: string; receiverId: string; content: string; roomId: string },
+    @MessageBody()
+    data: {
+      senderId: string;
+      receiverId: string;
+      content: string;
+      roomId: string;
+    },
     @ConnectedSocket() client: Socket,
   ) {
     const newMessage = await this.chatMessageModel.create({

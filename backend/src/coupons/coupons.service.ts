@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
 import { Model } from 'mongoose';
@@ -10,16 +14,25 @@ import { Coupon, CouponDocument } from './schemas/coupon.schema';
 export class CouponsService {
   constructor(
     @InjectModel(Coupon.name) private couponModel: Model<CouponDocument>,
-  ) { }
+  ) {}
 
   async create(createCouponDto: CreateCouponDto) {
-    if (createCouponDto.discountType === 'PERCENTAGE' && createCouponDto.discountValue > 100) {
-      throw new BadRequestException('Mức giảm giá theo phần trăm không được vượt quá 100%');
+    if (
+      createCouponDto.discountType === 'PERCENTAGE' &&
+      createCouponDto.discountValue > 100
+    ) {
+      throw new BadRequestException(
+        'Mức giảm giá theo phần trăm không được vượt quá 100%',
+      );
     }
 
-    const isExist = await this.couponModel.findOne({ code: createCouponDto.code.toUpperCase() });
+    const isExist = await this.couponModel.findOne({
+      code: createCouponDto.code.toUpperCase(),
+    });
     if (isExist) {
-      throw new BadRequestException(`Mã giảm giá ${createCouponDto.code} đã tồn tại`);
+      throw new BadRequestException(
+        `Mã giảm giá ${createCouponDto.code} đã tồn tại`,
+      );
     }
     try {
       const coupon = await this.couponModel.create({
@@ -29,7 +42,9 @@ export class CouponsService {
       return coupon;
     } catch (error) {
       if (error.code === 11000) {
-        throw new BadRequestException(`Mã giảm giá ${createCouponDto.code} đã tồn tại`);
+        throw new BadRequestException(
+          `Mã giảm giá ${createCouponDto.code} đã tồn tại`,
+        );
       }
       throw error;
     }
@@ -40,13 +55,14 @@ export class CouponsService {
     delete filter.current;
     delete filter.pageSize;
 
-    const offset = (+currentPage - 1) * (+limit);
+    const offset = (+currentPage - 1) * +limit;
     const defaultLimit = +limit ? +limit : 10;
 
     const totalItems = await this.couponModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.couponModel.find(filter)
+    const result = await this.couponModel
+      .find(filter)
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)
@@ -58,10 +74,10 @@ export class CouponsService {
         current: currentPage,
         pageSize: limit,
         pages: totalPages,
-        total: totalItems
+        total: totalItems,
       },
-      result
-    }
+      result,
+    };
   }
 
   async findOne(id: string) {
@@ -74,18 +90,24 @@ export class CouponsService {
     const query: any = {
       isActive: true,
       expiryDate: { $gt: new Date() },
-      $expr: { $lt: ["$usedCount", "$maxUsage"] }
+      $expr: { $lt: ['$usedCount', '$maxUsage'] },
     };
 
     const visibilityCondition = userId
-      ? { $or: [{ assignedTo: { $exists: false } }, { assignedTo: null }, { assignedTo: userId }] }
+      ? {
+          $or: [
+            { assignedTo: { $exists: false } },
+            { assignedTo: null },
+            { assignedTo: userId },
+          ],
+        }
       : { $or: [{ assignedTo: { $exists: false } }, { assignedTo: null }] };
 
     const hideLegacySpinCondition = {
       $or: [
         { code: { $not: /^SPIN-/ } },
-        { assignedTo: { $exists: true, $ne: null } }
-      ]
+        { assignedTo: { $exists: true, $ne: null } },
+      ],
     };
 
     query.$and = [visibilityCondition, hideLegacySpinCondition];
@@ -107,16 +129,23 @@ export class CouponsService {
       throw new BadRequestException('Mã giảm giá đã hết hạn');
     }
 
-    if (coupon.usedBy && coupon.usedBy.some(id => id.toString() === userId)) {
+    if (coupon.usedBy && coupon.usedBy.some((id) => id.toString() === userId)) {
       throw new BadRequestException('Bạn đã sử dụng mã giảm giá này rồi');
     }
 
     if (coupon.code.startsWith('SPIN-') && !coupon.assignedTo) {
-      throw new BadRequestException('Mã giảm giá này đã cũ và không còn hợp lệ');
+      throw new BadRequestException(
+        'Mã giảm giá này đã cũ và không còn hợp lệ',
+      );
     }
 
-    if (coupon.assignedTo && coupon.assignedTo.toString() !== userId.toString()) {
-      throw new BadRequestException('Mã giảm giá này không dành cho tài khoản của bạn');
+    if (
+      coupon.assignedTo &&
+      coupon.assignedTo.toString() !== userId.toString()
+    ) {
+      throw new BadRequestException(
+        'Mã giảm giá này không dành cho tài khoản của bạn',
+      );
     }
 
     if (coupon.usedCount >= coupon.maxUsage) {
@@ -124,7 +153,9 @@ export class CouponsService {
     }
 
     if (orderValue < coupon.minOrderValue) {
-      throw new BadRequestException(`Đơn hàng phải từ ${coupon.minOrderValue}đ để áp dụng mã này`);
+      throw new BadRequestException(
+        `Đơn hàng phải từ ${coupon.minOrderValue}đ để áp dụng mã này`,
+      );
     }
 
     let discountAmount = 0;
@@ -137,28 +168,36 @@ export class CouponsService {
     return {
       coupon,
       discountAmount,
-      finalTotal: Math.max(0, orderValue - discountAmount)
+      finalTotal: Math.max(0, orderValue - discountAmount),
     };
   }
 
   async update(id: string, updateCouponDto: UpdateCouponDto) {
     const currentCoupon = await this.couponModel.findById(id);
-    if (!currentCoupon) throw new NotFoundException('Không tìm thấy mã giảm giá');
+    if (!currentCoupon)
+      throw new NotFoundException('Không tìm thấy mã giảm giá');
 
     const newType = updateCouponDto.discountType || currentCoupon.discountType;
-    const newValue = updateCouponDto.discountValue !== undefined ? updateCouponDto.discountValue : currentCoupon.discountValue;
+    const newValue =
+      updateCouponDto.discountValue !== undefined
+        ? updateCouponDto.discountValue
+        : currentCoupon.discountValue;
 
     if (newType === 'PERCENTAGE' && newValue > 100) {
-      throw new BadRequestException('Mức giảm giá theo phần trăm không được vượt quá 100%');
+      throw new BadRequestException(
+        'Mức giảm giá theo phần trăm không được vượt quá 100%',
+      );
     }
 
     if (updateCouponDto.code) {
       const isExist = await this.couponModel.findOne({
         code: updateCouponDto.code.toUpperCase(),
-        _id: { $ne: id }
+        _id: { $ne: id },
       });
       if (isExist) {
-        throw new BadRequestException(`Mã giảm giá ${updateCouponDto.code} đã tồn tại`);
+        throw new BadRequestException(
+          `Mã giảm giá ${updateCouponDto.code} đã tồn tại`,
+        );
       }
       updateCouponDto.code = updateCouponDto.code.toUpperCase();
     }
@@ -168,7 +207,9 @@ export class CouponsService {
       return await currentCoupon.save();
     } catch (error) {
       if (error.code === 11000) {
-        throw new BadRequestException(`Mã giảm giá ${updateCouponDto.code} đã tồn tại`);
+        throw new BadRequestException(
+          `Mã giảm giá ${updateCouponDto.code} đã tồn tại`,
+        );
       }
       throw error;
     }

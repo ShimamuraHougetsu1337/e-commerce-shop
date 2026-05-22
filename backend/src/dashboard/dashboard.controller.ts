@@ -4,11 +4,11 @@ import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
 export class DashboardController {
-    constructor(private readonly dashboardService: DashboardService) { }
+  constructor(private readonly dashboardService: DashboardService) {}
 
-    @Get('stats')
-    @ResponseMessage('Lấy thống kê dashboard thành công')
-    async getStats() {
-        return await this.dashboardService.getStats();
-    }
+  @Get('stats')
+  @ResponseMessage('Lấy thống kê dashboard thành công')
+  async getStats() {
+    return await this.dashboardService.getStats();
+  }
 }

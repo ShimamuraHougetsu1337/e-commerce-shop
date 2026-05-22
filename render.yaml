@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: ecommerce-backend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    autoDeploy: false  # Managed by GitHub Actions CI/CD
+
+    healthCheckPath: /api/v1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # ─── Các biến nhạy cảm cần set tay trong Render Dashboard ───
+      # MONGODB_URI
+      # JWT_SECRET
+      # JWT_EXPIRES_IN
+      # JWT_REFRESH_TOKEN_SECRET
+      # JWT_REFRESH_EXPIRES_IN
+      # GEMINI_API_KEY
+      # EMAIL_HOST
+      # EMAIL_PORT
+      # EMAIL_USER
+      # EMAIL_PASS
+      # WEBSITE_URL           ← URL của Vercel frontend
+      # VNP_TMN_CODE
+      # VNP_HASH_SECRET
+      # VNP_URL
+      # VNP_RETURN_URL        ← URL Vercel + /order/vnpay-return

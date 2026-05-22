@@ -10,41 +10,41 @@ import { LocalAuthGuard } from './guard/local-auth.guard';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersService: UsersService
-  ) { }
+    private readonly usersService: UsersService,
+  ) {}
 
   @Public()
-  @ResponseMessage("Register successfully")
-  @Post("/register")
+  @ResponseMessage('Register successfully')
+  @Post('/register')
   register(@Body() user: RegisterUserDto) {
-    return this.authService.handleRegister(user)
+    return this.authService.handleRegister(user);
   }
 
   @Public()
   @UseGuards(LocalAuthGuard)
-  @ResponseMessage("Login successfully")
-  @Post("login")
+  @ResponseMessage('Login successfully')
+  @Post('login')
   login(@Req() req: any) {
-    return this.authService.login(req.user)
+    return this.authService.login(req.user);
   }
 
-  @Get("profile")
+  @Get('profile')
   async handleTest(@Req() req: any) {
     const user = await this.usersService.findOne(req.user._id);
     return user;
   }
 
   @Public()
-  @ResponseMessage("Social Login successfully")
-  @Post("social-login")
+  @ResponseMessage('Social Login successfully')
+  @Post('social-login')
   socialLogin(@Body() body: SocialLoginInput) {
     return this.authService.handleSocialLogin(body);
   }
 
   @Public()
-  @ResponseMessage("Refresh token successfully")
-  @Post("refresh")
-  handleRefreshToken(@Body("refreshToken") refreshToken: string) {
+  @ResponseMessage('Refresh token successfully')
+  @Post('refresh')
+  handleRefreshToken(@Body('refreshToken') refreshToken: string) {
     return this.authService.processRefreshToken(refreshToken);
   }
 }

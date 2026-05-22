@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
 import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -9,11 +13,12 @@ import { Category, CategoryDocument } from './schemas/category.schema';
 @Injectable()
 export class CategoriesService {
   constructor(
-    @InjectModel(Category.name) private categoryModel: SoftDeleteModel<CategoryDocument>
-  ) { }
+    @InjectModel(Category.name)
+    private categoryModel: SoftDeleteModel<CategoryDocument>,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    let baseSlug = createCategoryDto.slug;
+    const baseSlug = createCategoryDto.slug;
     let uniqueSlug = baseSlug;
     let counter = 1;
 
@@ -30,13 +35,14 @@ export class CategoriesService {
     const { filter, sort, projection, population } = aqp(qs);
     delete filter.current;
     delete filter.pageSize;
-    let offset = (+current - 1) * (+pageSize);
-    let defaultLimit = +pageSize ? +pageSize : 10;
+    const offset = (+current - 1) * +pageSize;
+    const defaultLimit = +pageSize ? +pageSize : 10;
 
     const totalItems = (await this.categoryModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.categoryModel.find(filter)
+    const result = await this.categoryModel
+      .find(filter)
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)
@@ -48,10 +54,10 @@ export class CategoriesService {
         current: current,
         pageSize: pageSize,
         pages: totalPages,
-        total: totalItems
+        total: totalItems,
       },
-      result
-    }
+      result,
+    };
   }
 
   async findOne(id: string) {
@@ -67,7 +73,7 @@ export class CategoriesService {
     if (updateCategoryDto.slug) {
       const existing = await this.categoryModel.findOne({
         slug: updateCategoryDto.slug,
-        _id: { $ne: id }
+        _id: { $ne: id },
       });
       if (existing) {
         throw new BadRequestException('Đường dẫn (Slug) này đã tồn tại!');
@@ -76,7 +82,9 @@ export class CategoriesService {
 
     const category = await this.categoryModel.findById(id);
     if (!category) {
-      throw new NotFoundException(`Không thể cập nhật. Không tìm thấy ID: ${id}`);
+      throw new NotFoundException(
+        `Không thể cập nhật. Không tìm thấy ID: ${id}`,
+      );
     }
 
     category.set(updateCategoryDto);
@@ -90,7 +98,7 @@ export class CategoriesService {
 
     return {
       message: `Đã xóa thành công danh mục: ${category.name}`,
-      result
+      result,
     };
   }
 }

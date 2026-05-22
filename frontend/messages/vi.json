@@ -145,6 +145,9 @@
     "enterShippingAddress": "Nhập địa chỉ nhận hàng của bạn",
     "totalAmount": "Thành tiền",
     "checkoutNow": "Thanh toán ngay",
+    "paymentMethod": "Phương thức thanh toán",
+    "paymentCOD": "Thanh toán khi nhận hàng (COD)",
+    "paymentVNPAY": "Thanh toán trực tuyến qua VNPAY",
     "discountForYou": "Mã giảm giá dành cho bạn",
     "noDiscountCodes": "Hiện tại không có mã giảm giá nào",
     "used": "Đã sử dụng",
@@ -711,5 +714,21 @@
     "orderReturnedMsg": "Yêu cầu trả đơn hàng #{id} của bạn đã được xử lý.",
     "newOrderAdminTitle": "🛍️ Có đơn hàng mới!",
     "newOrderAdminMsg": "Khách hàng vừa đặt đơn hàng #{id}."
+  },
+  "VnpayReturn": {
+    "titleSuccess": "Thanh toán thành công!",
+    "descSuccess": "Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận thanh toán.",
+    "titleFail": "Thanh toán thất bại",
+    "descFail": "Đã có lỗi xảy ra trong quá trình thanh toán qua VNPAY hoặc chữ ký không hợp lệ.",
+    "verifying": "Đang xác thực giao dịch VNPAY...",
+    "pleaseWait": "Vui lòng không tắt hoặc tải lại trang này.",
+    "orderId": "Mã đơn hàng",
+    "totalAmount": "Tổng số tiền",
+    "paymentMethod": "Phương thức",
+    "viewOrder": "Xem đơn hàng",
+    "continueShopping": "Tiếp tục mua sắm",
+    "backToCart": "Quay lại giỏ hàng",
+    "backToHome": "Về trang chủ",
+    "noDetails": "Không tìm thấy thông tin giao dịch."
   }
 }

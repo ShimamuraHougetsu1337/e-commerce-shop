@@ -13,10 +13,10 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule,
     MongooseModule.forFeature([
       { name: Product.name, schema: ProductSchema },
-      { name: ChatMessage.name, schema: ChatMessageSchema }
-    ])
+      { name: ChatMessage.name, schema: ChatMessageSchema },
+    ]),
   ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway],
 })
-export class ChatModule { }
+export class ChatModule {}

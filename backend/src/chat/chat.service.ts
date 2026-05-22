@@ -1,10 +1,18 @@
 import OpenAI from 'openai';
-import { GatewayTimeoutException, Injectable, InternalServerErrorException, ServiceUnavailableException } from '@nestjs/common';
+import {
+  GatewayTimeoutException,
+  Injectable,
+  InternalServerErrorException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { Product, ProductDocument } from '../products/schemas/product.schema';
-import { ChatMessage, ChatMessageDocument } from './schemas/chat-message.schema';
+import {
+  ChatMessage,
+  ChatMessageDocument,
+} from './schemas/chat-message.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
@@ -12,8 +20,10 @@ export class ChatService {
   private openai: OpenAI;
 
   constructor(
-    @InjectModel(Product.name) private productModel: SoftDeleteModel<ProductDocument>,
-    @InjectModel(ChatMessage.name) private chatMessageModel: Model<ChatMessageDocument>,
+    @InjectModel(Product.name)
+    private productModel: SoftDeleteModel<ProductDocument>,
+    @InjectModel(ChatMessage.name)
+    private chatMessageModel: Model<ChatMessageDocument>,
     private configService: ConfigService,
   ) {
     this.openai = new OpenAI({
@@ -25,10 +35,7 @@ export class ChatService {
   async getChatHistory(userId: string) {
     return await this.chatMessageModel
       .find({
-        $or: [
-          { senderId: userId },
-          { receiverId: userId }
-        ]
+        $or: [{ senderId: userId }, { receiverId: userId }],
       })
       .sort({ createdAt: 1 })
       .exec();
@@ -40,37 +47,33 @@ export class ChatService {
       {
         $group: {
           _id: {
-            $cond: [
-              { $eq: ["$receiverId", null] },
-              "$senderId",
-              "$receiverId"
-            ]
+            $cond: [{ $eq: ['$receiverId', null] }, '$senderId', '$receiverId'],
           },
-          lastMessage: { $first: "$content" },
-          lastUpdate: { $first: "$createdAt" }
-        }
+          lastMessage: { $first: '$content' },
+          lastUpdate: { $first: '$createdAt' },
+        },
       },
       {
         $addFields: {
           // Ép kiểu _id về ObjectId nếu nó đang là String để lookup chính xác
-          userObjectId: { $toObjectId: "$_id" }
-        }
+          userObjectId: { $toObjectId: '$_id' },
+        },
       },
       {
         $lookup: {
-          from: "users",
-          localField: "userObjectId",
-          foreignField: "_id",
-          as: "userDetails"
-        }
+          from: 'users',
+          localField: 'userObjectId',
+          foreignField: '_id',
+          as: 'userDetails',
+        },
       },
-      { $unwind: "$userDetails" },
+      { $unwind: '$userDetails' },
       { $sort: { lastUpdate: -1 } },
       {
         $project: {
-          userObjectId: 0
-        }
-      }
+          userObjectId: 0,
+        },
+      },
     ]);
   }
 
@@ -90,7 +93,7 @@ export class ChatService {
       /^(ok|oke|okay|được rồi|rồi|vâng|dạ|ừ)\s*[!.]*$/i,
       /^(tạm biệt|bye|bai|hẹn gặp)/i,
     ];
-    return smallTalkPatterns.some(p => p.test(message.trim()));
+    return smallTalkPatterns.some((p) => p.test(message.trim()));
   }
 
   /**
@@ -113,7 +116,7 @@ export class ChatService {
 
     // Đưa vào tối đa 4 tin nhắn gần nhất để giải quyết đại từ
     if (history.length > 0) {
-      history.slice(-4).forEach(h => {
+      history.slice(-4).forEach((h) => {
         extractionMessages.push({ role: h.role, content: h.content });
       });
     }
@@ -144,10 +147,11 @@ export class ChatService {
    */
   private async retrieveProducts(keyword: string) {
     const baseQuery = { isActive: true, isDeleted: false };
-    const selectFields = 'name price short_description averageRating totalReviews stock_quantity';
+    const selectFields =
+      'name price short_description averageRating totalReviews stock_quantity';
 
     // Chiến lược 1: Tìm exact phrase (nhanh, chính xác)
-    let products = await this.productModel
+    const products = await this.productModel
       .find({ ...baseQuery, name: { $regex: keyword, $options: 'i' } })
       .select(selectFields)
       .sort({ averageRating: -1 })
@@ -159,8 +163,8 @@ export class ChatService {
     if (products.length < 3) {
       const tokens = keyword
         .split(/\s+/)
-        .filter(t => t.length > 1)
-        .map(t => ({ name: { $regex: t, $options: 'i' } }));
+        .filter((t) => t.length > 1)
+        .map((t) => ({ name: { $regex: t, $options: 'i' } }));
 
       if (tokens.length > 1) {
         const fallback = await this.productModel
@@ -172,7 +176,7 @@ export class ChatService {
           .exec();
 
         // Gộp, loại trùng theo _id
-        const seen = new Set(products.map(p => String(p._id)));
+        const seen = new Set(products.map((p) => String(p._id)));
         for (const p of fallback) {
           if (!seen.has(String(p._id))) products.push(p);
           if (products.length >= 5) break;
@@ -197,7 +201,10 @@ export class ChatService {
       try {
         keyword = await this.extractSearchKeyword(userMessage, safeHistory);
       } catch (err) {
-        console.warn('[Chat] Keyword extraction failed, skipping retrieval:', err);
+        console.warn(
+          '[Chat] Keyword extraction failed, skipping retrieval:',
+          err,
+        );
       }
 
       // ── 2. RETRIEVAL ───────────────────────────────────────────────────────
@@ -209,7 +216,7 @@ export class ChatService {
 
           if (products.length > 0) {
             context = products
-              .map(p => {
+              .map((p) => {
                 const desc = p.short_description
                   ? p.short_description.substring(0, 120) + '…'
                   : 'Không có mô tả.';
@@ -247,18 +254,20 @@ ${context}
 - KHÔNG dùng thẻ <think> hay suy nghĩ thành văn bản.
 
 ## Xử lý theo tình huống:
-${hasProducts
-  ? `- Khách hỏi sản phẩm: Tư vấn dựa trên dữ liệu trên. Đề xuất sản phẩm nổi bật nhất.
+${
+  hasProducts
+    ? `- Khách hỏi sản phẩm: Tư vấn dựa trên dữ liệu trên. Đề xuất sản phẩm nổi bật nhất.
 - Nếu còn ít hàng (⚠️): Nhắc khách mua sớm để không hết.
 - Nếu HẾT HÀNG: Xin lỗi và hỏi khách có muốn xem mẫu tương tự không.`
-  : `- Không tìm thấy sản phẩm khớp: Thông báo nhẹ nhàng, hỏi khách muốn tìm sản phẩm khác không.`}
+    : `- Không tìm thấy sản phẩm khớp: Thông báo nhẹ nhàng, hỏi khách muốn tìm sản phẩm khác không.`
+}
 - Câu chào hỏi / ngoài lề: Chào lại thân thiện rồi hỏi "Dạ em có thể giúp anh/chị tìm sản phẩm gì ạ?". KHÔNG đề cập "không tìm thấy sản phẩm".`;
 
       // ── 4. GENERATION (Streaming) ──────────────────────────────────────────
       const apiMessages: any[] = [{ role: 'system', content: systemPrompt }];
 
       // Thêm tối đa 6 tin nhắn lịch sử gần nhất
-      safeHistory.slice(-6).forEach(h => {
+      safeHistory.slice(-6).forEach((h) => {
         apiMessages.push({ role: h.role, content: h.content });
       });
 

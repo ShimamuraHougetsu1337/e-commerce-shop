@@ -32,7 +32,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         connectionFactory: (connection) => {
           connection.plugin(softDeletePlugin);
           return connection;
-        }
+        },
       }),
       inject: [ConfigService],
     }),
@@ -55,4 +55,4 @@ import { NotificationsModule } from './notifications/notifications.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

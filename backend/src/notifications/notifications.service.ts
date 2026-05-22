@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Notification, NotificationDocument, NotificationType } from './schemas/notification.schema';
+import {
+  Notification,
+  NotificationDocument,
+  NotificationType,
+} from './schemas/notification.schema';
 import { OrderStatus } from '@/orders/schemas/order.schema';
 
 @Injectable()
@@ -59,7 +63,10 @@ export class NotificationsService {
   ): { type: NotificationType; title: string; message: string } {
     const shortId = orderId.toString().slice(-6).toUpperCase();
 
-    const map: Record<OrderStatus, { type: NotificationType; title: string; message: string }> = {
+    const map: Record<
+      OrderStatus,
+      { type: NotificationType; title: string; message: string }
+    > = {
       [OrderStatus.PENDING]: {
         type: NotificationType.ORDER_PLACED,
         title: '🛒 Đơn hàng đã được đặt',
@@ -107,10 +114,12 @@ export class NotificationsService {
       },
     };
 
-    return map[status] ?? {
-      type: NotificationType.ORDER_PLACED,
-      title: 'Cập nhật đơn hàng',
-      message: `Đơn hàng #${shortId} vừa được cập nhật trạng thái: ${status}.`,
-    };
+    return (
+      map[status] ?? {
+        type: NotificationType.ORDER_PLACED,
+        title: 'Cập nhật đơn hàng',
+        message: `Đơn hàng #${shortId} vừa được cập nhật trạng thái: ${status}.`,
+      }
+    );
   }
 }

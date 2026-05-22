@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,7 +18,8 @@ export class ProductsService {
   private openai: OpenAI;
 
   constructor(
-    @InjectModel(Product.name) private productModel: SoftDeleteModel<ProductDocument>,
+    @InjectModel(Product.name)
+    private productModel: SoftDeleteModel<ProductDocument>,
     private configService: ConfigService,
   ) {
     this.openai = new OpenAI({
@@ -23,7 +29,7 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto) {
-    let baseSlug = createProductDto.slug;
+    const baseSlug = createProductDto.slug;
     let uniqueSlug = baseSlug;
     let counter = 1;
 
@@ -36,7 +42,7 @@ export class ProductsService {
     // Map category_id to category for Schema
     const productData = {
       ...createProductDto,
-      category: createProductDto.category_id
+      category: createProductDto.category_id,
     };
 
     const res = await this.productModel.create(productData);
@@ -51,21 +57,26 @@ export class ProductsService {
 
     // Tìm kiếm linh hoạt (OR logic): Chỉ cần khớp 1 trong các từ, nhưng CHỈ tìm trong TÊN
     if (filter.name) {
-      const keyword = filter.name.toString().replace(/\//g, '').replace(/i$/, '').trim();
-      const words = keyword.split(/\s+/).filter(w => w.length > 0);
+      const keyword = filter.name
+        .toString()
+        .replace(/\//g, '')
+        .replace(/i$/, '')
+        .trim();
+      const words = keyword.split(/\s+/).filter((w) => w.length > 0);
 
       // Tạo pattern: từ1|từ2|từ3... (Khớp ít nhất 1 từ)
       const regexPattern = words.join('|');
       filter.name = { $regex: regexPattern, $options: 'i' };
     }
 
-    let offset = (+current - 1) * (+pageSize);
-    let defaultLimit = +pageSize ? +pageSize : 10;
+    const offset = (+current - 1) * +pageSize;
+    const defaultLimit = +pageSize ? +pageSize : 10;
 
     const totalItems = (await this.productModel.find(filter)).length;
     const totalPages = Math.ceil(totalItems / defaultLimit);
 
-    const result = await this.productModel.find(filter)
+    const result = await this.productModel
+      .find(filter)
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)
@@ -77,10 +88,10 @@ export class ProductsService {
         current: current,
         pageSize: pageSize,
         pages: totalPages,
-        total: totalItems
+        total: totalItems,
       },
-      result
-    }
+      result,
+    };
   }
   async findOne(id: string) {
     const product = await this.productModel.findById(id).populate('category');
@@ -95,7 +106,7 @@ export class ProductsService {
     if (updateProductDto.slug) {
       const existing = await this.productModel.findOne({
         slug: updateProductDto.slug,
-        _id: { $ne: updateProductDto.id }
+        _id: { $ne: updateProductDto.id },
       });
       if (existing) {
         throw new BadRequestException('Đường dẫn (Slug) này đã tồn tại!');
@@ -110,21 +121,16 @@ export class ProductsService {
 
     const product = await this.productModel.findById(updateProductDto.id);
     if (!product) {
-      throw new NotFoundException(`Không thể cập nhật. Không tìm thấy ID: ${updateProductDto.id}`);
+      throw new NotFoundException(
+        `Không thể cập nhật. Không tìm thấy ID: ${updateProductDto.id}`,
+      );
     }
 
     product.set(updateData);
     const res = await product.save();
 
-    // Nếu cập nhật có thay đổi ảnh, cập nhật lại Vector
-    if (updateProductDto.images && updateProductDto.images.length > 0) {
-      this.generateVectorForProduct(updateProductDto.id, updateProductDto.images[0]);
-    }
-
     return res;
   }
-
-
 
   async remove(id: string) {
     const product = await this.findOne(id);
@@ -133,7 +139,7 @@ export class ProductsService {
 
     return {
       message: `Đã xóa thành công sản phẩm: ${product.name}`,
-      result
+      result,
     };
   }
 
@@ -148,11 +154,19 @@ export class ProductsService {
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'What is the generic category of this item? Ignore all text, labels, and brand names on the packaging. Describe only its shape, color, and what kind of product it is (e.g., "cooking oil in a plastic bottle", "black jacket"). Keep it under 10 words.' },
-              { type: 'image_url', image_url: { url: `data:${file.mimetype};base64,${base64Image}` } }
-            ]
-          }
-        ]
+              {
+                type: 'text',
+                text: 'What is the generic category of this item? Ignore all text, labels, and brand names on the packaging. Describe only its shape, color, and what kind of product it is (e.g., "cooking oil in a plastic bottle", "black jacket"). Keep it under 10 words.',
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${file.mimetype};base64,${base64Image}`,
+                },
+              },
+            ],
+          },
+        ],
       });
 
       const description = visionResponse.choices[0]?.message?.content || '';
@@ -170,10 +184,10 @@ CRITICAL RULES:
 2. Ignore weird numbers or percentages (like 65%, 500ml) unless it's a clothing size.
 3. Example 1: "A bottle of Neptune cooking oil that withstands high temps" -> "dầu ăn"
 4. Example 2: "Black wireless gaming mouse" -> "chuột không dây"
-5. Example 3: "A red cotton t-shirt" -> "áo thun đỏ"`
+5. Example 3: "A red cotton t-shirt" -> "áo thun đỏ"`,
           },
-          { role: 'user', content: `Description: ${description}` }
-        ]
+          { role: 'user', content: `Description: ${description}` },
+        ],
       });
 
       const text = keywordResponse.choices[0]?.message?.content?.trim() || '';
@@ -182,7 +196,7 @@ CRITICAL RULES:
       const products = await this.productModel
         .find({
           name: { $regex: text, $options: 'i' },
-          isActive: true
+          isActive: true,
         })
         .limit(10)
         .populate('category')
@@ -191,16 +205,21 @@ CRITICAL RULES:
       return {
         description: description,
         keyword: text,
-        result: products
+        result: products,
       };
     } catch (error) {
-      console.error("Local Image search error:", error);
-      throw new InternalServerErrorException("Lỗi xử lý tìm kiếm bằng hình ảnh tại local");
+      console.error('Local Image search error:', error);
+      throw new InternalServerErrorException(
+        'Lỗi xử lý tìm kiếm bằng hình ảnh tại local',
+      );
     }
   }
 
   // API đồng bộ Vector đã tắt vì sử dụng Local Ollama
   async syncVectors() {
-    return { message: 'Đồng bộ vector đã bị tắt do hệ thống đang sử dụng tìm kiếm bằng Local Ollama.' };
+    return {
+      message:
+        'Đồng bộ vector đã bị tắt do hệ thống đang sử dụng tìm kiếm bằng Local Ollama.',
+    };
   }
 }

@@ -19,4 +19,4 @@ import { DatabasesService } from './databases.service';
   controllers: [DatabasesController],
   providers: [DatabasesService],
 })
-export class DatabasesModule { }
+export class DatabasesModule {}

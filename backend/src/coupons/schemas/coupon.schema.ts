@@ -23,7 +23,10 @@ export class Coupon {
   @Prop({ default: 0 })
   usedCount: number;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] })
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  })
   usedBy: mongoose.Schema.Types.ObjectId[];
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })

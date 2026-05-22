@@ -65,7 +65,7 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
                     content: (
                         <div>
                             <p>{t('orderSuccessDesc')}</p>
-                            <p>{t('orderId')}: <b>{res.data?._id || 'N/A'}</b></p>
+                            <p>{t('orderId')}: <b>{res.data?.order?._id || 'N/A'}</b></p>
                         </div>
                     ),
                     okText: t('viewOrder'),

@@ -9,22 +9,22 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { LocalStrategy } from './strategy/local.strategy';
 
-
 @Module({
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
-  imports: [UsersModule, Passport,
+  imports: [
+    UsersModule,
+    Passport,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: (configService.get<string>('JWT_EXPIRES_IN')) as StringValue,
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN') as StringValue,
         },
       }),
       inject: [ConfigService],
     }),
-
-  ]
+  ],
 })
-export class AuthModule { }
+export class AuthModule {}

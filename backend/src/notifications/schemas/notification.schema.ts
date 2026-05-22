@@ -18,7 +18,11 @@ export enum NotificationType {
 
 @Schema({ timestamps: true })
 export class Notification {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User.name,
+    required: true,
+  })
   userId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ type: String, enum: NotificationType, required: true })

@@ -1,18 +1,27 @@
-import { Body, Controller, Get, MessageEvent, Param, Post, Sse } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  MessageEvent,
+  Param,
+  Post,
+  Sse,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Public } from '../decorator/customize';
 import { ChatService } from './chat.service';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) { }
+  constructor(private readonly chatService: ChatService) {}
 
   @Public()
   @Post('stream')
   @Sse()
   async streamChat(
     @Body('message') message: string,
-    @Body('history') history?: { role: 'user' | 'assistant'; content: string }[],
+    @Body('history')
+    history?: { role: 'user' | 'assistant'; content: string }[],
   ): Promise<Observable<MessageEvent>> {
     const stream = await this.chatService.generateChatStream(message, history);
 
@@ -26,9 +35,13 @@ export class ChatController {
           }
           subscriber.complete();
         } catch (error: any) {
-          console.error("Stream Iteration Error:", error);
+          console.error('Stream Iteration Error:', error);
           let errorCode = 'AI_GENERIC_ERROR';
-          if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('quota')) {
+          if (
+            error?.status === 429 ||
+            error?.message?.includes('429') ||
+            error?.message?.includes('quota')
+          ) {
             errorCode = 'AI_QUOTA_EXCEEDED';
           }
           subscriber.next({ text: `[ERROR_CODE:${errorCode}]` } as any);

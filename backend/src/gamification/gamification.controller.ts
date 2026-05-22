@@ -4,7 +4,7 @@ import { Public, ResponseMessage } from 'src/decorator/customize';
 
 @Controller('gamification')
 export class GamificationController {
-  constructor(private readonly gamificationService: GamificationService) { }
+  constructor(private readonly gamificationService: GamificationService) {}
 
   @Get('status')
   @ResponseMessage('Lấy trạng thái vòng quay thành công')

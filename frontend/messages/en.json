@@ -145,6 +145,9 @@
     "enterShippingAddress": "Enter your shipping address",
     "totalAmount": "Total Amount",
     "checkoutNow": "Checkout Now",
+    "paymentMethod": "Payment Method",
+    "paymentCOD": "Cash on Delivery (COD)",
+    "paymentVNPAY": "Online Payment via VNPAY",
     "discountForYou": "Discount codes for you",
     "noDiscountCodes": "No discount codes available at the moment",
     "used": "Used",
@@ -711,5 +714,21 @@
     "orderReturnedMsg": "Your return request for order #{id} has been processed.",
     "newOrderAdminTitle": "🛍️ New Order Placed!",
     "newOrderAdminMsg": "A customer has just placed order #{id}."
+  },
+  "VnpayReturn": {
+    "titleSuccess": "Payment Successful!",
+    "descSuccess": "Thank you for your purchase. Your order payment has been confirmed.",
+    "titleFail": "Payment Failed",
+    "descFail": "An error occurred during the VNPAY payment process or the signature was invalid.",
+    "verifying": "Verifying VNPAY transaction...",
+    "pleaseWait": "Please do not close or reload this page.",
+    "orderId": "Order ID",
+    "totalAmount": "Total Amount",
+    "paymentMethod": "Method",
+    "viewOrder": "View Order",
+    "continueShopping": "Continue Shopping",
+    "backToCart": "Back to Cart",
+    "backToHome": "Back to Home",
+    "noDetails": "No transaction details found."
   }
 }
