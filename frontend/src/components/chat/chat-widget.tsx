@@ -29,16 +29,16 @@ export default function ChatWidget() {
   } = useChat(t);
 
   useEffect(() => {
-    if (isOpen) {
+    // Check chatbot status immediately on mount
+    checkChatStatus();
+
+    // Poll to check health every 3 minutes (180,000 ms)
+    const intervalId = setInterval(() => {
       checkChatStatus();
+    }, 180000);
 
-      const intervalId = setInterval(() => {
-        checkChatStatus();
-      }, 10000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [isOpen]);
+    return () => clearInterval(intervalId);
+  }, [checkChatStatus]);
 
   return (
     <div className="chat-widget-wrapper">
@@ -47,7 +47,7 @@ export default function ChatWidget() {
           className="chat-window-card"
           title={
             <Flex align="center" gap={8}>
-              <div className="chat-status-dot" />
+              <div className={`chat-status-dot ${isOffline ? 'chat-status-offline' : ''}`} />
               <RobotOutlined style={{ color: '#1677ff', fontSize: 20 }} />
               <Text strong>{t('salesAssistant')}</Text>
             </Flex>

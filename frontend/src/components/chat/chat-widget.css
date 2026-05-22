@@ -82,6 +82,11 @@
   box-shadow: 0 0 8px #52c41a;
 }
 
+.chat-status-dot.chat-status-offline {
+  background: #ff4d4f;
+  box-shadow: 0 0 8px #ff4d4f;
+}
+
 /* Toggle Button */
 .chat-toggle-btn {
   width: 64px !important;

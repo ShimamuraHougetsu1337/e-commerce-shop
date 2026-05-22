@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface Message {
   id: string;
@@ -16,7 +16,7 @@ export function useChat(t: any) {
   const [isWaitingTooLong, setIsWaitingTooLong] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
 
-  const checkChatStatus = async () => {
+  const checkChatStatus = useCallback(async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     try {
@@ -45,7 +45,7 @@ export function useChat(t: any) {
         ];
       });
     }
-  };
+  }, []);
 
   const handleSendMessage = async (retryMessage?: string) => {
     const userMsg = retryMessage || inputValue;
@@ -85,8 +85,16 @@ export function useChat(t: any) {
       setIsWaitingTooLong(false);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'API_ERROR');
+        let errorMessage = 'API_ERROR';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || 'API_ERROR';
+        } catch {
+          try {
+            errorMessage = await response.text();
+          } catch {}
+        }
+        throw new Error(errorMessage);
       }
 
       if (!response.body) throw new Error('NO_BODY');
@@ -111,15 +119,34 @@ export function useChat(t: any) {
 
             try {
               let content = '';
+              let isErrorData = false;
+              let errorMsg = '';
+
               if (dataStr.startsWith('{')) {
                 const data = JSON.parse(dataStr);
-                content = data.text || '';
+                if (data.statusCode && data.statusCode >= 400) {
+                  isErrorData = true;
+                  errorMsg = data.message || 'CHAT_SERVICE_ERROR';
+                } else {
+                  content = data.text || '';
+                }
               } else {
                 content = dataStr;
               }
 
-              if (content.includes('[ERROR_CODE:') || content === 'AI_QUOTA_EXCEEDED' || content === 'AI_GENERIC_ERROR') {
-                const errorCode = content.replace('[ERROR_CODE:', '').replace(']', '');
+              if (isErrorData) {
+                throw new Error(errorMsg);
+              }
+
+              if (
+                content === 'CHAT_SERVICE_ERROR' ||
+                content.includes('[ERROR_CODE:') ||
+                content === 'AI_QUOTA_EXCEEDED' ||
+                content === 'AI_GENERIC_ERROR'
+              ) {
+                const errorCode = content
+                  .replace('[ERROR_CODE:', '')
+                  .replace(']', '');
                 throw new Error(errorCode);
               }
 
@@ -130,10 +157,11 @@ export function useChat(t: any) {
                 ));
               }
             } catch (e: any) {
-              if (e.message === 'AI_QUOTA_EXCEEDED' || e.message === 'AI_GENERIC_ERROR') {
+              if (e instanceof SyntaxError) {
+                console.error("JSON parse error on line:", dataStr, e);
+              } else {
                 throw e;
               }
-              console.error("Parse error:", e);
             }
           }
         }

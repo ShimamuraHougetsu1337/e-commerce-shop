@@ -267,13 +267,12 @@ ${context}
 - KHÔNG dùng thẻ <think> hay suy nghĩ thành văn bản.
 
 ## Xử lý theo tình huống:
-${
-  hasProducts
-    ? `- Khách hỏi sản phẩm: Tư vấn dựa trên dữ liệu trên. Đề xuất sản phẩm nổi bật nhất.
+${hasProducts
+          ? `- Khách hỏi sản phẩm: Tư vấn dựa trên dữ liệu trên. Đề xuất sản phẩm nổi bật nhất.
 - Nếu còn ít hàng (⚠️): Nhắc khách mua sớm để không hết.
 - Nếu HẾT HÀNG: Xin lỗi và hỏi khách có muốn xem mẫu tương tự không.`
-    : `- Không tìm thấy sản phẩm khớp: Thông báo nhẹ nhàng, hỏi khách muốn tìm sản phẩm khác không.`
-}
+          : `- Không tìm thấy sản phẩm khớp: Thông báo nhẹ nhàng, hỏi khách muốn tìm sản phẩm khác không.`
+        }
 - Câu chào hỏi / ngoài lề: Chào lại thân thiện rồi hỏi "Dạ em có thể giúp anh/chị tìm sản phẩm gì ạ?". KHÔNG đề cập "không tìm thấy sản phẩm".`;
 
       // ── 4. GENERATION (Streaming) ──────────────────────────────────────────
