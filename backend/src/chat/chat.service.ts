@@ -27,9 +27,22 @@ export class ChatService {
     private configService: ConfigService,
   ) {
     this.openai = new OpenAI({
-      baseURL: 'http://localhost:11434/v1',
+      baseURL: this.configService.get<string>('OLLAMA_BASE_URL') || 'http://localhost:11434/v1',
       apiKey: 'ollama', // Ollama không yêu cầu key
     });
+  }
+
+  async checkHealth(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      await this.openai.models.list({ signal: controller.signal });
+      clearTimeout(timeoutId);
+      return true;
+    } catch (error) {
+      console.warn('[Chat Health] AI chatbot service is offline:', error?.message || error);
+      return false;
+    }
   }
 
   async getChatHistory(userId: string) {

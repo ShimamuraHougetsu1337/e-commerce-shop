@@ -14,6 +14,38 @@ export function useChat(t: any) {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isWaitingTooLong, setIsWaitingTooLong] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+
+  const checkChatStatus = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/chat/health`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      if (data.status !== 'ok') throw new Error();
+      setIsOffline(false);
+      setMessages(prev => prev.filter(m => m.id !== 'offline-msg'));
+    } catch (err) {
+      clearTimeout(timeoutId);
+      setIsOffline(true);
+      setMessages(prev => {
+        if (prev.some(m => m.id === 'offline-msg')) return prev;
+        return [
+          ...prev,
+          {
+            id: 'offline-msg',
+            role: 'assistant',
+            content: '⚠️ Hệ thống AI hiện đang ngoại tuyến hoặc bảo trì. Chức năng tự động hỗ trợ tạm thời không khả dụng. Xin lỗi vì sự bất tiện này!',
+            isError: true
+          }
+        ];
+      });
+    }
+  };
 
   const handleSendMessage = async (retryMessage?: string) => {
     const userMsg = retryMessage || inputValue;
@@ -147,6 +179,8 @@ export function useChat(t: any) {
     setInputValue,
     isLoading,
     isWaitingTooLong,
+    isOffline,
+    checkChatStatus,
     handleSendMessage
   };
 }

@@ -16,6 +16,17 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Public()
+  @Get('health')
+  async checkHealth() {
+    const isOk = await this.chatService.checkHealth();
+    if (isOk) {
+      return { status: 'ok' };
+    } else {
+      return { status: 'error', message: 'AI service offline' };
+    }
+  }
+
+  @Public()
   @Post('stream')
   @Sse()
   async streamChat(

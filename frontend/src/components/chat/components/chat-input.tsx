@@ -7,20 +7,21 @@ interface ChatInputProps {
   setInputValue: (value: string) => void;
   isLoading: boolean;
   onSendMessage: () => void;
+  disabled?: boolean;
 }
 
-export default function ChatInput({ inputValue, setInputValue, isLoading, onSendMessage }: ChatInputProps) {
+export default function ChatInput({ inputValue, setInputValue, isLoading, onSendMessage, disabled }: ChatInputProps) {
   const t = useTranslations('ChatWidget');
 
   return (
     <div className="chat-input-area">
       <Flex gap={10}>
         <Input
-          placeholder={t('chatPlaceholder')}
+          placeholder={disabled ? "Hệ thống AI hiện đang ngoại tuyến..." : t('chatPlaceholder')}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onPressEnter={onSendMessage}
-          disabled={isLoading}
+          onPressEnter={disabled ? undefined : onSendMessage}
+          disabled={isLoading || disabled}
           variant="filled"
           style={{ borderRadius: 10 }}
         />
@@ -28,8 +29,9 @@ export default function ChatInput({ inputValue, setInputValue, isLoading, onSend
           type="primary"
           shape="circle"
           icon={<SendOutlined />}
-          onClick={onSendMessage}
+          onClick={disabled ? undefined : onSendMessage}
           loading={isLoading}
+          disabled={disabled}
           style={{ height: 40, width: 40 }}
         />
       </Flex>

@@ -2,7 +2,7 @@
 
 import { CloseOutlined, RobotOutlined } from '@ant-design/icons';
 import { Button, Card, Flex, Typography } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useChat } from './hooks/useChat';
@@ -23,8 +23,22 @@ export default function ChatWidget() {
     setInputValue,
     isLoading,
     isWaitingTooLong,
+    isOffline,
+    checkChatStatus,
     handleSendMessage
   } = useChat(t);
+
+  useEffect(() => {
+    if (isOpen) {
+      checkChatStatus();
+
+      const intervalId = setInterval(() => {
+        checkChatStatus();
+      }, 10000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [isOpen]);
 
   return (
     <div className="chat-widget-wrapper">
@@ -50,6 +64,7 @@ export default function ChatWidget() {
             setInputValue={setInputValue}
             isLoading={isLoading}
             onSendMessage={() => handleSendMessage()}
+            disabled={isOffline}
           />
         </Card>
       )}

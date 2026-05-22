@@ -23,7 +23,7 @@ export class ProductsService {
     private configService: ConfigService,
   ) {
     this.openai = new OpenAI({
-      baseURL: 'http://localhost:11434/v1',
+      baseURL: this.configService.get<string>('OLLAMA_BASE_URL') || 'http://localhost:11434/v1',
       apiKey: 'ollama',
     });
   }
