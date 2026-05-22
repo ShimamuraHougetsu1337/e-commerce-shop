@@ -41,53 +41,11 @@ jobs:
       - name: 🏗️ Build
         run: npm run build
         env:
-          # Biến build-time (NEXT_PUBLIC_* được nhúng vào bundle lúc build)
-          NEXT_PUBLIC_BACKEND_URL: ${{ secrets.NEXT_PUBLIC_BACKEND_URL }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          GITHUB_ID: ${{ secrets.OAUTH_GITHUB_ID }}
-          GITHUB_SECRET: ${{ secrets.OAUTH_GITHUB_SECRET }}
-          GOOGLE_ID: ${{ secrets.GOOGLE_ID }}
-          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          NEXT_PUBLIC_BACKEND_URL: https://mock-backend.onrender.com
+          NEXTAUTH_URL: https://mock-frontend.vercel.app
+          NEXTAUTH_SECRET: f9sn3hQpQCNwzlfhC_bXWs_WHSC3NGdVhE3of4HUork_mock
+          GITHUB_ID: Ov23lipBsq9GsL9GMUcI_mock
+          GITHUB_SECRET: 75c4e021ed122ef8de77e1761f3407b84f95e54a_mock
+          GOOGLE_ID: 549254170593-1ikidu6fhqs809sl0s7qtlqp03g3m5og.apps.googleusercontent.com
+          GOOGLE_SECRET: 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_mock
 
-  # ─── Job 2: Deploy to Vercel (chỉ chạy khi push vào main) ─────────
-  deploy:
-    name: 🌐 Deploy to Vercel
-    needs: ci
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🟢 Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: 📦 Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: 🔗 Pull Vercel Environment (link project)
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: frontend
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: 🏗️ Build với Vercel
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: frontend
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: 🚀 Deploy lên Vercel Production
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: frontend
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

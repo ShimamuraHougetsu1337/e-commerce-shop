@@ -25,8 +25,9 @@ interface ReturnQueryFromVNPay {
   [key: string]: any;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { VNPay } = require('vnpay');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import VNPayModule = require('vnpay');
+const { VNPay } = VNPayModule;
 
 @Injectable()
 export class OrdersService {
