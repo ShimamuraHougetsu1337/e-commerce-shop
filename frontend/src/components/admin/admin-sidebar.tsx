@@ -2,6 +2,7 @@
 
 import {
   DashboardOutlined,
+  MessageOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
   StarOutlined,
@@ -28,6 +29,7 @@ export default function AdminSidebar({ collapsed }: { collapsed: boolean }) {
         { key: '/admin/customers', icon: <UserOutlined />, label: t('customersMenu') },
         { key: '/admin/coupons', icon: <TagsOutlined />, label: t('couponsMenu') },
         { key: '/admin/reviews', icon: <StarOutlined />, label: t('reviewsMenu') },
+        { key: '/admin/chats', icon: <MessageOutlined />, label: 'Hỗ trợ khách hàng' },
     ];
 
     return (

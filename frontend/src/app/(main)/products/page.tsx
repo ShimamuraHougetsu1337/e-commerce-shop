@@ -98,6 +98,10 @@ function ProductsContent() {
   }, []);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  useEffect(() => {
     if (!categoriesLoaded) return;
 
     const fetchProducts = async () => {
@@ -134,7 +138,7 @@ function ProductsContent() {
       }
     };
     fetchProducts();
-  }, [currentPage, sortOption, appliedCategories, appliedPriceRange, categoriesLoaded, categories]);
+  }, [currentPage, sortOption, appliedCategories, appliedPriceRange, categoriesLoaded, categories, searchQuery]);
 
   const handleApplyFilters = () => {
     setAppliedCategories(draftCategories);

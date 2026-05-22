@@ -9,12 +9,10 @@ import './globals.css';
 import {NextIntlClientProvider} from 'next-intl';
 import {getLocale, getMessages} from 'next-intl/server';
 
-export const dynamic = 'force-dynamic';
+import { SocketProvider } from '@/providers/socket.provider';
 
-export const metadata = {
-  title: 'E-commerce',
-  description: 'E-commerce',
-};
+export const dynamic = 'force-dynamic';
+// ... metadata code ...
 
 const RootLayout = async ({ children }: React.PropsWithChildren) => {
   const session = await getServerSession(authOptions)
@@ -28,7 +26,9 @@ const RootLayout = async ({ children }: React.PropsWithChildren) => {
           <AntdRegistry>
             <NextAuthWrapper session={session}>
               <AntdProvider>
-                {children}
+                <SocketProvider>
+                  {children}
+                </SocketProvider>
               </AntdProvider>
             </NextAuthWrapper>
             <ChatWidget />

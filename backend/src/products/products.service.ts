@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
 import type { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -10,14 +10,16 @@ import { Product, ProductDocument } from './schemas/product.schema';
 
 @Injectable()
 export class ProductsService {
-  private genAI: GoogleGenerativeAI;
+  private openai: OpenAI;
 
   constructor(
     @InjectModel(Product.name) private productModel: SoftDeleteModel<ProductDocument>,
     private configService: ConfigService,
   ) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    this.genAI = new GoogleGenerativeAI(apiKey || '');
+    this.openai = new OpenAI({
+      baseURL: 'http://localhost:11434/v1',
+      apiKey: 'ollama',
+    });
   }
 
   async create(createProductDto: CreateProductDto) {
@@ -39,11 +41,6 @@ export class ProductsService {
 
     const res = await this.productModel.create(productData);
 
-    // Tự động tạo Vector sau khi tạo sản phẩm thành công (chạy ngầm)
-    if (res.images && res.images.length > 0) {
-      this.generateVectorForProduct(res._id.toString(), res.images[0]);
-    }
-
     return res;
   }
 
@@ -52,11 +49,14 @@ export class ProductsService {
     delete filter.current;
     delete filter.pageSize;
 
-    // Nếu có tham số name (từ khóa search), chuyển sang sử dụng $text search để hỗ trợ tìm kiếm thông minh
+    // Tìm kiếm linh hoạt (OR logic): Chỉ cần khớp 1 trong các từ, nhưng CHỈ tìm trong TÊN
     if (filter.name) {
-      const keyword = filter.name.toString().replace(/\//g, '').replace(/i$/, ''); // Gỡ bỏ định dạng /.../i nếu có
-      delete filter.name;
-      filter.$text = { $search: keyword };
+      const keyword = filter.name.toString().replace(/\//g, '').replace(/i$/, '').trim();
+      const words = keyword.split(/\s+/).filter(w => w.length > 0);
+
+      // Tạo pattern: từ1|từ2|từ3... (Khớp ít nhất 1 từ)
+      const regexPattern = words.join('|');
+      filter.name = { $regex: regexPattern, $options: 'i' };
     }
 
     let offset = (+current - 1) * (+pageSize);
@@ -124,32 +124,7 @@ export class ProductsService {
     return res;
   }
 
-  // Hàm helper chạy ngầm để không làm chậm request của user
-  private async generateVectorForProduct(productId: string, imageUrl: string) {
-    try {
-      let imageBuffer: Buffer;
-      if (imageUrl.startsWith('http')) {
-        const response = await fetch(imageUrl);
-        imageBuffer = Buffer.from(await response.arrayBuffer());
-      } else {
-        const path = require('path');
-        const fs = require('fs');
-        const filePath = path.join(process.cwd(), 'public', 'images', 'product', imageUrl);
-        if (fs.existsSync(filePath)) {
-          imageBuffer = fs.readFileSync(filePath);
-        } else {
-          return;
-        }
-      }
 
-      const mockFile = { buffer: imageBuffer, mimetype: 'image/jpeg' } as Express.Multer.File;
-      const vector = await this.imageToVector(mockFile);
-      await this.productModel.updateOne({ _id: productId }, { image_vector: vector });
-      console.log(`Auto-generated vector for product: ${productId}`);
-    } catch (err) {
-      console.error(`Error auto-generating vector for ${productId}:`, err);
-    }
-  }
 
   async remove(id: string) {
     const product = await this.findOne(id);
@@ -164,144 +139,68 @@ export class ProductsService {
 
   async searchByImage(file: Express.Multer.File) {
     try {
-      // 1. Tạo Vector từ ảnh vừa upload
-      const queryVector = await this.imageToVector(file);
+      const base64Image = file.buffer.toString('base64');
 
-      // 2. Thực hiện Vector Search trong MongoDB Atlas
-      // Lưu ý: Cần tạo Vector Index trên Atlas với tên "vector_index" trước
-      const products = await this.productModel.aggregate([
-        {
-          "$vectorSearch": {
-            "index": "vector_index", 
-            "path": "image_vector",
-            "queryVector": queryVector,
-            "numCandidates": 100,
-            "limit": 10
+      // 1. Dùng model Vision để mô tả bức ảnh (Dùng tiếng Anh để Moondream nhận diện chính xác nhất)
+      const visionResponse = await this.openai.chat.completions.create({
+        model: 'moondream',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'What is the generic category of this item? Ignore all text, labels, and brand names on the packaging. Describe only its shape, color, and what kind of product it is (e.g., "cooking oil in a plastic bottle", "black jacket"). Keep it under 10 words.' },
+              { type: 'image_url', image_url: { url: `data:${file.mimetype};base64,${base64Image}` } }
+            ]
           }
-        } as any,
-        {
-          "$match": { "isActive": true }
-        },
-        {
-          "$project": {
-            "name": 1, "price": 1, "images": 1, "slug": 1,
-            "score": { "$meta": "vectorSearchScore" }
-          }
-        }
-      ]);
+        ]
+      });
 
-      return {
-        keyword: "Tìm kiếm bằng thị giác",
-        result: products
-      };
-    } catch (error) {
-      console.error("Vector search error:", error);
-      // Fallback về tìm kiếm text nếu Vector Search chưa được cấu hình Index trên Atlas
-      return this.searchByImageLegacy(file);
-    }
-  }
+      const description = visionResponse.choices[0]?.message?.content || '';
 
-  // Hàm phụ trợ để chuyển ảnh thành Vector (Sử dụng Embedding qua Text Description)
-  private async imageToVector(file: Express.Multer.File): Promise<number[]> {
-    const visionModel = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-    const embeddingModel = this.genAI.getGenerativeModel({ model: 'models/embedding-001' }); // Thêm tiền tố models/
+      // 2. Dùng Qwen3 để dịch và trích xuất từ khóa tiếng Việt từ mô tả tiếng Anh
+      const keywordResponse = await this.openai.chat.completions.create({
+        model: 'qwen3:4b-instruct',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert E-commerce product keyword extractor. 
+Based on the English description, return ONLY the generic product name in VIETNAMESE (maximum 3 words) for database searching. 
+CRITICAL RULES:
+1. Ignore any brand names (like Neptune, Logitech, Apple).
+2. Ignore weird numbers or percentages (like 65%, 500ml) unless it's a clothing size.
+3. Example 1: "A bottle of Neptune cooking oil that withstands high temps" -> "dầu ăn"
+4. Example 2: "Black wireless gaming mouse" -> "chuột không dây"
+5. Example 3: "A red cotton t-shirt" -> "áo thun đỏ"`
+          },
+          { role: 'user', content: `Description: ${description}` }
+        ]
+      });
 
-    const imagePart = {
-      inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype },
-    };
+      const text = keywordResponse.choices[0]?.message?.content?.trim() || '';
 
-    // Bước 1: Trích xuất đặc điểm thị giác cực kỳ chi tiết
-    const prompt = "Hãy mô tả cực kỳ chi tiết các đặc điểm thị giác của sản phẩm này: loại sản phẩm, hình dáng, màu sắc chủ đạo, chất liệu, hoa văn. Trả về dưới dạng một đoạn văn ngắn.";
-    const visionResult = await visionModel.generateContent([prompt, imagePart]);
-    const visualDescription = visionResult.response.text();
-
-    // Bước 2: Chuyển đoạn mô tả đó thành Vector
-    const embeddingResult = await embeddingModel.embedContent(visualDescription);
-    return embeddingResult.embedding.values;
-  }
-
-  // API đồng bộ Vector cho toàn bộ sản phẩm cũ
-  async syncVectors() {
-    const products = await this.productModel.find({ 
-      images: { $exists: true, $not: { $size: 0 } },
-      isActive: true 
-    });
-
-    let count = 0;
-    for (const product of products) {
-      let retryCount = 0;
-      let success = false;
-
-      while (!success && retryCount < 3) {
-        console.log(`---> Đang xử lý sản phẩm: ${product.name} (Lần thử: ${retryCount + 1})...`);
-        try {
-          // Giả sử lấy ảnh đầu tiên để tạo Vector
-          const imageUrl = product.images[0];
-          let imageBuffer: Buffer;
-
-          if (imageUrl.startsWith('http')) {
-            const response = await fetch(imageUrl);
-            imageBuffer = Buffer.from(await response.arrayBuffer());
-          } else {
-            const path = require('path');
-            const fs = require('fs');
-            const filePath = path.join(process.cwd(), 'public', 'images', 'product', imageUrl);
-            if (fs.existsSync(filePath)) {
-              imageBuffer = fs.readFileSync(filePath);
-            } else {
-              success = true; // Bỏ qua nếu không thấy file
-              continue;
-            }
-          }
-
-          const mockFile = { buffer: imageBuffer, mimetype: 'image/jpeg' } as Express.Multer.File;
-          const vector = await this.imageToVector(mockFile);
-          await this.productModel.updateOne(
-            { _id: product._id },
-            { image_vector: vector }
-          );
-          count++;
-          console.log(`✅ Thành công: ${product.name} (${count}/${products.length})`);
-          success = true;
-
-          // Nghỉ 5 giây để tránh dính Rate Limit tiếp theo
-          await new Promise(resolve => setTimeout(resolve, 5000));
-        } catch (err: any) {
-          if (err.status === 429) {
-            console.warn(`⚠️ Bị giới hạn tốc độ. Đang đợi 20 giây để thử lại...`);
-            await new Promise(resolve => setTimeout(resolve, 20000)); // Đợi 20s theo yêu cầu của Google
-            retryCount++;
-          } else {
-            console.error(`❌ Lỗi sản phẩm ${product.name}:`, err.message);
-            success = true; // Bỏ qua lỗi khác để chạy tiếp
-          }
-        }
-      }
-    }
-
-    return { message: `Đã đồng bộ thành công ${count} sản phẩm.` };
-  }
-
-  // Giữ lại hàm cũ để fallback nếu chưa tạo Index
-  async searchByImageLegacy(file: Express.Multer.File) {
-    try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-      const imagePart = {
-        inlineData: { data: file.buffer.toString('base64'), mimeType: file.mimetype },
-      };
-      const prompt = "Đây là sản phẩm gì? Hãy trả về tên sản phẩm ngắn gọn nhất có thể (dưới 5 từ) để tôi dùng tìm kiếm trong database.";
-      const result = await model.generateContent([prompt, imagePart]);
-      const text = (await result.response).text().trim();
-
+      // 3. Thực hiện tìm kiếm trong database (Chỉ tìm theo tên sản phẩm)
       const products = await this.productModel
-        .find({ $text: { $search: text }, isActive: true })
+        .find({
+          name: { $regex: text, $options: 'i' },
+          isActive: true
+        })
         .limit(10)
         .populate('category')
         .exec();
 
-      return { keyword: text, result: products };
+      return {
+        description: description,
+        keyword: text,
+        result: products
+      };
     } catch (error) {
-      throw new InternalServerErrorException("Lỗi xử lý tìm kiếm bằng hình ảnh");
+      console.error("Local Image search error:", error);
+      throw new InternalServerErrorException("Lỗi xử lý tìm kiếm bằng hình ảnh tại local");
     }
+  }
+
+  // API đồng bộ Vector đã tắt vì sử dụng Local Ollama
+  async syncVectors() {
+    return { message: 'Đồng bộ vector đã bị tắt do hệ thống đang sử dụng tìm kiếm bằng Local Ollama.' };
   }
 }

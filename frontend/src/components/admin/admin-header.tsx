@@ -11,6 +11,7 @@ import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/public/language-switcher';
+import NotificationBell from '@/components/public/notification-bell';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -51,6 +52,7 @@ export default function AdminHeader({ collapsed, setCollapsed }: {
 
             <Space size="large" align="center">
                 <LanguageSwitcher />
+                <NotificationBell />
                 <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                     <Space style={{ cursor: 'pointer' }}>
                         <Avatar style={{ backgroundColor: '#1677ff' }} icon={<UserOutlined />} />

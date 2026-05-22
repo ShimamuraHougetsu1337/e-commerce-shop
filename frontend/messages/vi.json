@@ -685,5 +685,31 @@
     "goodLuck": "Chúc may mắn",
     "spinning": "Đang quay...",
     "loadDataError": "Lỗi khi tải dữ liệu"
+  },
+  "Notifications": {
+    "title": "Thông báo",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "noNotifications": "Bạn không có thông báo nào",
+    "unreadCount": "{count} thông báo chưa đọc",
+    "justNow": "Vừa xong",
+    "ago": "trước",
+    "orderPendingTitle": "⏳ Đơn đặt hàng thành công",
+    "orderPendingMsg": "Đơn hàng #{id} của bạn đang chờ xác nhận.",
+    "orderConfirmedTitle": "✅ Đơn hàng đã được xác nhận",
+    "orderConfirmedMsg": "Đơn hàng #{id} đang được đóng gói chuẩn bị giao.",
+    "orderPreparingTitle": "📦 Đơn hàng đang chuẩn bị",
+    "orderPreparingMsg": "Cửa hàng đang chuẩn bị sản phẩm cho đơn #{id}.",
+    "orderShippingTitle": "🚚 Đơn hàng đang trên đường giao",
+    "orderShippingMsg": "Đơn hàng #{id} đang được đơn vị vận chuyển giao tới bạn.",
+    "orderDeliveredTitle": "🎉 Giao hàng thành công",
+    "orderDeliveredMsg": "Đơn hàng #{id} đã được giao thành công.",
+    "orderCompletedTitle": "💖 Đơn hàng đã hoàn thành",
+    "orderCompletedMsg": "Đảm bảo chất lượng đơn hàng #{id}. Hãy chia sẻ cảm nghĩ của bạn nhé!",
+    "orderCancelledTitle": "❌ Đơn hàng đã bị hủy",
+    "orderCancelledMsg": "Đơn hàng #{id} đã bị hủy bỏ thành công.",
+    "orderReturnedTitle": "🔄 Đơn hàng đã trả",
+    "orderReturnedMsg": "Yêu cầu trả đơn hàng #{id} của bạn đã được xử lý.",
+    "newOrderAdminTitle": "🛍️ Có đơn hàng mới!",
+    "newOrderAdminMsg": "Khách hàng vừa đặt đơn hàng #{id}."
   }
 }

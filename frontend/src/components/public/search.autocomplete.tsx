@@ -45,10 +45,10 @@ export default function SearchAutocomplete() {
                         label: (
                             <Flex align="center" gap="small" style={{ padding: '4px 0' }}>
                                 <Image
-                                    src={product.images && product.images.length > 0 
-                                        ? (product.images[0].startsWith('http') 
-                                            ? product.images[0] 
-                                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`) 
+                                    src={product.images && product.images.length > 0
+                                        ? (product.images[0].startsWith('http')
+                                            ? product.images[0]
+                                            : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${product.images[0]}`)
                                         : "/no-image.png"}
                                     alt={product.name}
                                     width={40}
@@ -117,14 +117,14 @@ export default function SearchAutocomplete() {
     return (
         <div style={{ width: '100%', maxWidth: 400 }}>
             <AutoComplete
-                dropdownMatchSelectWidth={500}
+                popupMatchSelectWidth={500}
                 style={{ width: '100%' }}
                 options={options}
                 onSelect={onSelect}
                 onSearch={handleSearch}
-                size="large"
             >
                 <Input
+                    size="large"
                     placeholder={t('searchPlaceholder')}
                     prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
                     suffix={
@@ -132,8 +132,8 @@ export default function SearchAutocomplete() {
                             {isUploading ? (
                                 <LoadingOutlined style={{ color: '#1677ff' }} />
                             ) : (
-                                <CameraOutlined 
-                                    style={{ color: '#bfbfbf', cursor: 'pointer', fontSize: '18px' }} 
+                                <CameraOutlined
+                                    style={{ color: '#bfbfbf', cursor: 'pointer', fontSize: '18px' }}
                                     onClick={() => fileInputRef.current?.click()}
                                 />
                             )}
@@ -142,10 +142,10 @@ export default function SearchAutocomplete() {
                     style={{ borderRadius: '8px' }}
                 />
             </AutoComplete>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
+            <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
                 accept="image/*"
                 onChange={handleImageSearch}
             />

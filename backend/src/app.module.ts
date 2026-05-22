@@ -18,6 +18,7 @@ import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
 import { GamificationModule } from './gamification/gamification.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { GamificationModule } from './gamification/gamification.module';
     CouponsModule,
     MailModule,
     GamificationModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
