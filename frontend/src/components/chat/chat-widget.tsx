@@ -4,6 +4,7 @@ import { CloseOutlined, RobotOutlined } from '@ant-design/icons';
 import { Button, Card, Flex, Typography } from 'antd';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 
 import { useChat } from './hooks/useChat';
 import ChatMessageList from './components/chat-message-list';
@@ -15,6 +16,7 @@ const { Text } = Typography;
 
 export default function ChatWidget() {
   const t = useTranslations('ChatWidget');
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   
   const {
@@ -39,6 +41,10 @@ export default function ChatWidget() {
 
     return () => clearInterval(intervalId);
   }, [checkChatStatus]);
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <div className="chat-widget-wrapper">

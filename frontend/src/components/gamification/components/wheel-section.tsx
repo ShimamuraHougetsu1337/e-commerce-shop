@@ -34,7 +34,7 @@ export default function WheelSection({ wheelData, mustSpin, prizeNumber, canSpin
                     innerBorderWidth={25}
                     radiusLineColor="#ffffff"
                     radiusLineWidth={3}
-                    fontSize={22}
+                    fontSize={16}
                     textDistance={65}
                     perpendicularText={true}
                     pointerProps={{

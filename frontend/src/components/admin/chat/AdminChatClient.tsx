@@ -110,7 +110,7 @@ export default function AdminChatClient({
                 </div>
                 <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto' }}>
                     <List
-                        dataSource={activeChats}
+                        dataSource={activeChats.filter(chat => String(chat._id) !== String(adminId))}
                         renderItem={(item) => (
                             <List.Item 
                                 onClick={() => setSelectedUser(item)}
