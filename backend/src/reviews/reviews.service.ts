@@ -4,9 +4,11 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { ClientProxy } from '@nestjs/microservices';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review, ReviewDocument } from './schemas/review.schema';
 
@@ -15,28 +17,51 @@ export class ReviewsService {
   constructor(
     @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+    @Inject('MODERATION_SERVICE') private readonly moderationClient: ClientProxy,
   ) {}
 
   async create(user: IUser, createReviewDto: CreateReviewDto) {
     const { productId } = createReviewDto;
 
-    const existingReview = await this.reviewModel.findOne({
-      userId: user._id,
-      productId,
-    });
-    if (existingReview) {
-      throw new BadRequestException('Bạn đã đánh giá sản phẩm này rồi');
-    }
-
     const newReview = await this.reviewModel.create({
       ...createReviewDto,
       userId: user._id,
+      status: 'PENDING_MODERATION',
+      isHidden: true,
     });
 
-    // Sync product stats
-    await this.updateProductStats(productId);
+    // Publish to RabbitMQ
+    this.moderationClient.emit('review.moderate', {
+      reviewId: newReview._id,
+      comment: newReview.comment,
+      productId: newReview.productId,
+    });
+
+    // Do not sync product stats here because it is hidden/pending.
+    // It will be synced when the AI approves it.
 
     return newReview;
+  }
+
+  async updateModerationStatus(
+    reviewId: string,
+    productId: string,
+    isAppropriate: boolean,
+    reason: string,
+  ) {
+    const status = isAppropriate ? 'APPROVED' : 'REJECTED';
+    const isHidden = !isAppropriate;
+
+    await this.reviewModel.findByIdAndUpdate(reviewId, {
+      status,
+      isHidden,
+      moderationReason: reason,
+    });
+
+    if (isAppropriate) {
+      // Sync stats only if approved
+      await this.updateProductStats(productId);
+    }
   }
 
   async findByUser(user: IUser) {
@@ -85,10 +110,22 @@ export class ReviewsService {
       );
     }
 
-    review.set(updateReviewDto);
+    review.set({
+      ...updateReviewDto,
+      status: 'PENDING_MODERATION',
+      isHidden: true,
+      moderationReason: null
+    });
     const updatedReview = await review.save();
 
-    // Sync product stats
+    // Re-publish to RabbitMQ for re-moderation
+    this.moderationClient.emit('review.moderate', {
+      reviewId: updatedReview._id,
+      comment: updatedReview.comment,
+      productId: updatedReview.productId,
+    });
+
+    // Sync product stats (will be removed from stats until approved)
     await this.updateProductStats(review.productId.toString());
 
     return updatedReview;
@@ -191,7 +228,13 @@ export class ReviewsService {
    */
   private async updateProductStats(productId: string) {
     const stats = await this.reviewModel.aggregate([
-      { $match: { productId: new mongoose.Types.ObjectId(productId) } },
+      { 
+        $match: { 
+          productId: new mongoose.Types.ObjectId(productId),
+          isHidden: false,
+          status: 'APPROVED'
+        } 
+      },
       {
         $group: {
           _id: '$productId',

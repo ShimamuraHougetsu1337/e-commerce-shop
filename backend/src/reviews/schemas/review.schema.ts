@@ -38,9 +38,16 @@ export class Review {
 
   @Prop({ type: Boolean, default: false })
   isHidden: boolean;
+
+  @Prop({
+    type: String,
+    enum: ['PENDING_MODERATION', 'APPROVED', 'REJECTED'],
+    default: 'PENDING_MODERATION',
+  })
+  status: string;
+
+  @Prop({ type: String, default: null })
+  moderationReason: string;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);
-
-// Compound unique index: Each user can only review a product once
-ReviewSchema.index({ userId: 1, productId: 1 }, { unique: true });

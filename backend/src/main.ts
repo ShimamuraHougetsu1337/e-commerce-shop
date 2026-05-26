@@ -2,6 +2,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
@@ -42,6 +43,20 @@ async function bootstrap() {
     preflightContinue: false,
   });
 
+  // Connect to RabbitMQ Microservice
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [configService.get('RABBITMQ_URL') || 'amqp://guest:guest@localhost:5672'],
+      queue: 'review_moderation_queue',
+      queueOptions: {
+        durable: true,
+      },
+      noAck: false, // manual ack in consumer
+    },
+  });
+
+  await app.startAllMicroservices();
   await app.listen(configService.get('PORT') || 8080);
 }
 bootstrap();
