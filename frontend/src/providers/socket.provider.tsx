@@ -28,7 +28,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         if (status === 'authenticated' && session?.accessToken) {
             const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
             const newSocket = io(backendUrl, {
-                transports: ['websocket'],
+                transports: ['polling', 'websocket'],
                 auth: { token: session.accessToken }
             });
 

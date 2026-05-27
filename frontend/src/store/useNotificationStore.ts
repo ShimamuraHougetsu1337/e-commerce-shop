@@ -46,8 +46,16 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   fetchUnreadCount: async (accessToken: string) => {
     try {
       const res = await getUnreadCountApi(accessToken);
-      if (res?.data) {
-        set({ unreadCount: res.data.count });
+      if (res) {
+        // Hỗ trợ cả cấu trúc mới { count } và số nguyên thô từ backend cũ
+        const rawData = res.data;
+        let count = 0;
+        if (typeof rawData === 'object' && rawData !== null && 'count' in rawData) {
+          count = Number(rawData.count);
+        } else if (typeof rawData === 'number') {
+          count = rawData;
+        }
+        set({ unreadCount: Number.isNaN(count) ? 0 : count });
       }
     } catch (err) {
       console.error('Error fetching unread notification count:', err);
@@ -63,7 +71,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
           notif._id === id ? { ...notif, isRead: true } : notif
         );
         // Giảm unreadCount nếu nó lớn hơn 0
-        const currentUnread = get().unreadCount;
+        const currentUnread = get().unreadCount || 0;
         set({
           notifications: updatedList,
           unreadCount: Math.max(0, currentUnread - 1),
@@ -100,7 +108,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     const newList = [notification, ...get().notifications];
     set({
       notifications: newList,
-      unreadCount: get().unreadCount + 1,
+      unreadCount: (get().unreadCount || 0) + 1,
     });
   },
 }));

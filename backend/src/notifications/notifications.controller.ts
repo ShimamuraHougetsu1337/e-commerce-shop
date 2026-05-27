@@ -14,8 +14,9 @@ export class NotificationsController {
 
   @Get('unread-count')
   @ResponseMessage('Lấy số thông báo chưa đọc thành công')
-  getUnreadCount(@User() user: IUser) {
-    return this.notificationsService.getUnreadCount(user._id);
+  async getUnreadCount(@User() user: IUser) {
+    const count = await this.notificationsService.getUnreadCount(user._id);
+    return { count };
   }
 
   @Patch(':id/read')

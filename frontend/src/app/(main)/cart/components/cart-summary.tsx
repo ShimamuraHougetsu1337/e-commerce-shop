@@ -102,33 +102,21 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
                 return;
             }
 
-            await clearCart(session.accessToken);
-            onCheckoutSuccess();
-            
-            if (paymentMethod === 'VNPAY' && res.data?.paymentUrl) {
-                window.location.href = res.data.paymentUrl;
+            const order = res.data?.order;
+            const paymentUrl = res.data?.paymentUrl;
+
+            // VNPay: redirect luôn (không xóa giỏ hàng trước, giỏ hàng sẽ được xóa sau ở vnpay-return nếu giao dịch thành công)
+            if (paymentMethod === 'VNPAY' && paymentUrl) {
+                window.location.href = paymentUrl;
                 return;
             }
-            
-            modal.success({
-                title: t('checkoutSuccessTitle'),
-                content: (
-                    <div>
-                        <p>{t('checkoutSuccessDesc')}</p>
-                        <p>{t('orderId')}: <b>{res.data?.order?._id || 'N/A'}</b></p>
-                    </div>
-                ),
-                okText: t('viewOrder'),
-                cancelText: t('continueShopping'),
-                okCancel: true,
-                centered: true,
-                onOk: () => {
-                    router.push('/profile?tab=orders');
-                },
-                onCancel: () => {
-                    router.push('/');
-                }
-            });
+
+            // COD: clear cart, trigger success, redirect to success page
+            await clearCart(session.accessToken);
+            onCheckoutSuccess();
+            const orderId = order?._id || order?.id || 'N/A';
+            const total = order?.totalAmount || finalTotal;
+            router.push(`/order/success?orderId=${orderId}&method=COD&total=${total}`);
 
         } catch (err) {
             console.error('Checkout error:', err);

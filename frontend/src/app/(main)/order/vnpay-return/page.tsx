@@ -7,12 +7,17 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { verifyVnpayPaymentApi } from '@/utils/user.api';
 import { useTranslations } from 'next-intl';
 
+import { useSession } from 'next-auth/react';
+import { useCartStore } from '@/store/useCartStore';
+
 const { Title, Text } = Typography;
 
 function VnpayReturnContent() {
     const t = useTranslations('VnpayReturn');
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { data: session } = useSession();
+    const { clearCart } = useCartStore();
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'verify_failed'>('loading');
     const [orderInfo, setOrderInfo] = useState<any>(null);
@@ -48,53 +53,30 @@ function VnpayReturnContent() {
         verifyPayment();
     }, [searchParams, t]);
 
-    if (loading) {
+    useEffect(() => {
+        const handleSuccessRedirect = async () => {
+            if (status === 'success' && orderInfo) {
+                // Chỉ xóa giỏ hàng nếu giao dịch thành công
+                if (session?.accessToken) {
+                    await clearCart(session.accessToken);
+                }
+                const orderId = orderInfo._id || orderInfo.id || '';
+                const total = orderInfo.totalAmount || '';
+                router.push(`/order/success?orderId=${orderId}&method=VNPAY&total=${total}`);
+            }
+        };
+        handleSuccessRedirect();
+    }, [status, orderInfo, session, clearCart, router]);
+
+    if (loading || status === 'success') {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
                 <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
-                <Title level={4} style={{ marginTop: 24 }}>{t('verifying')}</Title>
+                <Title level={4} style={{ marginTop: 24 }}>
+                    {status === 'success' ? t('titleSuccess') : t('verifying')}
+                </Title>
                 <Text type="secondary">{t('pleaseWait')}</Text>
             </div>
-        );
-    }
-
-    if (status === 'success') {
-        return (
-            <Result
-                status="success"
-                title={t('titleSuccess')}
-                subTitle={
-                    <Space direction="vertical" style={{ width: '100%' }}>
-                        <Text>{t('descSuccess')}</Text>
-                        {orderInfo && (
-                            <Card size="small" style={{ maxWidth: 400, margin: '16px auto', textAlign: 'left', borderRadius: 8 }}>
-                                <div style={{ marginBottom: 8 }}>
-                                    <Text type="secondary">{t('orderId')}: </Text>
-                                    <Text strong>{orderInfo._id || orderInfo.id}</Text>
-                                </div>
-                                <div style={{ marginBottom: 8 }}>
-                                    <Text type="secondary">{t('totalAmount')}: </Text>
-                                    <Text strong style={{ color: '#f5222d' }}>
-                                        {Number(orderInfo.totalAmount || 0).toLocaleString('vi-VN')} đ
-                                    </Text>
-                                </div>
-                                <div>
-                                    <Text type="secondary">{t('paymentMethod')}: </Text>
-                                    <Text strong>VNPAY</Text>
-                                </div>
-                            </Card>
-                        )}
-                    </Space>
-                }
-                extra={[
-                    <Button type="primary" key="orders" onClick={() => router.push('/profile?tab=orders')}>
-                        {t('viewOrder')}
-                    </Button>,
-                    <Button key="home" onClick={() => router.push('/')}>
-                        {t('continueShopping')}
-                    </Button>,
-                ]}
-            />
         );
     }
 
