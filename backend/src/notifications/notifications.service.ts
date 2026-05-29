@@ -31,12 +31,28 @@ export class NotificationsService {
     });
   }
 
-  async getByUser(userId: string): Promise<Notification[]> {
-    return this.notificationModel
+  async getByUser(userId: string, current: number, pageSize: number) {
+    const offset = (current - 1) * pageSize;
+
+    const totalItems = await this.notificationModel.countDocuments({ userId });
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    const result = await this.notificationModel
       .find({ userId })
       .sort({ createdAt: -1 })
-      .limit(50)
+      .skip(offset)
+      .limit(pageSize)
       .lean();
+
+    return {
+      meta: {
+        current,
+        pageSize,
+        pages: totalPages,
+        total: totalItems,
+      },
+      result,
+    };
   }
 
   async getUnreadCount(userId: string): Promise<number> {

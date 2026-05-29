@@ -10,9 +10,12 @@ import {
 interface NotificationStore {
   notifications: INotification[];
   unreadCount: number;
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
   isLoading: boolean;
   error: string | null;
-  fetchNotifications: (accessToken: string) => Promise<void>;
+  fetchNotifications: (accessToken: string, current?: number, pageSize?: number) => Promise<void>;
   fetchUnreadCount: (accessToken: string) => Promise<void>;
   markAsRead: (id: string, accessToken: string) => Promise<void>;
   markAllAsRead: (accessToken: string) => Promise<void>;
@@ -22,19 +25,24 @@ interface NotificationStore {
 export const useNotificationStore = create<NotificationStore>((set, get) => ({
   notifications: [],
   unreadCount: 0,
+  totalCount: 0,
+  currentPage: 1,
+  totalPages: 1,
   isLoading: false,
   error: null,
 
-  fetchNotifications: async (accessToken: string) => {
+  fetchNotifications: async (accessToken: string, current = 1, pageSize = 10) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await getMyNotificationsApi(accessToken);
+      const res = await getMyNotificationsApi(accessToken, current, pageSize);
       if (res?.data) {
-        // Sort notifications to place the newest first
-        const sorted = [...res.data].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        set({ notifications: sorted, isLoading: false });
+        set({
+          notifications: res.data.result || [],
+          currentPage: res.data.meta.current,
+          totalCount: res.data.meta.total,
+          totalPages: res.data.meta.pages,
+          isLoading: false
+        });
       } else {
         set({ notifications: [], isLoading: false });
       }
@@ -109,6 +117,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     set({
       notifications: newList,
       unreadCount: (get().unreadCount || 0) + 1,
+      totalCount: (get().totalCount || 0) + 1,
     });
   },
 }));

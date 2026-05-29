@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ResponseMessage, User, type IUser } from '@/decorator/customize';
 import { NotificationsService } from './notifications.service';
 
@@ -8,8 +8,16 @@ export class NotificationsController {
 
   @Get()
   @ResponseMessage('Lấy danh sách thông báo thành công')
-  getMyNotifications(@User() user: IUser) {
-    return this.notificationsService.getByUser(user._id);
+  getMyNotifications(
+    @User() user: IUser,
+    @Query('current') current?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.notificationsService.getByUser(
+      user._id,
+      current ? +current : 1,
+      pageSize ? +pageSize : 50,
+    );
   }
 
   @Get('unread-count')

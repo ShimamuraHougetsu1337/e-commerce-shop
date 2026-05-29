@@ -2,7 +2,7 @@
 
 import { createOrderApi } from '@/utils/user.api';
 import { CreditCardOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { App, Button, Divider, Flex, Input, Modal, Typography } from 'antd';
+import { App, Button, Divider, Flex, Input, Modal, Typography, Radio, Space } from 'antd';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -25,6 +25,7 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
     const router = useRouter();
     const [shippingAddress, setShippingAddress] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY'>('COD');
 
     const subtotal = product.price * quantity;
     const shipping = 0; // Free shipping
@@ -53,13 +54,19 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
                     }
                 ],
                 totalAmount: total,
-                paymentMethod: 'COD',
+                paymentMethod: paymentMethod,
                 shippingAddress: shippingAddress.trim(),
             };
 
             const res = await createOrderApi(orderPayload, session.accessToken);
 
             if (res && res.statusCode === 201) {
+                const paymentUrl = res.data?.paymentUrl;
+                if (paymentMethod === 'VNPAY' && paymentUrl) {
+                    window.location.href = paymentUrl;
+                    return;
+                }
+
                 modal.success({
                     title: t('orderSuccessTitle'),
                     content: (
@@ -134,6 +141,16 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
                         rows={3}
                         style={{ borderRadius: 8 }}
                     />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                    <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('paymentMethod')}</Text>
+                    <Radio.Group onChange={(e) => setPaymentMethod(e.target.value)} value={paymentMethod}>
+                        <Space direction="vertical">
+                            <Radio value="COD">{t('paymentCOD')}</Radio>
+                            <Radio value="VNPAY">{t('paymentVNPAY')}</Radio>
+                        </Space>
+                    </Radio.Group>
                 </div>
 
                 <div style={{ backgroundColor: '#f9f9f9', padding: 16, borderRadius: 12 }}>

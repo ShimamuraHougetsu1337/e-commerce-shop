@@ -174,9 +174,9 @@
   },
   "BenefitsBar": {
     "fastDelivery": "Fast Delivery",
-    "fastDeliveryDesc": "Free for orders over 2m",
+    "fastDeliveryDesc": " Nationwide delivery support",
     "easyReturn": "Flexible Returns",
-    "easyReturnDesc": "12 months genuine warranty",
+    "easyReturnDesc": "Genuine warranty",
     "securePayment": "Secure Payment",
     "securePaymentDesc": "Multiple secure methods",
     "dedicatedSupport": "Dedicated Support",
@@ -233,7 +233,10 @@
     "free": "Free",
     "total": "Total",
     "confirmCheckout": "Confirm Checkout",
-    "termsAgreement": "By placing an order, you agree to our terms and conditions."
+    "termsAgreement": "By placing an order, you agree to our terms and conditions.",
+    "paymentMethod": "Payment Method",
+    "paymentCOD": "Cash on Delivery (COD)",
+    "paymentVNPAY": "Online Payment via VNPAY"
   },
   "ProductReviews": {
     "loginRequired": "Please login to perform this action",
@@ -313,7 +316,8 @@
     "productReviews": "Product Reviews",
     "home": "Home",
     "profile": "Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "notifications": "Notifications"
   },
   "ProductContentWrapper": {
     "home": "Home",
@@ -696,6 +700,7 @@
     "unreadCount": "{count} unread notifications",
     "justNow": "Just now",
     "ago": "ago",
+    "viewAll": "View all notifications",
     "orderPendingTitle": "⏳ Order Placed Successfully",
     "orderPendingMsg": "Your order #{id} is awaiting confirmation.",
     "orderConfirmedTitle": "✅ Order Confirmed",

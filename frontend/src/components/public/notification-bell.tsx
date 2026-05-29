@@ -71,7 +71,7 @@ export default function NotificationBell() {
   // Fetch initial notifications and unread count
   useEffect(() => {
     if (status === 'authenticated' && session?.accessToken) {
-      fetchNotifications(session.accessToken);
+      fetchNotifications(session.accessToken, 1, 10);
       fetchUnreadCount(session.accessToken);
     }
   }, [status, session, fetchNotifications, fetchUnreadCount]);
@@ -240,7 +240,7 @@ export default function NotificationBell() {
         ) : (
           <List
             itemLayout="horizontal"
-            dataSource={notifications}
+            dataSource={notifications.slice(0, 10)}
             renderItem={(item) => (
               <List.Item
                 onClick={() => handleNotificationClick(item)}
@@ -293,6 +293,23 @@ export default function NotificationBell() {
           />
         )}
       </div>
+
+      {/* Popover Footer */}
+      {notifications.length > 0 && (
+        <div style={{ paddingTop: 8, borderTop: '1px solid #f3f4f6', marginTop: 8, textAlign: 'center' }}>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              setVisible(false);
+              router.push('/profile?tab=notifications');
+            }}
+            style={{ fontSize: '13px', width: '100%' }}
+          >
+            {t('viewAll')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 

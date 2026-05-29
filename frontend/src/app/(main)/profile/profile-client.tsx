@@ -3,7 +3,9 @@
 import AccountSettings from '@/components/profile/AccountSettings';
 import OrderHistory from '@/components/profile/order-history';
 import Reviews from '@/components/profile/Reviews';
+import ProfileNotifications from '@/components/profile/notifications';
 import {
+  BellOutlined,
   HomeOutlined,
   LogoutOutlined,
   ShoppingOutlined,
@@ -46,6 +48,7 @@ export default function ProfileClient({ session }: { session: any }) {
         { key: 'settings', icon: <UserOutlined />, label: t('accountInfo') },
         { key: 'orders', icon: <ShoppingOutlined />, label: t('manageOrders') },
         { key: 'reviews', icon: <StarOutlined />, label: t('productReviews') },
+        { key: 'notifications', icon: <BellOutlined />, label: t('notifications') },
     ];
 
     const renderContent = () => {
@@ -56,6 +59,8 @@ export default function ProfileClient({ session }: { session: any }) {
                 return <OrderHistory accessToken={session.accessToken} />;
             case 'reviews':
                 return <Reviews />;
+            case 'notifications':
+                return <ProfileNotifications accessToken={session.accessToken} />;
             default:
                 return <AccountSettings user={session.user} accessToken={session.accessToken} onNameUpdate={setDisplayName} />;
         }

@@ -174,9 +174,9 @@
   },
   "BenefitsBar": {
     "fastDelivery": "Giao hàng nhanh chóng",
-    "fastDeliveryDesc": "Miễn phí cho đơn hàng từ 2tr",
+    "fastDeliveryDesc": "Hỗ trợ giao hàng toàn quốc",
     "easyReturn": "Đổi trả linh hoạt",
-    "easyReturnDesc": "Bảo hành chính hãng 12 tháng",
+    "easyReturnDesc": "Bảo hành chính hãng",
     "securePayment": "Thanh toán an toàn",
     "securePaymentDesc": "Đa dạng phương thức bảo mật",
     "dedicatedSupport": "Hỗ trợ tận tâm",
@@ -233,7 +233,10 @@
     "free": "Miễn phí",
     "total": "Tổng cộng",
     "confirmCheckout": "Xác nhận đặt hàng",
-    "termsAgreement": "Bằng cách đặt hàng, bạn đồng ý với các điều khoản của chúng tôi."
+    "termsAgreement": "Bằng cách đặt hàng, bạn đồng ý với các điều khoản của chúng tôi.",
+    "paymentMethod": "Phương thức thanh toán",
+    "paymentCOD": "Thanh toán khi nhận hàng (COD)",
+    "paymentVNPAY": "Thanh toán trực tuyến qua VNPAY"
   },
   "ProductReviews": {
     "loginRequired": "Vui lòng đăng nhập để thực hiện",
@@ -313,7 +316,8 @@
     "productReviews": "Đánh giá sản phẩm",
     "home": "Trang chủ",
     "profile": "Hồ sơ cá nhân",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "notifications": "Thông báo"
   },
   "ProductContentWrapper": {
     "home": "Trang chủ",
@@ -696,6 +700,7 @@
     "unreadCount": "{count} thông báo chưa đọc",
     "justNow": "Vừa xong",
     "ago": "trước",
+    "viewAll": "Xem tất cả thông báo",
     "orderPendingTitle": "⏳ Đơn đặt hàng thành công",
     "orderPendingMsg": "Đơn hàng #{id} của bạn đang chờ xác nhận.",
     "orderConfirmedTitle": "✅ Đơn hàng đã được xác nhận",

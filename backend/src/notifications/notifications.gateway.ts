@@ -50,10 +50,12 @@ export class NotificationsGateway
     const { userId } = data;
     this.socketToUser.set(client.id, userId);
 
-    if (!this.userSockets.has(userId)) {
-      this.userSockets.set(userId, new Set());
+    let sockets = this.userSockets.get(userId);
+    if (!sockets) {
+      sockets = new Set();
+      this.userSockets.set(userId, sockets);
     }
-    this.userSockets.get(userId).add(client.id);
+    sockets.add(client.id);
 
     client.join(`user:${userId}`);
     console.log(`[Notifications] User ${userId} joined notification room`);

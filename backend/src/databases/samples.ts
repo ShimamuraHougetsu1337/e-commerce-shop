@@ -229,8 +229,8 @@ export const SAMPLE_PRODUCTS = [
     stock_quantity: 120,
     category_slug: 'home-living',
     images: [
-      'https://static.rangdongstore.vn/product/den-ban/RD-RL-01.V2/RD-RL-27.V2-1.jpg?fm=webp&w=500',
-      'https://static.rangdongstore.vn/product/den-ban/RD-RL-26/RD-RL-26.LED-1.jpg?fm=webp&w=500',
+      'https://down-vn.img.susercontent.com/file/sg-11134201-22110-aiwklxr0pcjvcb',
+      'https://down-vn.img.susercontent.com/file/sg-11134201-22110-aiwklxr0pcjvcb'
     ],
     averageRating: 4.5,
     totalReviews: 310,

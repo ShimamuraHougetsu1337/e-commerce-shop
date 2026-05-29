@@ -33,21 +33,23 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
             });
 
             newSocket.on('connect', () => {
-                const user = session.user as any;
-                const userId = user._id || user.id;
-                const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+                const user = session?.user as any;
+                const userId = user?._id || user?.id;
+                const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
-                // Báo danh với hệ thống ngay khi kết nối
-                newSocket.emit('join_room', { 
-                    roomId: isAdmin ? 'admins' : userId, 
-                    userId: userId, 
-                    isAdmin: isAdmin 
-                });
+                if (userId) {
+                    // Báo danh với hệ thống ngay khi kết nối
+                    newSocket.emit('join_room', { 
+                        roomId: isAdmin ? 'admins' : userId, 
+                        userId: userId, 
+                        isAdmin: isAdmin 
+                    });
 
-                // Join notification room
-                newSocket.emit('notification:join', { userId });
-                if (isAdmin) {
-                    newSocket.emit('notification:admin_join');
+                    // Join notification room
+                    newSocket.emit('notification:join', { userId });
+                    if (isAdmin) {
+                        newSocket.emit('notification:admin_join');
+                    }
                 }
             });
 

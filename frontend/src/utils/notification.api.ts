@@ -12,9 +12,17 @@ export interface INotification {
   updatedAt: string;
 }
 
-export const getMyNotificationsApi = (accessToken: string) => {
-  return sendRequest<IBackendRes<INotification[]>>({
-    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/notifications`,
+export const getMyNotificationsApi = (accessToken: string, current = 1, pageSize = 10) => {
+  return sendRequest<IBackendRes<{
+    meta: {
+      current: number;
+      pageSize: number;
+      pages: number;
+      total: number;
+    };
+    result: INotification[];
+  }>>({
+    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/notifications?current=${current}&pageSize=${pageSize}`,
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
