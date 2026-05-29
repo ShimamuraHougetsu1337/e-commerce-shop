@@ -169,7 +169,7 @@ export class ChatService {
       .find({ ...baseQuery, name: { $regex: keyword, $options: 'i' } })
       .select(selectFields)
       .sort({ averageRating: -1 })
-      .limit(5)
+      .limit(10)
       .lean()
       .exec();
 
@@ -185,7 +185,7 @@ export class ChatService {
           .find({ ...baseQuery, $or: tokens })
           .select(selectFields)
           .sort({ averageRating: -1 })
-          .limit(5)
+          .limit(10)
           .lean()
           .exec();
 
@@ -193,7 +193,7 @@ export class ChatService {
         const seen = new Set(products.map((p) => String(p._id)));
         for (const p of fallback) {
           if (!seen.has(String(p._id))) products.push(p);
-          if (products.length >= 5) break;
+          if (products.length >= 10) break;
         }
       }
     }
@@ -257,22 +257,24 @@ export class ChatService {
       // ── 3. SYSTEM PROMPT ───────────────────────────────────────────────────
       const hasProducts = !context.startsWith('Không có sản phẩm');
       const systemPrompt = `Bạn là trợ lý bán hàng thân thiện của E-Commerce Shop. Tên bạn là "Mia".
-/no_think
+Luôn trả lời trực tiếp bằng tiếng Việt tự nhiên. Tuyệt đối không dùng tiếng Trung hay tiếng Anh. Không chèn các câu phân tích hoặc giải thích meta vào câu trả lời.
 
 ## Dữ liệu sản phẩm (từ khoá: "${keyword ?? 'chưa xác định'}"):
 ${context}
 
 ## Quy tắc QUAN TRỌNG:
-- Trả lời NGẮN GỌN (tối đa 60 từ), tự nhiên, xưng "em", gọi khách là "anh/chị".
+- Trả lời bằng TIẾNG VIỆT, NGẮN GỌN (tối đa 60 từ), tự nhiên, xưng "em", gọi khách là "anh/chị".
 - KHÔNG bịa đặt sản phẩm, giá, thông tin ngoài dữ liệu trên.
+- KHÔNG dùng tiếng Trung (ví dụ không dùng "呢" hay "请问"), không dùng tiếng Anh.
+- KHÔNG giải thích các bước suy nghĩ hay bình luận về yêu cầu hệ thống.
 - KHÔNG dùng thẻ <think> hay suy nghĩ thành văn bản.
 
 ## Xử lý theo tình huống:
 ${hasProducts
-          ? `- Khách hỏi sản phẩm: Tư vấn dựa trên dữ liệu trên. Đề xuất sản phẩm nổi bật nhất.
+          ? `- Khách hỏi sản phẩm: Danh sách trên là các sản phẩm cửa hàng ĐANG CÓ. Hãy khẳng định là cửa hàng CÓ bán sản phẩm này và tư vấn trực tiếp dựa trên dữ liệu đó. Tuyệt đối KHÔNG nói cửa hàng không có sản phẩm khi sản phẩm đó đang nằm trong danh sách dữ liệu.
 - Nếu còn ít hàng (⚠️): Nhắc khách mua sớm để không hết.
 - Nếu HẾT HÀNG: Xin lỗi và hỏi khách có muốn xem mẫu tương tự không.`
-          : `- Không tìm thấy sản phẩm khớp: Thông báo nhẹ nhàng, hỏi khách muốn tìm sản phẩm khác không.`
+          : `- Không tìm thấy sản phẩm khớp: Thông báo nhẹ nhàng là hiện tại chưa có sản phẩm này, hỏi khách muốn tìm sản phẩm khác không.`
         }
 - Câu chào hỏi / ngoài lề: Chào lại thân thiện rồi hỏi "Dạ em có thể giúp anh/chị tìm sản phẩm gì ạ?". KHÔNG đề cập "không tìm thấy sản phẩm".`;
 

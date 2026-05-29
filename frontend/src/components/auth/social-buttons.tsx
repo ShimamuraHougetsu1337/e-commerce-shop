@@ -1,6 +1,6 @@
 "use client";
 
-import { GithubOutlined, GoogleOutlined } from "@ant-design/icons";
+import { FacebookFilled, GoogleOutlined } from "@ant-design/icons";
 import { Button, Flex, theme } from "antd";
 import { signIn } from "next-auth/react";
 
@@ -42,11 +42,11 @@ export default function SocialButtons() {
       </Button>
       <Button
         size="large"
-        icon={<GithubOutlined style={{ color: '#000000' }} />}
+        icon={<FacebookFilled style={{ color: '#1877F2' }} />}
         style={{ flex: 1, minWidth: "140px", fontWeight: 500, color: token.colorTextSecondary }}
-        onClick={() => signIn('github', { callbackUrl: '/' })}
+        onClick={() => signIn('facebook', { callbackUrl: '/' })}
       >
-        Github
+        Facebook
       </Button>
     </Flex>
   );

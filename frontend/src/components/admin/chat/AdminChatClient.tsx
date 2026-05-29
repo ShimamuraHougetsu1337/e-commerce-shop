@@ -177,7 +177,7 @@ export default function AdminChatClient({
                                     return (
                                         <div style={{ display: 'flex', justifyContent: isAdmin ? 'flex-end' : 'flex-start', marginBottom: 20 }}>
                                             {!isAdmin && (
-                                                <Avatar size="small" icon={<UserOutlined />} style={{ marginRight: 8, marginTop: 4, backgroundColor: '#8c8c8c' }} />
+                                                <Avatar size="small" src={getAvatarUrl(selectedUser.userDetails.avatar)} icon={<UserOutlined />} style={{ marginRight: 8, marginTop: 4, backgroundColor: '#8c8c8c' }} />
                                             )}
                                             <div style={{ maxWidth: '75%' }}>
                                                 <div style={{

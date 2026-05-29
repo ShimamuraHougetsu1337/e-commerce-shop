@@ -26,7 +26,7 @@ export function useChat(t: any) {
       clearTimeout(timeoutId);
       if (!response.ok) throw new Error();
       const data = await response.json();
-      if (data.status !== 'ok') throw new Error();
+      if (data.data?.status !== 'ok') throw new Error();
       setIsOffline(false);
       setMessages(prev => prev.filter(m => m.id !== 'offline-msg'));
     } catch (err) {
