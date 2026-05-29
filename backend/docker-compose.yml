@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:latest
+    container_name: ecom_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: ecom_rabbitmq
@@ -15,4 +24,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  mongodb_data:
   rabbitmq_data:

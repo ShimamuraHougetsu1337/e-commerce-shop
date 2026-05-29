@@ -79,7 +79,6 @@ cd e-commerce-shop
    MONGODB_URI=mongodb://localhost:27017/ecommerce
    JWT_SECRET=your_jwt_secret
    JWT_REFRESH_TOKEN_SECRET=your_refresh_secret
-   GEMINI_API_KEY=your_gemini_api_key
 
    # SMTP Mailer
    EMAIL_USER=your_email@gmail.com
@@ -95,12 +94,15 @@ cd e-commerce-shop
    RABBITMQ_URL=amqp://guest:guest@localhost:5672
    OLLAMA_BASE_URL=http://localhost:11434/v1
    ```
-4. Khởi động các dịch vụ bổ trợ (RabbitMQ & Ollama):
-   * **Chạy RabbitMQ (qua Docker Desktop):**
+4. Khởi động các dịch vụ bổ trợ (Database & Queue & AI):
+   * **Chạy MongoDB & RabbitMQ (qua Docker Desktop - Khuyên dùng):**
      ```bash
      # Tại thư mục backend
      docker compose up -d
      ```
+     *(Lệnh này tự động khởi chạy cả Database MongoDB trên cổng 27017 và RabbitMQ trên cổng 5672/15672)*
+   * **Cách khác (Nếu không dùng Docker):** 
+     Đảm bảo dịch vụ MongoDB local trên máy của bạn (hoặc MongoDB Atlas Cloud) đang hoạt động và cập nhật đường dẫn `MONGODB_URI` tương ứng trong file `.env`.
    * **Chạy Ollama Local (để sử dụng AI Chatbot):**
      ```bash
      ollama run qwen2.5:7b

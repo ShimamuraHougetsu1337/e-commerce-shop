@@ -43,9 +43,9 @@ jobs:
         env:
           NEXT_PUBLIC_BACKEND_URL: https://mock-backend.onrender.com
           NEXTAUTH_URL: https://mock-frontend.vercel.app
-          NEXTAUTH_SECRET: f9sn3hQpQCNwzlfhC_bXWs_WHSC3NGdVhE3of4HUork_mock
-          GITHUB_ID: Ov23lipBsq9GsL9GMUcI_mock
-          GITHUB_SECRET: 75c4e021ed122ef8de77e1761f3407b84f95e54a_mock
-          GOOGLE_ID: 549254170593-1ikidu6fhqs809sl0s7qtlqp03g3m5og.apps.googleusercontent.com
-          GOOGLE_SECRET: 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_mock
+          NEXTAUTH_SECRET: mock_nextauth_secret_value
+          GITHUB_ID: mock_github_id_value
+          GITHUB_SECRET: mock_github_secret_value
+          GOOGLE_ID: mock_google_id_value
+          GOOGLE_SECRET: mock_google_secret_value
 
