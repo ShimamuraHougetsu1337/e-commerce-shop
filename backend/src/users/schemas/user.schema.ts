@@ -52,6 +52,21 @@ export class User {
 
   @Prop()
   deletedAt: Date;
+
+  @Prop({ type: String })
+  phone: string;
+
+  @Prop({ type: String })
+  address: string;
+
+  @Prop({ type: String })
+  avatar: string;
+
+  @Prop({ type: Boolean, default: true })
+  receiveNotifications: boolean;
+
+  @Prop({ type: Boolean, default: true })
+  sendOrderToEmail: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { getAvatarUrl } from '@/utils/user.api';
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -233,7 +234,7 @@ export default function AdminReviewsPage() {
                     <div style={{ marginBottom: 16 }}>
                         <div style={{ padding: 12, background: '#f8fafc', borderRadius: 8, marginBottom: 12 }}>
                             <Space>
-                                <Avatar size={32} src={replyTarget.userId?.avatar}>{replyTarget.userId?.name?.[0]}</Avatar>
+                                <Avatar size={32} src={getAvatarUrl(replyTarget.userId?.avatar)}>{replyTarget.userId?.name?.[0]}</Avatar>
                                 <div>
                                     <Text strong>{replyTarget.userId?.name}</Text>
                                     <div><Rate disabled defaultValue={replyTarget.rating} style={{ fontSize: 12 }} /></div>

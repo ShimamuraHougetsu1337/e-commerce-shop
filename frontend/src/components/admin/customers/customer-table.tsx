@@ -26,6 +26,7 @@ import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
 import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { getAvatarUrl } from '@/utils/user.api';
 
 const { Title, Text } = Typography;
 
@@ -140,7 +141,7 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
             align: "left",
             render: (_, record) => (
                 <Space size="middle">
-                    <Avatar icon={<UserOutlined />} src={record.avatar} />
+                    <Avatar icon={<UserOutlined />} src={getAvatarUrl(record.avatar)} />
                     <Space direction="vertical" size={0}>
                         <Text strong style={{ color: '#1f2937' }}>{record.name}</Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>{record.email}</Text>

@@ -24,7 +24,7 @@ export class ProductsService {
   ) {
     this.openai = new OpenAI({
       baseURL: this.configService.get<string>('OLLAMA_BASE_URL') || 'http://localhost:11434/v1',
-      apiKey: 'ollama',
+      apiKey: this.configService.get<string>('OLLAMA_API_KEY') || 'ollama',
     });
   }
 
@@ -147,9 +147,9 @@ export class ProductsService {
     try {
       const base64Image = file.buffer.toString('base64');
 
-      // 1. Dùng model Vision để mô tả bức ảnh (Dùng tiếng Anh để Moondream nhận diện chính xác nhất)
+      const visionModel = this.configService.get<string>('OLLAMA_VISION_MODEL') || 'moondream';
       const visionResponse = await this.openai.chat.completions.create({
-        model: 'moondream',
+        model: visionModel,
         messages: [
           {
             role: 'user',
@@ -171,9 +171,9 @@ export class ProductsService {
 
       const description = visionResponse.choices[0]?.message?.content || '';
 
-      // 2. Dùng Qwen3 để dịch và trích xuất từ khóa tiếng Việt từ mô tả tiếng Anh
+      const model = this.configService.get<string>('OLLAMA_MODEL') || 'qwen2.5:7b';
       const keywordResponse = await this.openai.chat.completions.create({
-        model: 'qwen3:4b-instruct',
+        model,
         messages: [
           {
             role: 'system',

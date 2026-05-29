@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/public/language-switcher';
 import NotificationBell from '@/components/public/notification-bell';
+import { getAvatarUrl } from '@/utils/user.api';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -55,7 +56,11 @@ export default function AdminHeader({ collapsed, setCollapsed }: {
                 <NotificationBell />
                 <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                     <Space style={{ cursor: 'pointer' }}>
-                        <Avatar style={{ backgroundColor: '#1677ff' }} icon={<UserOutlined />} />
+                        <Avatar
+                            style={{ backgroundColor: '#1677ff' }}
+                            icon={<UserOutlined />}
+                            src={getAvatarUrl(session?.user?.avatar)}
+                        />
                         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
                             <Text strong style={{ fontSize: 13 }}>{session?.user?.name || t('admin')}</Text>
                             <Text type="secondary" style={{ fontSize: 11 }}>{session?.user?.role || t('adminRole')}</Text>

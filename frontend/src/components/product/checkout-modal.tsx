@@ -6,7 +6,7 @@ import { App, Button, Divider, Flex, Input, Modal, Typography, Radio, Space } fr
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 const { Title, Text } = Typography;
@@ -26,6 +26,20 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
     const [shippingAddress, setShippingAddress] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY'>('COD');
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    useEffect(() => {
+        if (session?.user && open && !isInitialized) {
+            setShippingAddress(session.user.address || '');
+            setIsInitialized(true);
+        }
+    }, [session, open, isInitialized]);
+
+    useEffect(() => {
+        if (!open) {
+            setIsInitialized(false);
+        }
+    }, [open]);
 
     const subtotal = product.price * quantity;
     const shipping = 0; // Free shipping

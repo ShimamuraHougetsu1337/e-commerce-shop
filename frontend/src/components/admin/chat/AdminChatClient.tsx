@@ -5,6 +5,7 @@ import { Layout, List, Avatar, Input, Button, Typography, Space, Flex, Badge } f
 import { UserOutlined, SendOutlined, MessageOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { useSocket } from '@/providers/socket.provider';
 import dayjs from 'dayjs';
+import { getAvatarUrl } from '@/utils/user.api';
 
 const { Sider, Content } = Layout;
 const { Text, Title } = Typography;
@@ -28,12 +29,12 @@ interface IMessage {
     createdAt?: string;
 }
 
-export default function AdminChatClient({ 
-    initialActiveChats, 
+export default function AdminChatClient({
+    initialActiveChats,
     adminId,
     accessToken
-}: { 
-    initialActiveChats: IActiveChat[], 
+}: {
+    initialActiveChats: IActiveChat[],
     adminId: string,
     accessToken: string
 }) {
@@ -46,14 +47,16 @@ export default function AdminChatClient({
 
     const isUserOnline = (userId: string) => onlineUsers.has(String(userId));
 
-    // Lắng nghe tin nhắn mới và cập nhật danh sách hội thoại
     useEffect(() => {
         if (!socket) return;
 
         socket.on('new_message', (message: IMessage) => {
             setMessages((prev) => {
                 const isRelevant = String(message.senderId) === String(selectedUser?._id) || String(message.receiverId) === String(selectedUser?._id);
-                return isRelevant ? [...prev, message] : prev;
+                if (!isRelevant) return prev;
+                const exists = prev.some(m => m._id && message._id && m._id === message._id);
+                if (exists) return prev;
+                return [...prev, message];
             });
             fetchActiveChats();
         });
@@ -63,7 +66,6 @@ export default function AdminChatClient({
         };
     }, [socket, selectedUser]);
 
-    // Khi chọn user mới, tham gia phòng và lấy lịch sử
     useEffect(() => {
         if (selectedUser && socket) {
             socket.emit('join_room', { roomId: selectedUser._id });
@@ -112,11 +114,11 @@ export default function AdminChatClient({
                     <List
                         dataSource={activeChats.filter(chat => String(chat._id) !== String(adminId))}
                         renderItem={(item) => (
-                            <List.Item 
+                            <List.Item
                                 onClick={() => setSelectedUser(item)}
-                                style={{ 
-                                    cursor: 'pointer', 
-                                    padding: '16px 24px', 
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '16px 24px',
                                     transition: 'all 0.3s',
                                     backgroundColor: selectedUser?._id === item._id ? '#e6f4ff' : 'transparent',
                                     borderLeft: selectedUser?._id === item._id ? '4px solid #1677ff' : '4px solid transparent'
@@ -125,7 +127,7 @@ export default function AdminChatClient({
                                 <List.Item.Meta
                                     avatar={
                                         <Badge dot status={isUserOnline(item._id) ? 'success' : 'default'} offset={[-2, 32]}>
-                                            <Avatar src={item.userDetails.avatar} icon={<UserOutlined />} size="large" />
+                                            <Avatar src={getAvatarUrl(item.userDetails.avatar)} icon={<UserOutlined />} size="large" />
                                         </Badge>
                                     }
                                     title={<Text strong style={{ color: selectedUser?._id === item._id ? '#1677ff' : 'inherit' }}>{item.userDetails.name}</Text>}
@@ -139,14 +141,14 @@ export default function AdminChatClient({
                     />
                 </div>
             </Sider>
-            
+
             <Content style={{ display: 'flex', flexDirection: 'column', background: '#fff' }}>
                 {selectedUser ? (
                     <>
                         <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
                             <Space size="middle">
                                 <Badge dot status={isUserOnline(selectedUser._id) ? 'success' : 'default'} offset={[-2, 32]}>
-                                    <Avatar src={selectedUser.userDetails.avatar} icon={<UserOutlined />} />
+                                    <Avatar src={getAvatarUrl(selectedUser.userDetails.avatar)} icon={<UserOutlined />} />
                                 </Badge>
                                 <div>
                                     <Text strong style={{ fontSize: 16, display: 'block' }}>{selectedUser.userDetails.name}</Text>
@@ -157,15 +159,15 @@ export default function AdminChatClient({
                             </Space>
                         </div>
 
-                        <div 
-                            ref={scrollRef} 
-                            style={{ 
-                                flex: 1, 
-                                overflowY: 'auto', 
-                                padding: '30px', 
-                                background: '#f0f2f5', 
-                                backgroundImage: 'radial-gradient(#d1d1d1 0.5px, transparent 0.5px)', 
-                                backgroundSize: '20px 20px' 
+                        <div
+                            ref={scrollRef}
+                            style={{
+                                flex: 1,
+                                overflowY: 'auto',
+                                padding: '30px',
+                                background: '#f0f2f5',
+                                backgroundImage: 'radial-gradient(#d1d1d1 0.5px, transparent 0.5px)',
+                                backgroundSize: '20px 20px'
                             }}
                         >
                             <List
@@ -178,8 +180,8 @@ export default function AdminChatClient({
                                                 <Avatar size="small" icon={<UserOutlined />} style={{ marginRight: 8, marginTop: 4, backgroundColor: '#8c8c8c' }} />
                                             )}
                                             <div style={{ maxWidth: '75%' }}>
-                                                <div style={{ 
-                                                    padding: '12px 18px', 
+                                                <div style={{
+                                                    padding: '12px 18px',
                                                     borderRadius: isAdmin ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                                                     backgroundColor: isAdmin ? '#1677ff' : '#fff',
                                                     color: isAdmin ? '#fff' : '#262626',
@@ -203,18 +205,18 @@ export default function AdminChatClient({
 
                         <div style={{ padding: '24px', borderTop: '1px solid #f0f0f0' }}>
                             <Flex gap="middle">
-                                <Input 
+                                <Input
                                     size="large"
-                                    placeholder="Nhập phản hồi cho khách hàng..." 
+                                    placeholder="Nhập phản hồi cho khách hàng..."
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onPressEnter={handleSendMessage}
                                     style={{ borderRadius: '8px' }}
                                 />
-                                <Button 
-                                    type="primary" 
-                                    size="large" 
-                                    icon={<SendOutlined />} 
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    icon={<SendOutlined />}
                                     onClick={handleSendMessage}
                                     style={{ borderRadius: '8px' }}
                                 >

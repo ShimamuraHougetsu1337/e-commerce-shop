@@ -17,7 +17,13 @@ declare module "next-auth" {
         refreshToken: string;
         error?: "RefreshAccessTokenError";
         user: {
+            _id?: string;
             role?: string;
+            phone?: string;
+            address?: string;
+            avatar?: string;
+            receiveNotifications?: boolean;
+            sendOrderToEmail?: boolean;
         } & DefaultSession["user"];
     }
 }

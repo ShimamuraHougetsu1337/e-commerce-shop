@@ -51,4 +51,39 @@ export class FilesController {
       fileName: file.filename,
     };
   }
+
+  @Post('upload-avatar')
+  @Public()
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public/images/avatar',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  uploadAvatar(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: /(jpg|jpeg|png)$/,
+            skipMagicNumbersValidation: true,
+          }),
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5MB
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return {
+      fileName: file.filename,
+    };
+  }
 }

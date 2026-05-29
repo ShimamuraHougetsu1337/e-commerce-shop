@@ -118,10 +118,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       content: data.content,
     });
 
-    this.server.to(data.roomId).emit('new_message', newMessage);
-
+    let target = this.server.to(data.roomId);
     if (data.receiverId === 'ADMIN') {
-      this.server.to('admins').emit('new_message', newMessage);
+      target = target.to('admins');
     }
+    target.emit('new_message', newMessage);
   }
 }

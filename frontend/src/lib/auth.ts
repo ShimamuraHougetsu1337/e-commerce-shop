@@ -107,9 +107,18 @@ export const authOptions: AuthOptions = {
                 }
             }
 
-            // Khi gọi update() từ client, cập nhật tên mới vào token
-            if (trigger === 'update' && session?.name) {
-                (token.user as any).name = session.name;
+            // Khi gọi update() từ client, cập nhật thông tin mới vào token
+            if (trigger === 'update' && session) {
+                if (!token.user) token.user = {};
+                token.user = {
+                    ...token.user,
+                    ...(session.name !== undefined && { name: session.name }),
+                    ...(session.phone !== undefined && { phone: session.phone }),
+                    ...(session.address !== undefined && { address: session.address }),
+                    ...(session.avatar !== undefined && { avatar: session.avatar }),
+                    ...(session.receiveNotifications !== undefined && { receiveNotifications: session.receiveNotifications }),
+                    ...(session.sendOrderToEmail !== undefined && { sendOrderToEmail: session.sendOrderToEmail }),
+                };
             }
 
             // Return previous token if the access token has not expired yet

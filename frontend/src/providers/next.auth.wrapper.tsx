@@ -14,8 +14,8 @@ const SessionGuard = ({ children }: React.PropsWithChildren) => {
     return <>{children}</>;
 };
 
-const NextAuthWrapper = ({ children, session }: React.PropsWithChildren & { session: any }) => (
-    <SessionProvider session={session} refetchInterval={5 * 60}>
+const NextAuthWrapper = ({ children }: React.PropsWithChildren) => (
+    <SessionProvider refetchInterval={5 * 60}>
         <SessionGuard>
             {children}
         </SessionGuard>

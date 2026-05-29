@@ -160,7 +160,16 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    data: { name?: string; oldPassword?: string; newPassword?: string },
+    data: {
+      name?: string;
+      oldPassword?: string;
+      newPassword?: string;
+      phone?: string;
+      address?: string;
+      avatar?: string;
+      receiveNotifications?: boolean;
+      sendOrderToEmail?: boolean;
+    },
   ) {
     const user = await this.userModel.findById(userId);
     if (!user) {
@@ -170,6 +179,26 @@ export class UsersService {
     const updateData: any = {};
     if (data.name) {
       updateData.name = data.name;
+    }
+
+    if (data.phone !== undefined) {
+      updateData.phone = data.phone;
+    }
+
+    if (data.address !== undefined) {
+      updateData.address = data.address;
+    }
+
+    if (data.avatar !== undefined) {
+      updateData.avatar = data.avatar;
+    }
+
+    if (data.receiveNotifications !== undefined) {
+      updateData.receiveNotifications = data.receiveNotifications;
+    }
+
+    if (data.sendOrderToEmail !== undefined) {
+      updateData.sendOrderToEmail = data.sendOrderToEmail;
     }
 
     if (data.oldPassword && data.newPassword) {

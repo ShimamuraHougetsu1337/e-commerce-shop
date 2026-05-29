@@ -6,6 +6,7 @@ import { SendOutlined, CustomerServiceOutlined, UserOutlined } from '@ant-design
 import { useSocket } from '@/providers/socket.provider';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
+import { getAvatarUrl } from '@/utils/user.api';
 
 const { Content } = Layout;
 const { Text, Title } = Typography;
@@ -162,7 +163,7 @@ export default function SupportPage() {
                                         </div>
                                     </div>
                                     {isMe && (
-                                        <Avatar size="small" icon={<UserOutlined />} style={{ marginLeft: 8, marginTop: 4, backgroundColor: '#1677ff' }} />
+                                        <Avatar size="small" icon={<UserOutlined />} src={getAvatarUrl(session?.user?.avatar)} style={{ marginLeft: 8, marginTop: 4, backgroundColor: '#1677ff' }} />
                                     )}
                                 </div>
                             );

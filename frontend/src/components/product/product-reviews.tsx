@@ -1,6 +1,6 @@
 'use client';
 
-import { createReviewApi, deleteReviewApi, getReviewsByProductApi, updateReviewApi, getMyReviewsApi } from '@/utils/user.api';
+import { createReviewApi, deleteReviewApi, getReviewsByProductApi, updateReviewApi, getMyReviewsApi, getAvatarUrl } from '@/utils/user.api';
 import { DeleteOutlined, EditOutlined, MessageOutlined, ShopOutlined, UserOutlined } from '@ant-design/icons';
 import { App, Avatar, Button, Card, Col, Empty, Flex, Form, Input, List, Popconfirm, Rate, Row, Spin, Typography, Space, Tag, Modal } from 'antd';
 import { useSession } from 'next-auth/react';
@@ -285,7 +285,7 @@ const ProductReviews = ({ productId, onReviewSuccess }: ProductReviewsProps) => 
                                         ] : []}
                                     >
                                         <List.Item.Meta
-                                            avatar={<Avatar size={48} icon={<UserOutlined />} src={item.userId?.avatar} />}
+                                            avatar={<Avatar size={48} icon={<UserOutlined />} src={getAvatarUrl(item.userId?.avatar)} />}
                                             title={
                                                 <Flex justify="space-between" align="center">
                                                     <Space>

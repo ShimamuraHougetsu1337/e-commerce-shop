@@ -146,9 +146,9 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
                     </Button>
                 </Flex>
                 <Space.Compact style={{ width: '100%' }}>
-                    <Input 
+                    <Input
                         placeholder={t('enterDiscountCode')}
-                        prefix={<TagOutlined />} 
+                        prefix={<TagOutlined />}
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                         disabled={!!appliedCoupon}
@@ -174,7 +174,19 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
             )}
 
             <div style={{ marginBottom: 24 }}>
-                <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('shippingAddress')}</Text>
+                <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
+                    <Text strong>{t('shippingAddress')}</Text>
+                    {session?.user?.address && (
+                        <Button
+                            type="link"
+                            size="small"
+                            style={{ padding: 0, height: 'auto' }}
+                            onClick={() => setShippingAddress(session.user.address)}
+                        >
+                            {t('useDefaultAddress')}
+                        </Button>
+                    )}
+                </Flex>
                 <Input.TextArea
                     placeholder={t('enterShippingAddress')}
                     value={shippingAddress}

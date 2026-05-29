@@ -10,7 +10,7 @@ export class OllamaService {
   constructor(private configService: ConfigService) {
     this.openai = new OpenAI({
       baseURL: this.configService.get<string>('OLLAMA_BASE_URL') || 'http://localhost:11434/v1',
-      apiKey: 'ollama', // Ollama không yêu cầu key
+      apiKey: this.configService.get<string>('OLLAMA_API_KEY') || 'ollama',
     });
   }
 
@@ -28,7 +28,7 @@ Nội dung đánh giá cần kiểm tra: "${comment}"`;
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: this.configService.get<string>('OLLAMA_MODEL') || 'qwen3:4b-instruct',
+        model: this.configService.get<string>('OLLAMA_MODEL') || 'qwen2.5:7b',
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
       });

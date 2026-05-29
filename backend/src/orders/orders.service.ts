@@ -170,22 +170,28 @@ export class OrdersService {
 
       // 5. Gửi email xác nhận (không làm gián đoạn luồng chính)
       const fullUser = await this.userModel.findById(user._id);
-      void this.mailService.sendOrderConfirmation(order, fullUser || user);
+      if (!fullUser || fullUser.sendOrderToEmail !== false) {
+        void this.mailService.sendOrderConfirmation(order, fullUser || user);
+      }
 
-      // 6. Gửi thông báo realtime cho user
+      // Build notification details (used for user and/or admin)
       const { type, title, message } =
         this.notificationsService.buildOrderNotification(
           OrderStatus.PENDING,
           order._id.toString(),
         );
-      const notification = await this.notificationsService.createForUser(
-        user._id,
-        type,
-        title,
-        message,
-        order._id.toString(),
-      );
-      this.notificationsGateway.sendToUser(user._id, notification);
+
+      // 6. Gửi thông báo realtime cho user
+      if (!fullUser || fullUser.receiveNotifications !== false) {
+        const notification = await this.notificationsService.createForUser(
+          user._id,
+          type,
+          title,
+          message,
+          order._id.toString(),
+        );
+        this.notificationsGateway.sendToUser(user._id, notification);
+      }
 
       // 7. Thông báo cho Admin có đơn hàng mới
       const adminNotif = await this.notificationsService.createForUser(
@@ -282,22 +288,25 @@ export class OrdersService {
         await order.save();
 
         // Gửi thông báo realtime cho user
-        const { type, title, message } =
-          this.notificationsService.buildOrderNotification(
-            OrderStatus.CONFIRMED,
+        const fullUser = await this.userModel.findById(String(order.userId));
+        if (!fullUser || fullUser.receiveNotifications !== false) {
+          const { type, title, message } =
+            this.notificationsService.buildOrderNotification(
+              OrderStatus.CONFIRMED,
+              order._id.toString(),
+            );
+          const notification = await this.notificationsService.createForUser(
+            String(order.userId),
+            type,
+            title,
+            message,
             order._id.toString(),
           );
-        const notification = await this.notificationsService.createForUser(
-          String(order.userId),
-          type,
-          title,
-          message,
-          order._id.toString(),
-        );
-        this.notificationsGateway.sendToUser(
-          String(order.userId),
-          notification,
-        );
+          this.notificationsGateway.sendToUser(
+            String(order.userId),
+            notification,
+          );
+        }
 
         return { RspCode: '00', Message: 'Confirm success' };
       } else {
@@ -348,22 +357,25 @@ export class OrdersService {
           await order.save();
 
           // Gửi thông báo realtime cho user
-          const { type, title, message } =
-            this.notificationsService.buildOrderNotification(
-              OrderStatus.CONFIRMED,
+          const fullUser = await this.userModel.findById(String(order.userId));
+          if (!fullUser || fullUser.receiveNotifications !== false) {
+            const { type, title, message } =
+              this.notificationsService.buildOrderNotification(
+                OrderStatus.CONFIRMED,
+                order._id.toString(),
+              );
+            const notification = await this.notificationsService.createForUser(
+              String(order.userId),
+              type,
+              title,
+              message,
               order._id.toString(),
             );
-          const notification = await this.notificationsService.createForUser(
-            String(order.userId),
-            type,
-            title,
-            message,
-            order._id.toString(),
-          );
-          this.notificationsGateway.sendToUser(
-            String(order.userId),
-            notification,
-          );
+            this.notificationsGateway.sendToUser(
+              String(order.userId),
+              notification,
+            );
+          }
         }
         return { success: true, message: 'Thanh toán thành công', order };
       } else {
@@ -526,16 +538,19 @@ export class OrdersService {
 
     // Gửi thông báo realtime cho chủ đơn hàng
     const userId = String(order.userId);
-    const { type, title, message } =
-      this.notificationsService.buildOrderNotification(status, id);
-    const notification = await this.notificationsService.createForUser(
-      userId,
-      type,
-      title,
-      message,
-      id,
-    );
-    this.notificationsGateway.sendToUser(userId, notification);
+    const fullUser = await this.userModel.findById(userId);
+    if (!fullUser || fullUser.receiveNotifications !== false) {
+      const { type, title, message } =
+        this.notificationsService.buildOrderNotification(status, id);
+      const notification = await this.notificationsService.createForUser(
+        userId,
+        type,
+        title,
+        message,
+        id,
+      );
+      this.notificationsGateway.sendToUser(userId, notification);
+    }
 
     return result;
   }

@@ -9,6 +9,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import 'dayjs/locale/en';
 
+import styles from './notification-bell.module.css';
+
 import {
   Badge,
   Popover,
@@ -253,7 +255,7 @@ export default function NotificationBell() {
                   marginBottom: '4px',
                   borderBottom: 'none',
                 }}
-                className="notification-item-hover"
+                className={styles.notificationItemHover}
               >
                 <List.Item.Meta
                   avatar={getNotificationIcon(item.type)}
@@ -317,46 +319,36 @@ export default function NotificationBell() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        .notification-item-hover:hover {
-          background-color: #f4f4f5 !important;
-        }
-        .custom-notification-popover .ant-popover-inner {
-          border-radius: 16px !important;
-          padding: 16px !important;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-          border: 1px solid #f3f4f6 !important;
-        }
-        .custom-notification-popover .ant-popover-arrow {
-          display: none !important;
-        }
-      ` }} />
-      <Popover
-        content={popoverContent}
-        trigger="click"
-        open={visible}
-        onOpenChange={setVisible}
-        placement="bottomRight"
-        overlayClassName="custom-notification-popover"
-        overlayStyle={{ paddingTop: 8 }}
-      >
-        <Badge count={unreadCount} size="small" style={{ boxShadow: '0 0 0 2px #ffffff' }}>
-          <Tooltip title={t('title')}>
-            <Button
-              type="text"
-              icon={
-                <BellOutlined
-                  style={{
-                    fontSize: 20,
-                    transition: 'transform 0.3s ease',
-                  }}
-                />
-              }
-              className="header-btn"
-            />
-          </Tooltip>
-        </Badge>
-      </Popover>
+      <div style={{ position: 'relative', display: 'inline-flex' }}>
+        <Popover
+          content={popoverContent}
+          trigger="click"
+          open={visible}
+          onOpenChange={setVisible}
+          placement="bottomRight"
+          arrow={{ pointAtCenter: true }}
+          overlayClassName={styles.customNotificationPopover}
+          overlayStyle={{ paddingTop: 8 }}
+          getPopupContainer={(triggerNode) => triggerNode.parentElement as HTMLElement}
+        >
+          <Badge count={unreadCount} size="small" style={{ boxShadow: '0 0 0 2px #ffffff' }}>
+            <Tooltip title={t('title')}>
+              <Button
+                type="text"
+                icon={
+                  <BellOutlined
+                    style={{
+                      fontSize: 20,
+                      transition: 'transform 0.3s ease',
+                    }}
+                  />
+                }
+                className="header-btn"
+              />
+            </Tooltip>
+          </Badge>
+        </Popover>
+      </div>
     </>
   );
 }

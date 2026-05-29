@@ -22,6 +22,7 @@ import SearchAutocomplete from './search.autocomplete';
 import LanguageSwitcher from './language-switcher';
 import { useTranslations } from 'next-intl';
 import NotificationBell from './notification-bell';
+import { getAvatarUrl } from '@/utils/user.api';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
@@ -87,8 +88,10 @@ export default function AppHeader() {
   return (
     <AntHeader
       style={{
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 1000,
         width: '100%',
         backgroundColor: '#fff',
@@ -168,17 +171,34 @@ export default function AppHeader() {
                 </Tooltip>
               </Badge>
 
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Dropdown
                   menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
                   placement="bottomRight"
                 >
-                  <Button type="text" style={{ padding: '4px 8px' }}>
+                  <Button 
+                    type="text" 
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      padding: 0,
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      verticalAlign: 'middle'
+                    }}
+                  >
                     <Avatar
-                      size="small"
-                      style={{ backgroundColor: '#1677ff', verticalAlign: 'middle' }}
+                      size={32}
+                      src={getAvatarUrl(session.user?.avatar)}
+                      style={{ 
+                        backgroundColor: '#1677ff',
+                        border: '1.5px solid #fff',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                      }}
                     >
-                      {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      {!session.user?.avatar && (session.user?.name?.charAt(0)?.toUpperCase() || 'U')}
                     </Avatar>
                   </Button>
                 </Dropdown>

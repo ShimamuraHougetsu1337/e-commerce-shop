@@ -93,7 +93,26 @@ export const clearCartApi = (accessToken: string) => {
     });
 }
 
-export const updateProfileApi = (data: { name?: string, oldPassword?: string, newPassword?: string }, accessToken: string) => {
+export const getAvatarUrl = (avatar?: string) => {
+    if (!avatar) return undefined;
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar;
+    if (avatar.startsWith('images/')) return `${process.env.NEXT_PUBLIC_BACKEND_URL}/${avatar}`;
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/avatar/${avatar}`;
+}
+
+export const updateProfileApi = (
+    data: {
+        name?: string;
+        oldPassword?: string;
+        newPassword?: string;
+        phone?: string;
+        address?: string;
+        avatar?: string;
+        receiveNotifications?: boolean;
+        sendOrderToEmail?: boolean;
+    },
+    accessToken: string
+) => {
     return sendRequest<IBackendRes<any>>({
         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/profile`,
         method: "PATCH",
