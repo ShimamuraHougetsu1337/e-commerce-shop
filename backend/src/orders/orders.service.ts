@@ -3,6 +3,7 @@ import { IUser } from '@/decorator/customize';
 import { MailService } from '@/mail/mail.service';
 import { NotificationsGateway } from '@/notifications/notifications.gateway';
 import { NotificationsService } from '@/notifications/notifications.service';
+import { NotificationType } from '@/notifications/schemas/notification.schema';
 import { Product, ProductDocument } from '@/products/schemas/product.schema';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import {
@@ -193,15 +194,29 @@ export class OrdersService {
         this.notificationsGateway.sendToUser(user._id, notification);
       }
 
-      // 7. Thông báo cho Admin có đơn hàng mới
-      const adminNotif = await this.notificationsService.createForUser(
-        user._id,
-        type, // Hoặc NotificationType.NEW_ORDER_ADMIN
-        '🛍️ Có đơn hàng mới!',
-        `Khách hàng vừa đặt đơn hàng #${order._id.toString().slice(-6).toUpperCase()} — ${order.totalAmount.toLocaleString('vi-VN')}đ`,
-        order._id.toString(),
-      );
-      this.notificationsGateway.sendToAdmins(adminNotif);
+      // 7. Thông báo cho Admin có đơn hàng mới (Lưu thông báo cho các tài khoản Admin/Super Admin)
+      const admins = await this.userModel.find({
+        role: 'SUPER_ADMIN',
+      });
+
+      for (const admin of admins) {
+        await this.notificationsService.createForUser(
+          admin._id.toString(),
+          NotificationType.NEW_ORDER_ADMIN,
+          '🛍️ Có đơn hàng mới!',
+          `Khách hàng vừa đặt đơn hàng #${order._id.toString().slice(-6).toUpperCase()} — ${order.totalAmount.toLocaleString('vi-VN')}đ`,
+          order._id.toString(),
+        );
+      }
+
+      this.notificationsGateway.sendToAdmins({
+        type: NotificationType.NEW_ORDER_ADMIN,
+        title: '🛍️ Có đơn hàng mới!',
+        message: `Khách hàng vừa đặt đơn hàng #${order._id.toString().slice(-6).toUpperCase()} — ${order.totalAmount.toLocaleString('vi-VN')}đ`,
+        orderId: order._id.toString(),
+        isRead: false,
+        createdAt: new Date(),
+      });
 
       // Tạo URL VNPAY nếu phương thức thanh toán là VNPAY
       let paymentUrl: string | null = null;
