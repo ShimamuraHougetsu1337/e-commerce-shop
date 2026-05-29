@@ -108,7 +108,6 @@ export const updateProfileApi = (
         phone?: string;
         address?: string;
         avatar?: string;
-        receiveNotifications?: boolean;
         sendOrderToEmail?: boolean;
     },
     accessToken: string

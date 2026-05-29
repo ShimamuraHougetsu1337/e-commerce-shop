@@ -167,7 +167,6 @@ export class UsersService {
       phone?: string;
       address?: string;
       avatar?: string;
-      receiveNotifications?: boolean;
       sendOrderToEmail?: boolean;
     },
   ) {
@@ -193,9 +192,6 @@ export class UsersService {
       updateData.avatar = data.avatar;
     }
 
-    if (data.receiveNotifications !== undefined) {
-      updateData.receiveNotifications = data.receiveNotifications;
-    }
 
     if (data.sendOrderToEmail !== undefined) {
       updateData.sendOrderToEmail = data.sendOrderToEmail;

@@ -32,7 +32,6 @@ const AccountSettings = ({ user, avatar, accessToken, onNameUpdate }: AccountSet
                 phone: values.phone,
                 address: values.address,
                 avatar: avatar,
-                receiveNotifications: values.receiveNotifications,
                 sendOrderToEmail: values.sendOrderToEmail
             }, accessToken);
             
@@ -45,7 +44,6 @@ const AccountSettings = ({ user, avatar, accessToken, onNameUpdate }: AccountSet
                     phone: values.phone,
                     address: values.address,
                     avatar: avatar,
-                    receiveNotifications: values.receiveNotifications,
                     sendOrderToEmail: values.sendOrderToEmail
                 });
             } else {
@@ -97,7 +95,6 @@ const AccountSettings = ({ user, avatar, accessToken, onNameUpdate }: AccountSet
                             displayName: user?.name,
                             phone: user?.phone,
                             address: user?.address,
-                            receiveNotifications: user?.receiveNotifications !== false,
                             sendOrderToEmail: user?.sendOrderToEmail !== false
                         }}
                         onFinish={handleUpdateProfile}
@@ -144,17 +141,7 @@ const AccountSettings = ({ user, avatar, accessToken, onNameUpdate }: AccountSet
                         <Title level={5} style={{ marginBottom: 20 }}>{t('preferencesTitle')}</Title>
                         
                         <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
-                            <Col xs={24} sm={12}>
-                                <Form.Item 
-                                    name="receiveNotifications" 
-                                    valuePropName="checked"
-                                    label={t('receiveNotificationsLabel')}
-                                    help={t('receiveNotificationsDesc')}
-                                >
-                                    <Switch checkedChildren="ON" unCheckedChildren="OFF" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12}>
+                            <Col xs={24} sm={24}>
                                 <Form.Item 
                                     name="sendOrderToEmail" 
                                     valuePropName="checked"

@@ -79,7 +79,6 @@ export class UsersController {
       phone?: string;
       address?: string;
       avatar?: string;
-      receiveNotifications?: boolean;
       sendOrderToEmail?: boolean;
     },
   ) {

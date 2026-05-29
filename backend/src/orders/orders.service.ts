@@ -183,16 +183,14 @@ export class OrdersService {
         );
 
       // 6. Gửi thông báo realtime cho user
-      if (!fullUser || fullUser.receiveNotifications !== false) {
-        const notification = await this.notificationsService.createForUser(
-          user._id,
-          type,
-          title,
-          message,
-          order._id.toString(),
-        );
-        this.notificationsGateway.sendToUser(user._id, notification);
-      }
+      const notification = await this.notificationsService.createForUser(
+        user._id,
+        type,
+        title,
+        message,
+        order._id.toString(),
+      );
+      this.notificationsGateway.sendToUser(user._id, notification);
 
       // 7. Thông báo cho Admin có đơn hàng mới (Lưu thông báo cho các tài khoản Admin/Super Admin)
       const admins = await this.userModel.find({
@@ -240,7 +238,7 @@ export class OrdersService {
       }
       throw new InternalServerErrorException(
         'Có lỗi xảy ra trong quá trình xử lý đơn hàng: ' +
-          (error as Error).message,
+        (error as Error).message,
       );
     } finally {
       await session.endSession();
@@ -303,25 +301,22 @@ export class OrdersService {
         await order.save();
 
         // Gửi thông báo realtime cho user
-        const fullUser = await this.userModel.findById(String(order.userId));
-        if (!fullUser || fullUser.receiveNotifications !== false) {
-          const { type, title, message } =
-            this.notificationsService.buildOrderNotification(
-              OrderStatus.CONFIRMED,
-              order._id.toString(),
-            );
-          const notification = await this.notificationsService.createForUser(
-            String(order.userId),
-            type,
-            title,
-            message,
+        const { type, title, message } =
+          this.notificationsService.buildOrderNotification(
+            OrderStatus.CONFIRMED,
             order._id.toString(),
           );
-          this.notificationsGateway.sendToUser(
-            String(order.userId),
-            notification,
-          );
-        }
+        const notification = await this.notificationsService.createForUser(
+          String(order.userId),
+          type,
+          title,
+          message,
+          order._id.toString(),
+        );
+        this.notificationsGateway.sendToUser(
+          String(order.userId),
+          notification,
+        );
 
         return { RspCode: '00', Message: 'Confirm success' };
       } else {
@@ -372,25 +367,22 @@ export class OrdersService {
           await order.save();
 
           // Gửi thông báo realtime cho user
-          const fullUser = await this.userModel.findById(String(order.userId));
-          if (!fullUser || fullUser.receiveNotifications !== false) {
-            const { type, title, message } =
-              this.notificationsService.buildOrderNotification(
-                OrderStatus.CONFIRMED,
-                order._id.toString(),
-              );
-            const notification = await this.notificationsService.createForUser(
-              String(order.userId),
-              type,
-              title,
-              message,
+          const { type, title, message } =
+            this.notificationsService.buildOrderNotification(
+              OrderStatus.CONFIRMED,
               order._id.toString(),
             );
-            this.notificationsGateway.sendToUser(
-              String(order.userId),
-              notification,
-            );
-          }
+          const notification = await this.notificationsService.createForUser(
+            String(order.userId),
+            type,
+            title,
+            message,
+            order._id.toString(),
+          );
+          this.notificationsGateway.sendToUser(
+            String(order.userId),
+            notification,
+          );
         }
         return { success: true, message: 'Thanh toán thành công', order };
       } else {
@@ -553,19 +545,16 @@ export class OrdersService {
 
     // Gửi thông báo realtime cho chủ đơn hàng
     const userId = String(order.userId);
-    const fullUser = await this.userModel.findById(userId);
-    if (!fullUser || fullUser.receiveNotifications !== false) {
-      const { type, title, message } =
-        this.notificationsService.buildOrderNotification(status, id);
-      const notification = await this.notificationsService.createForUser(
-        userId,
-        type,
-        title,
-        message,
-        id,
-      );
-      this.notificationsGateway.sendToUser(userId, notification);
-    }
+    const { type, title, message } =
+      this.notificationsService.buildOrderNotification(status, id);
+    const notification = await this.notificationsService.createForUser(
+      userId,
+      type,
+      title,
+      message,
+      id,
+    );
+    this.notificationsGateway.sendToUser(userId, notification);
 
     return result;
   }

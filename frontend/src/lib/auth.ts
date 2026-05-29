@@ -116,7 +116,6 @@ export const authOptions: AuthOptions = {
                     ...(session.phone !== undefined && { phone: session.phone }),
                     ...(session.address !== undefined && { address: session.address }),
                     ...(session.avatar !== undefined && { avatar: session.avatar }),
-                    ...(session.receiveNotifications !== undefined && { receiveNotifications: session.receiveNotifications }),
                     ...(session.sendOrderToEmail !== undefined && { sendOrderToEmail: session.sendOrderToEmail }),
                 };
             }

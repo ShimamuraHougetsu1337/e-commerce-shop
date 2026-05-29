@@ -291,8 +291,6 @@
     "updateProfileSuccess": "Cập nhật thông tin cá nhân thành công!",
     "updateProfileError": "Có lỗi xảy ra khi cập nhật thông tin cá nhân",
     "preferencesTitle": "Cài đặt & Tùy chọn nhận tin",
-    "receiveNotificationsLabel": "Nhận thông báo hệ thống",
-    "receiveNotificationsDesc": "Nhận thông báo realtime trong ứng dụng (Trạng thái đơn hàng, tin nhắn...)",
     "sendOrderToEmailLabel": "Nhận hóa đơn qua Email",
     "sendOrderToEmailDesc": "Tự động gửi thông tin chi tiết đơn hàng về hòm thư Email khi đặt hàng thành công",
     "saveChanges": "Lưu thay đổi",

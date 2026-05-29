@@ -291,8 +291,6 @@
     "updateProfileSuccess": "Personal profile updated successfully!",
     "updateProfileError": "An error occurred while updating the profile",
     "preferencesTitle": "Preferences & Notifications",
-    "receiveNotificationsLabel": "Receive System Notifications",
-    "receiveNotificationsDesc": "Receive real-time notifications inside the application (order updates, messages, etc.)",
     "sendOrderToEmailLabel": "Send Order Invoices to Email",
     "sendOrderToEmailDesc": "Automatically send detailed invoices to your email upon successful order placement",
     "saveChanges": "Save Changes",

@@ -22,7 +22,6 @@ declare module "next-auth" {
             phone?: string;
             address?: string;
             avatar?: string;
-            receiveNotifications?: boolean;
             sendOrderToEmail?: boolean;
         } & DefaultSession["user"];
     }
