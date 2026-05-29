@@ -20,8 +20,8 @@ interface CartSummaryProps {
 
 export default function CartSummary({ session, initialCoupons, onCheckoutSuccess }: CartSummaryProps) {
     const t = useTranslations('CartPage');
-    const { items, getTotalPrice, clearCart, isLoading } = useCartStore();
-    const { message, modal } = App.useApp();
+    const { items, getTotalPrice, clearCart } = useCartStore();
+    const { message } = App.useApp();
     const router = useRouter();
 
     const [couponCode, setCouponCode] = useState('');
@@ -30,6 +30,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
     const [isCouponsModalVisible, setIsCouponsModalVisible] = useState(false);
     const [shippingAddress, setShippingAddress] = useState('');
     const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY'>('COD');
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
 
     const handleApplyCoupon = async () => {
         if (!session?.accessToken) {
@@ -55,6 +56,8 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
     };
 
     const handleCheckout = async () => {
+        if (isCheckingOut) return;
+
         if (!session?.accessToken) {
             message.warning(t('loginRequiredCheckout'));
             router.push('/login');
@@ -77,6 +80,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
             return;
         }
 
+        setIsCheckingOut(true);
         try {
             const finalTotal = appliedCoupon ? appliedCoupon.finalTotal : getTotalPrice();
             const orderPayload = {
@@ -97,7 +101,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
 
             const res = await createOrderApi(orderPayload, session.accessToken);
 
-            if (!res || res.statusCode !== 201) {
+            if (!res || (res.statusCode !== 201 && res.statusCode !== 200 && res.statusCode !== '201' && res.statusCode !== '200')) {
                 message.error(t('orderFailed'));
                 return;
             }
@@ -121,6 +125,8 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
         } catch (err) {
             console.error('Checkout error:', err);
             message.error(t('systemError'));
+        } finally {
+            setIsCheckingOut(false);
         }
     };
 
@@ -220,7 +226,8 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
                 icon={<CreditCardOutlined />}
                 style={{ height: 50, fontSize: 18, borderRadius: 8 }}
                 onClick={handleCheckout}
-                loading={isLoading}
+                loading={isCheckingOut}
+                disabled={isCheckingOut}
             >
                 {t('checkoutNow')}
             </Button>

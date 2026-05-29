@@ -320,14 +320,40 @@ export class OrdersService {
 
         return { RspCode: '00', Message: 'Confirm success' };
       } else {
-        order.status = OrderStatus.CANCELLED;
-        order.timeline.push({
-          status: OrderStatus.CANCELLED,
-          note: 'Thanh toán VNPAY thất bại với mã lỗi ' + responseCode,
-          timestamp: new Date(),
-          actionBy: order.userId,
-        });
-        await order.save();
+        if (order.status === OrderStatus.PENDING) {
+          order.status = OrderStatus.CANCELLED;
+          const isCancel = responseCode === '24';
+          const noteText = isCancel
+            ? 'Người dùng hủy thanh toán qua VNPAY'
+            : 'Thanh toán VNPAY thất bại với mã lỗi ' + responseCode;
+          order.timeline.push({
+            status: OrderStatus.CANCELLED,
+            note: noteText,
+            timestamp: new Date(),
+            actionBy: order.userId,
+          });
+          await order.save();
+
+          await this.restoreOrderStock(order);
+
+          // Gửi thông báo realtime cho user
+          const { type, title, message } =
+            this.notificationsService.buildOrderNotification(
+              OrderStatus.CANCELLED,
+              order._id.toString(),
+            );
+          const notification = await this.notificationsService.createForUser(
+            String(order.userId),
+            type,
+            title,
+            message,
+            order._id.toString(),
+          );
+          this.notificationsGateway.sendToUser(
+            String(order.userId),
+            notification,
+          );
+        }
         return {
           RspCode: '00',
           Message: 'Confirm success (Transaction failed)',
@@ -388,13 +414,37 @@ export class OrdersService {
       } else {
         if (order.status === OrderStatus.PENDING) {
           order.status = OrderStatus.CANCELLED;
+          const isCancel = responseCode === '24';
+          const noteText = isCancel
+            ? 'Người dùng hủy thanh toán qua VNPAY'
+            : 'Thanh toán VNPAY thất bại với mã lỗi ' + responseCode;
           order.timeline.push({
             status: OrderStatus.CANCELLED,
-            note: 'Thanh toán VNPAY thất bại với mã lỗi ' + responseCode,
+            note: noteText,
             timestamp: new Date(),
             actionBy: order.userId,
           });
           await order.save();
+
+          await this.restoreOrderStock(order);
+
+          // Gửi thông báo realtime cho user
+          const { type, title, message } =
+            this.notificationsService.buildOrderNotification(
+              OrderStatus.CANCELLED,
+              order._id.toString(),
+            );
+          const notification = await this.notificationsService.createForUser(
+            String(order.userId),
+            type,
+            title,
+            message,
+            order._id.toString(),
+          );
+          this.notificationsGateway.sendToUser(
+            String(order.userId),
+            notification,
+          );
         }
         return { success: false, message: 'Thanh toán thất bại', order };
       }
@@ -525,6 +575,10 @@ export class OrdersService {
       );
     }
 
+    if (status === OrderStatus.CANCELLED) {
+      await this.restoreOrderStock(order);
+    }
+
     const timelineEntry = {
       status,
       note: note || `Cập nhật trạng thái: ${status}`,
@@ -557,5 +611,22 @@ export class OrdersService {
     this.notificationsGateway.sendToUser(userId, notification);
 
     return result;
+  }
+
+  private async restoreOrderStock(order: any) {
+    try {
+      for (const item of order.items) {
+        const productId = item.product?._id || item.product;
+        await this.productModel.updateOne(
+          { _id: productId },
+          { $inc: { stock_quantity: item.quantity } },
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Error restoring stock for order ${order._id}:`,
+        error,
+      );
+    }
   }
 }

@@ -74,7 +74,7 @@ export default function CheckoutModal({ product, quantity, open, onCancel }: Che
 
             const res = await createOrderApi(orderPayload, session.accessToken);
 
-            if (res && res.statusCode === 201) {
+            if (res && (res.statusCode === 201 || res.statusCode === 200 || res.statusCode === '201' || res.statusCode === '200')) {
                 const paymentUrl = res.data?.paymentUrl;
                 if (paymentMethod === 'VNPAY' && paymentUrl) {
                     window.location.href = paymentUrl;
