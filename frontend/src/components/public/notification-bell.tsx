@@ -315,7 +315,8 @@ export default function NotificationBell() {
     </div>
   );
 
-  if (status !== 'authenticated') return null;
+  const isAuthenticated = status === 'authenticated' || (status === 'loading' && session);
+  if (!isAuthenticated) return null;
 
   return (
     <>

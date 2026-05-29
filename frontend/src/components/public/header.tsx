@@ -139,7 +139,7 @@ export default function AppHeader() {
 
         <Flex align="center" gap="middle" style={{ flexShrink: 0 }}>
           <LanguageSwitcher />
-          {status === 'authenticated' ? (
+          {status === 'authenticated' || (status === 'loading' && session) ? (
             <>
               <Tooltip title={t('luckyWheel') || 'Vòng quay may mắn'}>
                 <Link href={'/lucky-wheel'}>
