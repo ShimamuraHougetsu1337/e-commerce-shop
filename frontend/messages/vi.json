@@ -144,6 +144,8 @@
     "shippingAddress": "Địa chỉ giao hàng",
     "useDefaultAddress": "Sử dụng địa chỉ mặc định",
     "enterShippingAddress": "Nhập địa chỉ nhận hàng của bạn",
+    "addressApplied": "Đã áp dụng địa chỉ mặc định thành công",
+    "defaultAddressNotSet": "Bạn chưa thiết lập địa chỉ mặc định trong hồ sơ tài khoản!",
     "totalAmount": "Thành tiền",
     "checkoutNow": "Thanh toán ngay",
     "paymentMethod": "Phương thức thanh toán",

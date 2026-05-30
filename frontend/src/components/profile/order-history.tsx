@@ -164,7 +164,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                                         src={item.product?.images?.[0] 
                                             ? (item.product.images[0].startsWith('http') 
                                                 ? item.product.images[0] 
-                                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
+                                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${item.product.images[0]}`)
                                             : 'https://placehold.co/100x100?text=No+Image'}
                                         alt={item.productName}
                                         fill
@@ -244,7 +244,7 @@ const OrderCard = ({ order, accessToken }: { order: Order, accessToken: string }
                                         src={item.product?.images?.[0] 
                                             ? (item.product.images[0].startsWith('http') 
                                                 ? item.product.images[0] 
-                                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/products/${item.product.images[0]}`)
+                                                : `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${item.product.images[0]}`)
                                             : 'https://placehold.co/100x100?text=No+Image'}
                                         alt={item.productName}
                                         fill

@@ -144,6 +144,8 @@
     "shippingAddress": "Shipping Address",
     "useDefaultAddress": "Use default address",
     "enterShippingAddress": "Enter your shipping address",
+    "addressApplied": "Default address applied successfully",
+    "defaultAddressNotSet": "You have not set a default shipping address in your profile!",
     "totalAmount": "Total Amount",
     "checkoutNow": "Checkout Now",
     "paymentMethod": "Payment Method",

@@ -218,9 +218,6 @@ export default function CustomerTable({ initialData }: CustomerTableProps) {
                         onSearch={handleSearch}
                         allowClear
                     />
-                    <Button type="primary" icon={<PlusOutlined />}>
-                        {t('addNew')}
-                    </Button>
                 </Space>
             </div>
 

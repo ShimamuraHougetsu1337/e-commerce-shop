@@ -34,10 +34,6 @@ export default function ProductTable({ initialData }: ProductTableProps) {
         setViewingProduct,
         isViewDrawerOpen,
         setIsViewDrawerOpen,
-        searchText,
-        sort,
-        imageUrl,
-        setImageUrl,
         pagination,
         swrLoading,
         mutate,
@@ -71,8 +67,6 @@ export default function ProductTable({ initialData }: ProductTableProps) {
     const showModal = (product?: ProductTableRow) => {
         if (product) {
             setEditingProduct(product);
-            const thumb = product.images?.[0] || '';
-            setImageUrl(thumb);
 
             let categoryId = "";
             if (product.category) {
@@ -82,12 +76,11 @@ export default function ProductTable({ initialData }: ProductTableProps) {
             form.setFieldsValue({
                 ...product,
                 category_id: categoryId,
-                thumbnail: thumb,
+                images: product.images || [],
                 isActive: product.isActive !== undefined ? product.isActive : true
             });
         } else {
             setEditingProduct(null);
-            setImageUrl('');
             form.resetFields();
         }
         setIsModalOpen(true);
@@ -251,8 +244,6 @@ export default function ProductTable({ initialData }: ProductTableProps) {
                 form={form}
                 editingProduct={editingProduct}
                 loading={loading}
-                imageUrl={imageUrl}
-                setImageUrl={setImageUrl}
                 categories={categories}
                 session={session}
             />

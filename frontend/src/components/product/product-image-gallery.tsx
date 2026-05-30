@@ -2,23 +2,34 @@
 
 import { Col, Row } from 'antd';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProductImageGalleryProps {
     images: string[];
     title: string;
 }
 
-
 export default function ProductImageGallery({ images, title }: ProductImageGalleryProps) {
-    const [selectedImage, setSelectedImage] = useState(images[0]);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    // Reset selected image when images list changes
+    useEffect(() => {
+        setSelectedIndex(0);
+    }, [images]);
+
+    const getImageUrl = (img: string) => {
+        if (!img) return '/no-image.png';
+        if (img.startsWith('http') || img.startsWith('/')) return img;
+        return `${process.env.NEXT_PUBLIC_BACKEND_URL}/images/product/${img}`;
+    };
+
+    const activeImage = images && images.length > 0 ? images[selectedIndex] || images[0] : '';
 
     return (
         <>
-            
             <div className="pdp-main-image">
                 <Image
-                    src={selectedImage}
+                    src={getImageUrl(activeImage)}
                     alt={title}
                     fill
                     style={{ objectFit: 'contain', padding: '24px' }}
@@ -26,21 +37,20 @@ export default function ProductImageGallery({ images, title }: ProductImageGalle
                 />
             </div>
 
-            
             <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-                {images.map((img, idx) => (
+                {images && images.map((img, idx) => (
                     <Col span={6} key={idx}>
                         <div
-                            onClick={() => setSelectedImage(img)}
+                            onClick={() => setSelectedIndex(idx)}
                             className="pdp-thumbnail"
                             style={{
-                                border: selectedImage === img
+                                border: selectedIndex === idx
                                     ? '2px solid #1677ff'
                                     : '2px solid transparent',
                             }}
                         >
                             <Image
-                                src={img}
+                                src={getImageUrl(img)}
                                 alt={`thumbnail-${idx}`}
                                 fill
                                 style={{ objectFit: 'cover' }}

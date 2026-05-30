@@ -6,8 +6,9 @@ import { createOrderApi } from '@/utils/user.api';
 import { CreditCardOutlined, GiftOutlined, TagOutlined } from '@ant-design/icons';
 import { App, Button, Card, Divider, Flex, Input, Space, Typography, Radio } from 'antd';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
 import CouponModal from './coupon-modal';
 
 const { Title, Text } = Typography;
@@ -23,8 +24,19 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
     const { items, getTotalPrice, clearCart } = useCartStore();
     const { message } = App.useApp();
     const router = useRouter();
+    const { data: clientSession, update } = useSession();
+    const currentSession = clientSession || session;
 
     const [couponCode, setCouponCode] = useState('');
+    const handleUseDefaultAddress = () => {
+        const address = currentSession?.user?.address;
+        if (address) {
+            setShippingAddress(address);
+            message.success(t('addressApplied') || 'Đã áp dụng địa chỉ mặc định');
+        } else {
+            message.warning(t('defaultAddressNotSet') || 'Bạn chưa thiết lập địa chỉ mặc định!');
+        }
+    };
     const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
     const [applyingCoupon, setApplyingCoupon] = useState(false);
     const [isCouponsModalVisible, setIsCouponsModalVisible] = useState(false);
@@ -33,7 +45,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
     const [isCheckingOut, setIsCheckingOut] = useState(false);
 
     const handleApplyCoupon = async () => {
-        if (!session?.accessToken) {
+        if (!currentSession?.accessToken) {
             message.warning(t('loginRequiredCoupon'));
             router.push('/auth/login');
             return;
@@ -41,7 +53,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
         if (!couponCode) return;
         setApplyingCoupon(true);
         try {
-            const res = await applyCouponApi(couponCode, getTotalPrice(), session.accessToken);
+            const res = await applyCouponApi(couponCode, getTotalPrice(), currentSession.accessToken);
             if (res && res.data) {
                 setAppliedCoupon(res.data);
                 message.success(t('couponSuccess'));
@@ -58,7 +70,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
     const handleCheckout = async () => {
         if (isCheckingOut) return;
 
-        if (!session?.accessToken) {
+        if (!currentSession?.accessToken) {
             message.warning(t('loginRequiredCheckout'));
             router.push('/login');
             return;
@@ -99,7 +111,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
                 minOrderValue: appliedCoupon ? appliedCoupon.coupon.minOrderValue : undefined,
             };
 
-            const res = await createOrderApi(orderPayload, session.accessToken);
+            const res = await createOrderApi(orderPayload, currentSession.accessToken);
 
             if (!res || (res.statusCode !== 201 && res.statusCode !== 200 && res.statusCode !== '201' && res.statusCode !== '200')) {
                 message.error(t('orderFailed'));
@@ -116,7 +128,7 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
             }
 
             // COD: clear cart, trigger success, redirect to success page
-            await clearCart(session.accessToken);
+            await clearCart(currentSession.accessToken);
             onCheckoutSuccess();
             const orderId = order?._id || order?.id || 'N/A';
             const total = order?.totalAmount || finalTotal;
@@ -182,12 +194,12 @@ export default function CartSummary({ session, initialCoupons, onCheckoutSuccess
             <div style={{ marginBottom: 24 }}>
                 <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
                     <Text strong>{t('shippingAddress')}</Text>
-                    {session?.user?.address && (
+                    {currentSession && (
                         <Button
                             type="link"
                             size="small"
                             style={{ padding: 0, height: 'auto' }}
-                            onClick={() => setShippingAddress(session.user.address)}
+                            onClick={handleUseDefaultAddress}
                         >
                             {t('useDefaultAddress')}
                         </Button>

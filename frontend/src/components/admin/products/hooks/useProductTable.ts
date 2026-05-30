@@ -22,7 +22,6 @@ export function useProductTable({ initialData, session, form }: UseProductTableP
     const [isViewDrawerOpen, setIsViewDrawerOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [sort, setSort] = useState<string>('-createdAt');
-    const [imageUrl, setImageUrl] = useState<string>('');
 
     const [pagination, setPagination] = useState({
         current: initialData.data?.meta?.current || 1,
@@ -87,10 +86,10 @@ export function useProductTable({ initialData, session, form }: UseProductTableP
             const values = await form.validateFields();
             setLoading(true);
 
-            const { thumbnail, ...restValues } = values;
+            const { images, ...restValues } = values;
             const payload = {
                 ...restValues,
-                images: thumbnail ? [thumbnail] : []
+                images: images || []
             };
 
             if (editingProduct) {
@@ -136,8 +135,6 @@ export function useProductTable({ initialData, session, form }: UseProductTableP
         setSearchText,
         sort,
         setSort,
-        imageUrl,
-        setImageUrl,
         pagination,
         setPagination,
         swrLoading,

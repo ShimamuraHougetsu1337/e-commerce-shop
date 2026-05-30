@@ -8,20 +8,20 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-    restart: unless-stopped
+    restart: "no"
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: ecom_rabbitmq
     ports:
-      - "5672:5672"   # AMQP protocol port
+      - "5672:5672" # AMQP protocol port
       - "15672:15672" # Management UI port
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-    restart: unless-stopped
+    restart: "no"
 
 volumes:
   mongodb_data:
