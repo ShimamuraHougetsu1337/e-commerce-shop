@@ -144,13 +144,26 @@ export default function ProductModal({
                     {/* Left Column - Product details */}
                     <Col span={14}>
                         <div style={{ paddingRight: 8 }}>
-                            <Form.Item
-                                name="name"
-                                label={<span style={{ fontWeight: 500 }}>{t('name')}</span>}
-                                rules={[{ required: true, message: t('nameRequired') }]}
-                            >
-                                <Input placeholder={t('name')} style={{ borderRadius: 6 }} />
-                            </Form.Item>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="name"
+                                        label={<span style={{ fontWeight: 500 }}>{t('name')}</span>}
+                                        rules={[{ required: true, message: t('nameRequired') }]}
+                                    >
+                                        <Input placeholder={t('productNamePlaceholder') || t('name')} style={{ borderRadius: 6 }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="slug"
+                                        label={<span style={{ fontWeight: 500 }}>{t('slug')}</span>}
+                                        rules={[{ required: true, message: t('slugRequired') }]}
+                                    >
+                                        <Input placeholder={t('slugPlaceholder')} style={{ borderRadius: 6 }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
 
                             <Row gutter={16}>
                                 <Col span={12}>
