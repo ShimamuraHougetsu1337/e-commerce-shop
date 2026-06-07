@@ -15,3 +15,5 @@ Thumbs.db
 *.log
 .temp/
 .tmp/
+
+doc.md
